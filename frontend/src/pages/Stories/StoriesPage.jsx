@@ -1,27 +1,40 @@
 import React, { useEffect, useState } from 'react';
 import { storyService } from '../../services/api';
-import StoryCard from '../../components/common/StoryCard';
+import { featuredStory as defaultFeatured, fieldStories as defaultFieldStories, communityMoments } from '../../data/storiesData';
+import FeaturedStorySection from './components/FeaturedStorySection';
+import StoryEditorialCard from './components/StoryEditorialCard';
+import StoryQuoteSection from './components/StoryQuoteSection';
+import StoriesBehindWorkSection from './components/StoriesBehindWorkSection';
+import FromCommunitySection from './components/FromCommunitySection';
+import './stories.css';
 
 export default function StoriesPage() {
-  const [stories, setStories] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [featured, setFeatured] = useState(defaultFeatured);
+  const [stories, setStories] = useState(defaultFieldStories);
 
   useEffect(() => {
-    async function loadStories() {
+    // Scroll to top on page load
+    window.scrollTo(0, 0);
+
+    async function loadLiveStoriesIfAvailable() {
       try {
-        const data = await storyService.getStories();
-        setStories(data);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
+        const liveData = await storyService.getStories();
+        if (Array.isArray(liveData) && liveData.length > 0) {
+          // If backend has live stories, utilize them; otherwise retain complete prototype data
+          const featuredItem = liveData.find((s) => s.featured) || liveData[0];
+          setFeatured(featuredItem);
+          setStories(liveData.slice(1));
+        }
+      } catch {
+        // Backend offline or empty: cleanly retain prototype data without console error clutter
       }
     }
-    loadStories();
+    loadLiveStoriesIfAvailable();
   }, []);
 
   return (
     <div className="stories-page-root">
+      {/* Hero Section — EXACT Existing Hero Design & Copy Preserved */}
       <section className="stories-hero">
         <div className="container">
           <span className="section-badge">Voices of Transformation</span>
@@ -32,52 +45,36 @@ export default function StoriesPage() {
         </div>
       </section>
 
-      <section className="section bg-light-alt">
+      {/* SECTION 1 — FEATURED STORY */}
+      <FeaturedStorySection story={featured} />
+
+      {/* SECTION 2 — STORIES FROM THE FIELD */}
+      <section className="field-stories-section" aria-label="Stories from the Field">
         <div className="container">
-          <div className="stories-grid">
+          <div className="section-header">
+            <span className="section-badge">Field Narratives</span>
+            <h2 className="section-title">Stories from the Field</h2>
+            <p className="section-subtitle">
+              First-hand moments from the people and communities working toward a better future.
+            </p>
+          </div>
+
+          <div className="field-stories-grid">
             {stories.map((story) => (
-              <StoryCard key={story.id} story={story} />
+              <StoryEditorialCard key={story.id || story.slug} story={story} />
             ))}
           </div>
         </div>
       </section>
 
-      <style>{`
-        .stories-hero {
-          background: linear-gradient(135deg, #091712 0%, #0F4C3A 100%);
-          color: white;
-          padding: 5rem 0 4rem 0;
-          text-align: center;
-        }
-        .stories-hero .section-badge {
-          background: rgba(16, 185, 129, 0.2);
-          color: #34D399;
-          border-color: rgba(52, 211, 153, 0.4);
-        }
-        .stories-hero-title {
-          color: white;
-          font-size: 2.75rem;
-          font-weight: 800;
-          margin-bottom: 1.25rem;
-        }
-        .stories-hero-subtitle {
-          font-size: 1.15rem;
-          color: #CBD5E1;
-          max-width: 700px;
-          margin: 0 auto;
-          line-height: 1.65;
-        }
-        .stories-grid {
-          display: grid;
-          grid-template-columns: 1fr;
-          gap: 2rem;
-        }
-        @media (min-width: 768px) {
-          .stories-grid {
-            grid-template-columns: repeat(2, 1fr);
-          }
-        }
-      `}</style>
+      {/* SECTION 3 — STORY QUOTE / HUMAN VOICE */}
+      <StoryQuoteSection />
+
+      {/* SECTION 4 — STORIES BEHIND THE WORK */}
+      <StoriesBehindWorkSection />
+
+      {/* SECTION 5 — FROM THE COMMUNITY */}
+      <FromCommunitySection moments={communityMoments} />
     </div>
   );
 }
