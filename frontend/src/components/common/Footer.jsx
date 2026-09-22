@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Shield, Mail, Phone, MapPin, Send, CheckCircle2 } from 'lucide-react';
+import { Shield, Mail, Phone, MapPin, Send, CheckCircle2, ArrowUp } from 'lucide-react';
 import { contactService } from '../../services/api';
+import riLogo from '../../assets/ri-logo.png';
 
 export default function Footer() {
   const [email, setEmail] = useState('');
@@ -23,15 +24,19 @@ export default function Footer() {
     }
   };
 
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
-    <footer className="footer-root">
+    <footer className="footer-editorial-root">
       <div className="container footer-content">
         <div className="footer-grid">
           {/* Col 1: Brand & Mission */}
           <div className="footer-col brand-col">
             <div className="footer-logo">
               <div className="footer-logo-icon">
-                <Shield size={22} color="#FFFFFF" />
+                <img src={riLogo} alt="Responsible Individuals" className="footer-ri-logo" />
               </div>
               <div className="footer-logo-text">
                 <span className="footer-title">RESPONSIBLE</span>
@@ -96,20 +101,20 @@ export default function Footer() {
                   className="newsletter-input"
                 />
                 <button type="submit" disabled={loading} className="newsletter-btn" aria-label="Subscribe">
-                  <Send size={16} />
+                  <Send size={15} />
                 </button>
               </form>
             )}
 
             <div className="footer-contact-info">
               <div className="contact-line">
-                <MapPin size={16} /> <span>Indiranagar, Bengaluru, KA 560038</span>
+                <MapPin size={15} /> <span>Indiranagar, Bengaluru, KA 560038</span>
               </div>
               <div className="contact-line">
-                <Mail size={16} /> <span>connect@responsibleindividuals.org</span>
+                <Mail size={15} /> <span>connect@responsibleindividuals.org</span>
               </div>
               <div className="contact-line">
-                <Phone size={16} /> <span>+91 80 4123 4567</span>
+                <Phone size={15} /> <span>+91 80 4123 4567</span>
               </div>
             </div>
           </div>
@@ -123,15 +128,19 @@ export default function Footer() {
             <Link to="/contact">Terms of Service</Link>
             <Link to="/contact">Annual Disclosures</Link>
           </div>
+          <button onClick={scrollToTop} className="back-to-top-btn" aria-label="Scroll to top">
+            <span>Back to top</span>
+            <ArrowUp size={15} />
+          </button>
         </div>
       </div>
 
       <style>{`
-        .footer-root {
-          background: #091219;
+        .footer-editorial-root {
+          background: #0C1210;
           color: #94A3B8;
-          padding: 4.5rem 0 2rem 0;
-          border-top: 1px solid #1E293B;
+          padding: 5.5rem 0 2.5rem 0;
+          border-top: 1px solid #1C2723;
         }
         .footer-grid {
           display: grid;
@@ -145,8 +154,8 @@ export default function Footer() {
         }
         @media (min-width: 1024px) {
           .footer-grid {
-            grid-template-columns: 1.4fr 0.8fr 0.8fr 1.2fr;
-            gap: 3rem;
+            grid-template-columns: 1.35fr 0.8fr 0.85fr 1.2fr;
+            gap: 3.5rem;
           }
         }
         .footer-logo {
@@ -156,13 +165,16 @@ export default function Footer() {
           margin-bottom: 1.25rem;
         }
         .footer-logo-icon {
-          width: 38px;
-          height: 38px;
-          border-radius: var(--radius-md);
-          background: linear-gradient(135deg, #0F4C3A 0%, #10B981 100%);
+          width: 42px;
+          height: 42px;
           display: flex;
           align-items: center;
           justify-content: center;
+        }
+        .footer-ri-logo {
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
         }
         .footer-logo-text {
           display: flex;
@@ -183,19 +195,19 @@ export default function Footer() {
         }
         .footer-desc {
           font-size: 0.9rem;
-          line-height: 1.6;
-          margin-bottom: 1.25rem;
-          color: #94A3B8;
+          line-height: 1.65;
+          margin-bottom: 1.5rem;
+          color: #9DB0A7;
         }
         .tax-exemption-tag {
           display: flex;
           align-items: center;
-          gap: 0.6rem;
+          gap: 0.65rem;
           font-size: 0.8rem;
           color: #CBD5E1;
           background: rgba(255, 255, 255, 0.04);
-          padding: 0.5rem 0.75rem;
-          border-radius: var(--radius-md);
+          padding: 0.55rem 0.85rem;
+          border-radius: 12px;
           border: 1px solid rgba(255, 255, 255, 0.08);
         }
         .tax-badge {
@@ -203,24 +215,25 @@ export default function Footer() {
           color: #042F1A;
           font-size: 0.7rem;
           font-weight: 800;
-          padding: 0.15rem 0.45rem;
+          padding: 0.15rem 0.5rem;
           border-radius: var(--radius-sm);
         }
         .footer-heading {
           color: #FFFFFF;
           font-size: 1.05rem;
-          margin-bottom: 1.25rem;
-          font-weight: 700;
+          margin-bottom: 1.5rem;
+          font-weight: 800;
+          letter-spacing: 0.02em;
         }
         .footer-links {
           list-style: none;
           display: flex;
           flex-direction: column;
-          gap: 0.65rem;
+          gap: 0.75rem;
         }
         .footer-links a {
-          color: #94A3B8;
-          font-size: 0.9rem;
+          color: #9DB0A7;
+          font-size: 0.925rem;
           transition: color var(--transition-fast);
         }
         .footer-links a:hover {
@@ -229,7 +242,8 @@ export default function Footer() {
         .footer-newsletter-text {
           font-size: 0.875rem;
           margin-bottom: 1rem;
-          line-height: 1.5;
+          line-height: 1.55;
+          color: #9DB0A7;
         }
         .newsletter-form {
           display: flex;
@@ -238,10 +252,10 @@ export default function Footer() {
         }
         .newsletter-input {
           width: 100%;
-          padding: 0.7rem 3rem 0.7rem 1rem;
-          background: #16222F;
-          border: 1px solid #283747;
-          border-radius: var(--radius-md);
+          padding: 0.75rem 3rem 0.75rem 1.15rem;
+          background: #15201C;
+          border: 1px solid #273630;
+          border-radius: var(--radius-pill);
           color: #FFFFFF;
           font-size: 0.875rem;
         }
@@ -254,18 +268,20 @@ export default function Footer() {
           right: 4px;
           top: 4px;
           bottom: 4px;
-          padding: 0 1rem;
+          width: 38px;
           background: #10B981;
-          color: white;
+          color: #042F1A;
           border: none;
-          border-radius: var(--radius-sm);
+          border-radius: var(--radius-pill);
           cursor: pointer;
           display: flex;
           align-items: center;
           justify-content: center;
+          transition: background var(--transition-fast);
         }
         .newsletter-btn:hover {
           background: #059669;
+          color: #FFFFFF;
         }
         .subscribe-success {
           display: flex;
@@ -279,24 +295,25 @@ export default function Footer() {
         .footer-contact-info {
           display: flex;
           flex-direction: column;
-          gap: 0.6rem;
+          gap: 0.65rem;
           font-size: 0.85rem;
         }
         .contact-line {
           display: flex;
           align-items: center;
           gap: 0.6rem;
-          color: #94A3B8;
+          color: #9DB0A7;
         }
         .footer-bottom {
-          margin-top: 3.5rem;
-          padding-top: 1.5rem;
-          border-top: 1px solid #1E293B;
+          margin-top: 4.5rem;
+          padding-top: 1.75rem;
+          border-top: 1px solid #1C2723;
           display: flex;
           flex-direction: column;
-          gap: 1rem;
+          gap: 1.25rem;
           align-items: center;
           font-size: 0.825rem;
+          color: #6E8278;
         }
         @media (min-width: 768px) {
           .footer-bottom {
@@ -306,13 +323,33 @@ export default function Footer() {
         }
         .footer-bottom-links {
           display: flex;
-          gap: 1.25rem;
+          gap: 1.5rem;
         }
         .footer-bottom-links a {
-          color: #64748B;
+          color: #6E8278;
+          transition: color var(--transition-fast);
         }
         .footer-bottom-links a:hover {
-          color: #CBD5E1;
+          color: #FFFFFF;
+        }
+        .back-to-top-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.4rem;
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          color: #9DB0A7;
+          padding: 0.35rem 0.85rem;
+          border-radius: var(--radius-pill);
+          cursor: pointer;
+          font-size: 0.78rem;
+          font-weight: 600;
+          transition: all var(--transition-fast);
+        }
+        .back-to-top-btn:hover {
+          background: rgba(16, 185, 129, 0.2);
+          color: #34D399;
+          border-color: rgba(16, 185, 129, 0.3);
         }
       `}</style>
     </footer>
