@@ -1,0 +1,102 @@
+export const GALLERY_CATEGORIES = [
+  'All',
+  'Lake Restoration',
+  'Education',
+  'Afforestation',
+  'Livelihoods',
+  'Ecology',
+  'Community'
+];
+
+export const GALLERY_ITEMS = [
+  {
+    id: 1,
+    title: 'Community Wetland Planting Drive',
+    category: 'Lake Restoration',
+    location: 'Kaikondrahalli, Bengaluru',
+    date: 'September 2024',
+    impact: '400+ Wetland Saplings Planted',
+    themeColor: '#0D9488',
+    accentBg: 'rgba(13, 148, 136, 0.12)',
+    accentBorder: 'rgba(13, 148, 136, 0.3)',
+    image: 'https://images.unsplash.com/photo-1544654803-b69140b285a1?auto=format&fit=crop&w=1200&q=85',
+    localFallback: '/images/gallery/lake_restoration.svg',
+    fallbackGradient: 'linear-gradient(135deg, #064E3B 0%, #0D9488 50%, #0F172A 100%)',
+    description: 'Over 150 community volunteers and local school students gathered along the shorelines of Kaikondrahalli Lake to plant native wetland saplings and vetiver grasses. This bio-shield aids in natural water filtration, prevents soil erosion, and revives aquatic bird habitats in urban Bengaluru.'
+  },
+  {
+    id: 2,
+    title: 'Rural STEM Smart Lab Inauguration',
+    category: 'Education',
+    location: 'Kolar District',
+    date: 'August 2024',
+    impact: '320 Students Empowered',
+    themeColor: '#2563EB',
+    accentBg: 'rgba(37, 99, 235, 0.12)',
+    accentBorder: 'rgba(37, 99, 235, 0.3)',
+    image: 'https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=1200&q=85',
+    localFallback: '/images/gallery/education_stem.svg',
+    fallbackGradient: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 50%, #0F172A 100%)',
+    description: 'Opening a solar-powered STEM laboratory in rural Kolar, equipping 300+ students with hands-on robotics kits, digital microscopes, and interactive science modules to foster curiosity, critical thinking, and technical skills.'
+  },
+  {
+    id: 3,
+    title: 'Urban Miyawaki Sapling Installation',
+    category: 'Afforestation',
+    location: 'Indiranagar, Bengaluru',
+    date: 'July 2024',
+    impact: '600 Native Trees Planted',
+    themeColor: '#059669',
+    accentBg: 'rgba(5, 150, 105, 0.12)',
+    accentBorder: 'rgba(5, 150, 105, 0.3)',
+    image: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=1200&q=85',
+    localFallback: '/images/gallery/urban_afforestation.svg',
+    fallbackGradient: 'linear-gradient(135deg, #064E3B 0%, #059669 50%, #0F172A 100%)',
+    description: 'Transforming an underutilized patch of urban land into a dense Miyawaki mini-forest with 600 indigenous tree species. Local residents, youth volunteers, and corporate partners worked together to enrich soil, mulch, and plant native saplings.'
+  },
+  {
+    id: 4,
+    title: 'Women Artisan Weaving Workshop',
+    category: 'Livelihoods',
+    location: 'Tumakuru, Karnataka',
+    date: 'June 2024',
+    impact: '45 Artisans Upskilled',
+    themeColor: '#8B5CF6',
+    accentBg: 'rgba(139, 92, 246, 0.12)',
+    accentBorder: 'rgba(139, 92, 246, 0.3)',
+    image: 'https://images.unsplash.com/photo-1606744888344-493238951221?auto=format&fit=crop&w=1200&q=85',
+    localFallback: '/images/gallery/women_artisans.svg',
+    fallbackGradient: 'linear-gradient(135deg, #4C1D95 0%, #8B5CF6 50%, #0F172A 100%)',
+    description: 'Empowering rural women artisans through specialized masterclasses on natural dye preparation, sustainable handloom techniques, and direct market linkage for fair-trade handmade textiles.'
+  },
+  {
+    id: 5,
+    title: 'Citizen Water Quality Monitoring Walk',
+    category: 'Ecology',
+    location: 'Varthur Inflow, Bengaluru',
+    date: 'May 2024',
+    impact: '12 Water Inflows Tested',
+    themeColor: '#0D9488',
+    accentBg: 'rgba(13, 148, 136, 0.12)',
+    accentBorder: 'rgba(13, 148, 136, 0.3)',
+    image: 'https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?auto=format&fit=crop&w=1200&q=85',
+    localFallback: '/images/gallery/water_monitoring.svg',
+    fallbackGradient: 'linear-gradient(135deg, #115E59 0%, #0D9488 50%, #0F172A 100%)',
+    description: 'Equipping citizen scientists and students with water sampling field kits to measure pH, dissolved oxygen, and nitrate levels at key Varthur Lake inlets. The collected data empowers local monitoring and community advocacy.'
+  },
+  {
+    id: 6,
+    title: 'Zero Waste Source Segregation Drive',
+    category: 'Community',
+    location: 'Malleshwaram, Bengaluru',
+    date: 'April 2024',
+    impact: '500 Households Reached',
+    themeColor: '#D97706',
+    accentBg: 'rgba(217, 119, 6, 0.12)',
+    accentBorder: 'rgba(217, 119, 6, 0.3)',
+    image: 'https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?auto=format&fit=crop&w=1200&q=85',
+    localFallback: '/images/gallery/waste_segregation.svg',
+    fallbackGradient: 'linear-gradient(135deg, #78350F 0%, #D97706 50%, #0F172A 100%)',
+    description: 'A door-to-door community campaign educating residents on 3-way waste segregation at source, home composting techniques, and eliminating single-use plastic across neighborhood markets.'
+  }
+];
