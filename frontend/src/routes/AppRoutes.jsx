@@ -19,7 +19,12 @@ import GalleryPage from '../pages/Gallery/GalleryPage';
 import PartnersPage from '../pages/Partners/PartnersPage';
 import CareersPage from '../pages/Careers/CareersPage';
 import ContactPage from '../pages/Contact/ContactPage';
+
+// Authentication Pages
 import LoginPage from '../pages/Auth/LoginPage';
+import RegisterPage from '../pages/Auth/RegisterPage';
+import VerifyOTPPage from '../pages/Auth/VerifyOTPPage';
+import LoginOTPPage from '../pages/Auth/LoginOTPPage';
 
 // Admin Pages
 import AdminDashboard from '../pages/Admin/AdminDashboard';
@@ -30,34 +35,107 @@ import AdminEnquiries from '../pages/Admin/AdminEnquiries';
 export default function AppRoutes() {
   return (
     <Routes>
-      {/* Public Routes */}
+
+      {/* =========================
+          PUBLIC ROUTES
+      ========================== */}
       <Route path="/" element={<PublicLayout />}>
+
         <Route index element={<HomePage />} />
+
         <Route path="about" element={<AboutPage />} />
+
         <Route path="projects" element={<ProjectsPage />} />
-        <Route path="projects/:slug" element={<ProjectDetailPage />} />
+
+        <Route
+          path="projects/:slug"
+          element={<ProjectDetailPage />}
+        />
+
         <Route path="impact" element={<ImpactPage />} />
+
         <Route path="volunteer" element={<VolunteerPage />} />
+
         <Route path="donate" element={<DonatePage />} />
+
         <Route path="events" element={<EventsPage />} />
+
         <Route path="stories" element={<StoriesPage />} />
+
         <Route path="gallery" element={<GalleryPage />} />
+
         <Route path="partners" element={<PartnersPage />} />
+
         <Route path="careers" element={<CareersPage />} />
+
         <Route path="contact" element={<ContactPage />} />
-        <Route path="login" element={<LoginPage />} />
+
+        {/* =========================
+            AUTHENTICATION
+        ========================== */}
+
+        <Route
+          path="login"
+          element={<LoginPage />}
+        />
+
+        <Route
+          path="register"
+          element={<RegisterPage />}
+        />
+
+        <Route
+          path="verify-otp"
+          element={<VerifyOTPPage />}
+        />
+        <Route
+          path="login-otp"
+          element={<LoginOTPPage />}
+        />
       </Route>
 
-      {/* Admin Protected Routes */}
-      <Route path="/admin-portal" element={<AdminLayout />}>
-        <Route index element={<AdminDashboard />} />
-        <Route path="volunteers" element={<AdminVolunteers />} />
-        <Route path="donations" element={<AdminDonations />} />
-        <Route path="enquiries" element={<AdminEnquiries />} />
+
+      {/* =========================
+          ADMIN ROUTES
+      ========================== */}
+
+      <Route
+        path="/admin-portal"
+        element={<AdminLayout />}
+      >
+
+        <Route
+          index
+          element={<AdminDashboard />}
+        />
+
+        <Route
+          path="volunteers"
+          element={<AdminVolunteers />}
+        />
+
+        <Route
+          path="donations"
+          element={<AdminDonations />}
+        />
+
+        <Route
+          path="enquiries"
+          element={<AdminEnquiries />}
+        />
+
       </Route>
 
-      {/* Fallback */}
-      <Route path="*" element={<Navigate to="/" replace />} />
+
+      {/* =========================
+          FALLBACK
+      ========================== */}
+
+      <Route
+        path="*"
+        element={<Navigate to="/" replace />}
+      />
+
     </Routes>
   );
 }
