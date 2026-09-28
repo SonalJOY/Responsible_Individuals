@@ -26,23 +26,95 @@ const getAreaImage = (area, idx) => {
 
 // Fallback metrics for containers where backend metrics list is empty
 const fallbackAreaMetrics = {
+  environment: [
+    { id: 'f-env-1', name: 'Water Bodies Rejuvenated', unit: 'Lakes', baseline_value: '0', target_value: '8', achieved_value: '6', percentage: 75.0, metric_type: 'OUTPUT' },
+    { id: 'f-env-2', name: 'Native Trees Planted', unit: 'Saplings', baseline_value: '0', target_value: '25000', achieved_value: '18400', percentage: 73.6, metric_type: 'OUTPUT' },
+  ],
+  education: [
+    { id: 'f-edu-1', name: 'Rural Schools Upgraded', unit: 'Schools', baseline_value: '0', target_value: '50', achieved_value: '42', percentage: 84.0, metric_type: 'OUTPUT' },
+    { id: 'f-edu-2', name: 'Students with Digital Access', unit: 'Students', baseline_value: '500', target_value: '15000', achieved_value: '12800', percentage: 85.3, metric_type: 'REACH' },
+  ],
   community: [
-    { id: 'f-comm-1', name: 'Community Waste Diverted', unit: 'Tons', achieved_value: '420', target_value: '500', percentage: 84.0, metric_type: 'OUTPUT' },
-    { id: 'f-comm-2', name: 'Neighborhood Composting Hubs', unit: 'Units', achieved_value: '28', target_value: '35', percentage: 80.0, metric_type: 'OUTPUT' },
+    { id: 'f-comm-1', name: 'Community Waste Diverted', unit: 'Tons', baseline_value: '0', target_value: '500', achieved_value: '420', percentage: 84.0, metric_type: 'OUTPUT' },
+    { id: 'f-comm-2', name: 'Neighborhood Composting Hubs', unit: 'Hubs', baseline_value: '0', target_value: '35', achieved_value: '28', percentage: 80.0, metric_type: 'OUTPUT' },
   ],
   health: [
-    { id: 'f-hlth-1', name: 'Preventive Health Screenings', unit: 'Citizens', achieved_value: '8400', target_value: '10000', percentage: 84.0, metric_type: 'REACH' },
-    { id: 'f-hlth-2', name: 'Clean Drinking Water Filtration', unit: 'Habitations', achieved_value: '45', target_value: '50', percentage: 90.0, metric_type: 'OUTCOME' },
+    { id: 'f-hlth-1', name: 'Preventive Health Screenings', unit: 'Citizens', baseline_value: '500', target_value: '10000', achieved_value: '8400', percentage: 84.0, metric_type: 'REACH' },
+    { id: 'f-hlth-2', name: 'Clean Drinking Water Filtration', unit: 'Habitations', baseline_value: '0', target_value: '50', achieved_value: '45', percentage: 90.0, metric_type: 'OUTCOME' },
   ],
   livelihood: [
-    { id: 'f-live-1', name: 'Women Micro-Entrepreneurs', unit: 'Enterprises', achieved_value: '680', target_value: '800', percentage: 85.0, metric_type: 'OUTCOME' },
-    { id: 'f-live-2', name: 'Youth Vocational Certifications', unit: 'Graduates', achieved_value: '1240', target_value: '1500', percentage: 82.7, metric_type: 'OUTPUT' },
+    { id: 'f-live-1', name: 'Women Micro-Entrepreneurs Supported', unit: 'Enterprises', baseline_value: '50', target_value: '800', achieved_value: '680', percentage: 85.0, metric_type: 'OUTCOME' },
+    { id: 'f-live-2', name: 'Youth Vocational Certifications', unit: 'Graduates', baseline_value: '100', target_value: '1500', achieved_value: '1240', percentage: 82.7, metric_type: 'OUTPUT' },
   ],
   civic: [
-    { id: 'f-civ-1', name: 'Citizen Grievances Resolved', unit: 'Cases', achieved_value: '1120', target_value: '1400', percentage: 80.0, metric_type: 'OUTCOME' },
-    { id: 'f-civ-2', name: 'Youth Town Hall Assemblies', unit: 'Sessions', achieved_value: '36', target_value: '40', percentage: 90.0, metric_type: 'OUTPUT' },
+    { id: 'f-civ-1', name: 'Citizen Grievances Resolved', unit: 'Cases', baseline_value: '0', target_value: '1400', achieved_value: '1120', percentage: 80.0, metric_type: 'OUTCOME' },
+    { id: 'f-civ-2', name: 'Youth Town Hall Assemblies', unit: 'Sessions', baseline_value: '0', target_value: '40', achieved_value: '36', percentage: 90.0, metric_type: 'OUTPUT' },
   ],
 };
+
+// Default focus areas ensuring rich metrics are always displayed
+const defaultImpactAreas = [
+  {
+    id: 'default-env',
+    slug: 'environment',
+    name: 'Environment & Water Restoration',
+    description: 'Protecting lakes, restoring urban watersheds, and driving afforestation for resilient cities.',
+    icon_name: 'TreePine',
+    color_accent: '#10B981',
+    sdg_alignment: 'SDG 6: Clean Water, SDG 13: Climate Action, SDG 15: Life on Land',
+    metrics: fallbackAreaMetrics.environment,
+  },
+  {
+    id: 'default-edu',
+    slug: 'education',
+    name: 'Education & Digital Literacy',
+    description: 'Equipping underserved government schools with modern digital STEM labs and teacher mentorship.',
+    icon_name: 'GraduationCap',
+    color_accent: '#3B82F6',
+    sdg_alignment: 'SDG 4: Quality Education, SDG 10: Reduced Inequalities',
+    metrics: fallbackAreaMetrics.education,
+  },
+  {
+    id: 'default-comm',
+    slug: 'community',
+    name: 'Community Development & Waste',
+    description: 'Fostering decentralized waste segregation, clean neighborhood stewardship, and civic safety.',
+    icon_name: 'Users',
+    color_accent: '#F59E0B',
+    sdg_alignment: 'SDG 11: Sustainable Cities, SDG 12: Responsible Consumption',
+    metrics: fallbackAreaMetrics.community,
+  },
+  {
+    id: 'default-hlth',
+    slug: 'health',
+    name: 'Healthcare & Preventive Wellness',
+    description: 'Providing mobile diagnostics, maternal wellness checkups, and clean drinking water filtration.',
+    icon_name: 'HeartPulse',
+    color_accent: '#EC4899',
+    sdg_alignment: 'SDG 3: Good Health and Well-being',
+    metrics: fallbackAreaMetrics.health,
+  },
+  {
+    id: 'default-live',
+    slug: 'livelihood',
+    name: 'Sustainable Livelihoods & Skills',
+    description: 'Empowering women micro-entrepreneurs and youth through vocational training and market linkages.',
+    icon_name: 'Briefcase',
+    color_accent: '#8B5CF6',
+    sdg_alignment: 'SDG 8: Decent Work and Economic Growth',
+    metrics: fallbackAreaMetrics.livelihood,
+  },
+  {
+    id: 'default-civ',
+    slug: 'civic',
+    name: 'Civic Responsibility & Youth Leadership',
+    description: 'Engaging youth and citizen collectives to bridge the gap between citizens and local governance.',
+    icon_name: 'ShieldCheck',
+    color_accent: '#0D9488',
+    sdg_alignment: 'SDG 16: Peace, Justice and Strong Institutions, SDG 17: Partnerships',
+    metrics: fallbackAreaMetrics.civic,
+  },
+];
 
 // Publication Disclosures with Morphing Card Animation
 const publicationDisclosures = [
@@ -79,7 +151,7 @@ const publicationDisclosures = [
 ];
 
 export default function ImpactPage() {
-  const [areas, setAreas] = useState([]);
+  const [areas, setAreas] = useState(defaultImpactAreas);
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [revealedAreas, setRevealedAreas] = useState({});
@@ -105,7 +177,9 @@ export default function ImpactPage() {
           impactService.getAreas(),
           impactService.getReports(),
         ]);
-        setAreas(areasData || []);
+        if (areasData && Array.isArray(areasData) && areasData.length > 0) {
+          setAreas(areasData);
+        }
         setReports(reportsData || []);
       } catch (err) {
         console.error('Failed to load impact data:', err);
@@ -120,6 +194,22 @@ export default function ImpactPage() {
   useEffect(() => {
     if (areas.length === 0) return;
 
+    // Safety timeout: ensure all cards become revealed so they are never hidden
+    const timer = setTimeout(() => {
+      setRevealedAreas((prev) => {
+        const next = { ...prev };
+        areas.forEach((a, idx) => {
+          const key = a.id || `area-${idx}`;
+          next[key] = true;
+        });
+        return next;
+      });
+    }, 400);
+
+    if (typeof IntersectionObserver === 'undefined') {
+      return () => clearTimeout(timer);
+    }
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -132,8 +222,8 @@ export default function ImpactPage() {
         });
       },
       {
-        threshold: 0.15,
-        rootMargin: '0px 0px -40px 0px',
+        threshold: 0.05,
+        rootMargin: '100px 0px 50px 0px',
       }
     );
 
@@ -141,8 +231,12 @@ export default function ImpactPage() {
       if (el) observer.observe(el);
     });
 
-    return () => observer.disconnect();
+    return () => {
+      clearTimeout(timer);
+      observer.disconnect();
+    };
   }, [areas]);
+
 
   return (
     <div className="impact-page-root">
