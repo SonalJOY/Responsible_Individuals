@@ -1,0 +1,22 @@
+Update on Your Volunteer Application - Responsible Individuals
+
+Dear {{ full_name }},
+
+Thank you for taking the time to apply for the {{ opportunity_title }} volunteer initiative. We truly appreciate your enthusiasm and desire to contribute to our mission.
+
+After careful review of all submissions for this specific cohort, we regret to inform you that we are unable to offer you a placement for this role at this time due to limited capacity or specialized role requirements.
+
+APPLICATION DETAILS:
+- Opportunity: {{ opportunity_title }}
+- Status: Declined
+{% if review_notes %}- Review Notes: {{ review_notes }}
+{% endif %}
+
+STAY CONNECTED:
+New seasonal programs and community drives launch regularly. We warmly encourage you to explore upcoming volunteer opportunities that match your interests and availability.
+
+Thank you once again for your commitment to social and environmental responsibility.
+
+Warm regards,
+Responsible Individuals Volunteer Team
+Contact: {{ contact_email }}

@@ -1,0 +1,23 @@
+Application Waitlisted: {{ opportunity_title }} - Responsible Individuals
+
+Dear {{ full_name }},
+
+Thank you for applying for {{ opportunity_title }}. We have received an overwhelming response for this role, and all immediate slots are currently allocated.
+
+Your application has been placed on the Waitlist.
+
+APPLICATION DETAILS:
+- Opportunity: {{ opportunity_title }}
+{% if location %}- Location: {{ location }}
+{% endif %}- Status: Waitlisted
+{% if review_notes %}- Coordinator Notes: {{ review_notes }}
+{% endif %}
+
+WHAT DOES THIS MEAN?
+If an accepted applicant's availability changes or if additional spots open up in this initiative, waitlisted volunteers will be contacted in priority order.
+
+In the meantime, feel free to explore other open opportunities on our platform.
+
+Warm regards,
+Responsible Individuals Volunteer Team
+Contact: {{ contact_email }}

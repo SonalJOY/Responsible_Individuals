@@ -129,15 +129,45 @@ export const volunteerService = {
     const res = await api.get('/volunteers/interests/');
     return res.data.results || res.data;
   },
+  register: async (registrationData) => {
+    const res = await api.post('/volunteers/register/', registrationData);
+    if (res.data.access) {
+      localStorage.setItem('ri_access_token', res.data.access);
+      localStorage.setItem('ri_refresh_token', res.data.refresh);
+      localStorage.setItem('ri_user', JSON.stringify(res.data.user));
+    }
+    return res.data;
+  },
+  apply: async (applicationData) => {
+    const res = await api.post('/volunteers/apply/', applicationData);
+    return res.data;
+  },
+  getMyProfile: async () => {
+    const res = await api.get('/volunteers/my-profile/');
+    return res.data;
+  },
+  updateMyProfile: async (profileData) => {
+    const res = await api.patch('/volunteers/my-profile/', profileData);
+    return res.data;
+  },
+  getMyApplications: async () => {
+    const res = await api.get('/volunteers/my-applications/');
+    return res.data.results || res.data;
+  },
+  getMyParticipations: async () => {
+    const res = await api.get('/volunteers/my-participations/');
+    return res.data.results || res.data;
+  },
+  getCertificates: async () => {
+    const res = await api.get('/volunteers/certificates/');
+    return res.data.results || res.data;
+  },
   createProfile: async (profileData) => {
     const res = await api.post('/volunteers/profiles/', profileData);
     return res.data;
   },
-  apply: async (applicationData) => {
-    const res = await api.post('/volunteers/applications/', applicationData);
-    return res.data;
-  },
 };
+
 
 export const donationService = {
   getCampaigns: async () => {

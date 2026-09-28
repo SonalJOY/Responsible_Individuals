@@ -5,6 +5,7 @@ from .models import (
     VolunteerProfile,
     VolunteerApplication,
     VolunteerParticipation,
+    Certificate,
 )
 
 
@@ -37,3 +38,12 @@ class VolunteerInterestAdmin(admin.ModelAdmin):
 @admin.register(VolunteerParticipation)
 class VolunteerParticipationAdmin(admin.ModelAdmin):
     list_display = ('volunteer_profile', 'project', 'date', 'hours', 'verified')
+    list_filter = ('verified', 'date')
+    search_fields = ('volunteer_profile__full_name', 'activity_performed')
+
+
+@admin.register(Certificate)
+class CertificateAdmin(admin.ModelAdmin):
+    list_display = ('certificate_code', 'volunteer_profile', 'title', 'issue_date', 'hours_recognized', 'status')
+    list_filter = ('status', 'issue_date')
+    search_fields = ('certificate_code', 'volunteer_profile__full_name', 'volunteer_profile__email', 'title')

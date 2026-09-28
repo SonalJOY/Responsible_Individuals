@@ -1,0 +1,16 @@
+New Volunteer Registered - Responsible Individuals Platform
+
+A new volunteer has successfully created a profile.
+
+VOLUNTEER DETAILS:
+- Full Name: {{ full_name }}
+- Email: {{ email }}
+{% if phone %}- Phone: {{ phone }}
+{% endif %}{% if city %}- Location: {{ city }}{% if state %}, {{ state }}{% endif %}
+{% endif %}{% if occupation %}- Occupation: {{ occupation }}
+{% endif %}{% if skills %}- Skills: {{ skills }}
+{% endif %}{% if availability %}- Availability: {{ availability }}
+{% endif %}{% if interests_list %}- Selected Interests: {{ interests_list }}
+{% endif %}- Registered At: {{ registered_at }}
+
+You can view and manage volunteer profiles in the Admin Portal.

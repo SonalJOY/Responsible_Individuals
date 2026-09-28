@@ -1,0 +1,21 @@
+Application Received: {{ opportunity_title }} - Responsible Individuals
+
+Dear {{ full_name }},
+
+We have successfully received your volunteer application for {{ opportunity_title }}.
+
+APPLICATION DETAILS:
+- Opportunity: {{ opportunity_title }}
+{% if location %}- Location: {{ location }}
+{% endif %}{% if commitment %}- Commitment: {{ commitment }}
+{% endif %}- Status: Pending Review
+- Submitted On: {{ application_date }}
+
+WHAT HAPPENS NEXT?
+Our initiative coordinator is reviewing your statement and schedule. You will receive an email update once your application status is updated.
+
+Thank you for offering your time and skills to support grassroots impact.
+
+Warm regards,
+Responsible Individuals Volunteer Team
+Contact: {{ contact_email }}

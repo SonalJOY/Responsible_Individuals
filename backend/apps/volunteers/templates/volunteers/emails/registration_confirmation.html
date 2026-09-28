@@ -1,0 +1,41 @@
+{% extends "volunteers/emails/base_email.html" %}
+
+{% block content %}
+<h2>Welcome to the Community, {{ full_name }}!</h2>
+
+<p>Thank you for registering as a volunteer with <strong>Responsible Individuals</strong>. Your account and volunteer profile have been successfully established.</p>
+
+<div class="info-card">
+  <div class="info-card-item">
+    <span class="info-label">Volunteer Name:</span>
+    <span class="info-value">{{ full_name }}</span>
+  </div>
+  <div class="info-card-item">
+    <span class="info-label">Registered Email:</span>
+    <span class="info-value">{{ email }}</span>
+  </div>
+  {% if city %}
+  <div class="info-card-item">
+    <span class="info-label">Location:</span>
+    <span class="info-value">{{ city }}{% if state %}, {{ state }}{% endif %}</span>
+  </div>
+  {% endif %}
+  {% if interests_list %}
+  <div class="info-card-item">
+    <span class="info-label">Selected Focus Areas:</span>
+    <span class="info-value">{{ interests_list }}</span>
+  </div>
+  {% endif %}
+</div>
+
+<p><strong>What's Next?</strong></p>
+<ul style="padding-left: 20px; color: #475569; margin-bottom: 20px;">
+  <li style="margin-bottom: 8px;"><strong>Explore Active Roles:</strong> Browse open community opportunities across lake rejuvenation, robotics mentoring, and zero-waste initiatives.</li>
+  <li style="margin-bottom: 8px;"><strong>Apply with Intent:</strong> Submit applications for roles matching your schedule and skills.</li>
+  <li style="margin-bottom: 8px;"><strong>Track Verified Impact:</strong> Log your on-ground participation hours and earn verifiable certificates of recognition.</li>
+</ul>
+
+<p>We are thrilled to have you with us in making meaningful, measurable change.</p>
+
+<p style="margin-top: 24px;">Warm regards,<br><strong>Responsible Individuals Volunteer Team</strong></p>
+{% endblock %}
