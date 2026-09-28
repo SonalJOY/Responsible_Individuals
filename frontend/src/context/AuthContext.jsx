@@ -7,6 +7,9 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // ----------------------------------------------------------
+  // Load saved user when application starts
+  // ----------------------------------------------------------
   useEffect(() => {
     const savedUser = authService.getCurrentUser();
     if (savedUser) {
@@ -15,29 +18,78 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
-  const login = async (email, password) => {
-    const data = await authService.login(email, password);
-    setUser(data.user);
+  // ----------------------------------------------------------
+  // LOGIN - STEP 1
+  // ----------------------------------------------------------
+  const login = async (identifier, password) => {
+    const data = await authService.login(identifier, password);
+    // If direct login returned user (e.g. demo mode or fallback)
+    if (data?.user) {
+      setUser(data.user);
+    }
     return data;
   };
 
+  // ----------------------------------------------------------
+  // LOGIN OTP - STEP 2
+  // ----------------------------------------------------------
+  const verifyLoginOTP = async (identifier, code) => {
+    const data = await authService.verifyLoginOTP(identifier, code);
+    if (data?.user) {
+      setUser(data.user);
+    }
+    return data;
+  };
+
+  // ----------------------------------------------------------
+  // REGISTER
+  // ----------------------------------------------------------
   const register = async (userData) => {
     const data = await authService.register(userData);
-    setUser(data.user);
     return data;
   };
 
+  // ----------------------------------------------------------
+  // REGISTER VOLUNTEER
+  // ----------------------------------------------------------
   const registerVolunteer = async (volunteerData) => {
     const data = await volunteerService.register(volunteerData);
-    setUser(data.user);
+    if (data?.user) {
+      setUser(data.user);
+    }
     return data;
   };
 
+  // ----------------------------------------------------------
+  // VERIFY REGISTRATION OTP
+  // ----------------------------------------------------------
+  const verifyOTP = async (identifier, code) => {
+    const data = await authService.verifyOTP(identifier, code);
+    if (data?.user) {
+      setUser(data.user);
+    }
+    return data;
+  };
+
+  // ----------------------------------------------------------
+  // RESEND REGISTRATION OTP
+  // ----------------------------------------------------------
+  const resendOTP = async (identifier) => {
+    const data = await authService.resendOTP(identifier);
+    return data;
+  };
+
+  // ----------------------------------------------------------
+  // LOGOUT
+  // ----------------------------------------------------------
   const logout = () => {
     authService.logout();
     setUser(null);
   };
 
+  // ----------------------------------------------------------
+  // SET AUTH USER (FOR LOCAL UPDATES)
+  // ----------------------------------------------------------
   const setAuthUser = (updatedUser) => {
     setUser(updatedUser);
     if (updatedUser) {
@@ -45,14 +97,32 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const isAdmin = Boolean(user && (user.is_staff || user.is_admin_or_staff));
+  // ----------------------------------------------------------
+  // ADMIN CHECK
+  // ----------------------------------------------------------
+  const isAdmin = Boolean(
+    user && (user.is_staff || user.is_admin_or_staff)
+  );
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, registerVolunteer, logout, setAuthUser, isAdmin }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        loading,
+        login,
+        verifyLoginOTP,
+        register,
+        registerVolunteer,
+        verifyOTP,
+        resendOTP,
+        logout,
+        setAuthUser,
+        isAdmin,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
 };
 
 export const useAuth = () => useContext(AuthContext);
-
