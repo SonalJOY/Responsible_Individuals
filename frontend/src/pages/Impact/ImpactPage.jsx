@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { impactService } from '../../services/api';
 import { 
-  FileText, Download, CheckCircle2, FileCheck, ExternalLink, Sparkles, Play, Pause
+  FileText, Download, CheckCircle2, FileCheck, ExternalLink, Sparkles, Play, Pause,
+  TreePine, GraduationCap, Users, HeartPulse, Briefcase, ShieldCheck, TrendingUp
 } from 'lucide-react';
 import ImpactCounter from '../../components/common/ImpactCounter';
 import impactBg from '../../assets/impact-bg.jpg';
@@ -9,9 +10,10 @@ import areaEnvImg from '../../assets/area-environment.jpg';
 import areaEduImg from '../../assets/area-education.jpg';
 import areaCommImg from '../../assets/area-community.jpg';
 import areaHealthImg from '../../assets/area-healthcare.jpg';
+import areaLiveImg from '../../assets/area-livelihood.jpg';
 import areaCivicImg from '../../assets/area-civic.jpg';
 
-// Mapping focus area to its domain background picture
+// Mapping focus area to its domain picture
 const getAreaImage = (area, idx) => {
   const name = (area.name || '').toLowerCase();
   const slug = (area.slug || '').toLowerCase();
@@ -19,10 +21,24 @@ const getAreaImage = (area, idx) => {
   if (slug.includes('education') || name.includes('education') || name.includes('digital')) return areaEduImg;
   if (slug.includes('community') || name.includes('community') || name.includes('waste')) return areaCommImg;
   if (slug.includes('health') || name.includes('health') || name.includes('wellness')) return areaHealthImg;
-  if (slug.includes('civic') || name.includes('civic') || name.includes('youth') || name.includes('livelihood')) return areaCivicImg;
-  const imgs = [areaEnvImg, areaEduImg, areaCommImg, areaHealthImg, areaCivicImg, areaCivicImg];
+  if (slug.includes('livelihood') || name.includes('livelihood') || name.includes('skill')) return areaLiveImg;
+  if (slug.includes('civic') || name.includes('civic') || name.includes('youth')) return areaCivicImg;
+  const imgs = [areaEnvImg, areaEduImg, areaCommImg, areaHealthImg, areaLiveImg, areaCivicImg];
   return imgs[idx % imgs.length];
 };
+
+// Mapping focus area to its Lucide icon
+const getAreaIcon = (area, idx) => {
+  const slug = (area.slug || '').toLowerCase();
+  const name = (area.name || '').toLowerCase();
+  if (slug.includes('env') || name.includes('water')) return TreePine;
+  if (slug.includes('edu') || name.includes('school')) return GraduationCap;
+  if (slug.includes('comm') || name.includes('waste')) return Users;
+  if (slug.includes('health') || name.includes('well')) return HeartPulse;
+  if (slug.includes('live') || name.includes('skill')) return Briefcase;
+  return ShieldCheck;
+};
+
 
 // Fallback metrics for containers where backend metrics list is empty
 const fallbackAreaMetrics = {
@@ -194,20 +210,13 @@ export default function ImpactPage() {
   useEffect(() => {
     if (areas.length === 0) return;
 
-    // Safety timeout: ensure all cards become revealed so they are never hidden
-    const timer = setTimeout(() => {
-      setRevealedAreas((prev) => {
-        const next = { ...prev };
-        areas.forEach((a, idx) => {
-          const key = a.id || `area-${idx}`;
-          next[key] = true;
-        });
-        return next;
-      });
-    }, 400);
-
     if (typeof IntersectionObserver === 'undefined') {
-      return () => clearTimeout(timer);
+      const allRevealed = {};
+      areas.forEach((a, idx) => {
+        allRevealed[a.id || `area-${idx}`] = true;
+      });
+      setRevealedAreas(allRevealed);
+      return;
     }
 
     const observer = new IntersectionObserver(
@@ -217,13 +226,14 @@ export default function ImpactPage() {
             const areaId = entry.target.dataset.areaId;
             if (areaId) {
               setRevealedAreas((prev) => ({ ...prev, [areaId]: true }));
+              observer.unobserve(entry.target);
             }
           }
         });
       },
       {
-        threshold: 0.05,
-        rootMargin: '100px 0px 50px 0px',
+        threshold: 0.12,
+        rootMargin: '0px 0px -40px 0px',
       }
     );
 
@@ -232,10 +242,10 @@ export default function ImpactPage() {
     });
 
     return () => {
-      clearTimeout(timer);
       observer.disconnect();
     };
   }, [areas]);
+
 
 
   return (
@@ -300,12 +310,16 @@ export default function ImpactPage() {
             </div>
           </div>
 
-          {/* Focus Area Containers with Smooth Scroll-Reveal Sequences */}
+          {/* Focus Area Showcases with Editorial Split Layout & Dynamic Scroll Entrance */}
           <div className="impact-areas-list">
             {areas.map((area, idx) => {
               const areaKey = area.id || `area-${idx}`;
               const isRevealed = Boolean(revealedAreas[areaKey]);
               const bgImage = getAreaImage(area, idx);
+              const AreaIcon = getAreaIcon(area, idx);
+              const accentColor = area.color_accent || '#10B981';
+              const isReversed = idx % 2 === 1;
+
               const areaMetrics = (area.metrics && area.metrics.length > 0) 
                 ? area.metrics 
                 : (fallbackAreaMetrics[area.slug] || [
@@ -319,34 +333,49 @@ export default function ImpactPage() {
                   ref={(el) => (cardRefs.current[areaKey] = el)}
                   data-area-id={areaKey}
                   data-seq-index={idx}
-                  className={`card impact-area-row seq-animated-card seq-mode-orchestrated ${isRevealed ? 'is-revealed' : ''}`}
+                  className={`impact-pillar-card ${isReversed ? 'is-reversed' : ''} ${isRevealed ? 'is-revealed' : ''}`}
+                  style={{ '--pillar-accent': accentColor }}
                 >
-                  {/* High Resolution Blurred Background Image */}
-                  <div 
-                    className="area-bg-layer"
-                    style={{ backgroundImage: `url(${bgImage})` }}
-                    aria-hidden="true"
-                  />
-                  
-                  {/* Subtle Gradient Shade Overlay */}
-                  <div className="area-bg-overlay" aria-hidden="true" />
-
-                  {/* Glassmorphic Container Content */}
-                  <div className="area-card-inner">
-                    {/* Header: Title, Tagline, and SDG Alignment */}
-                    <div className="seq-block seq-block-1 impact-area-header">
-                      <div className="area-title-wrap">
-                        <div className="area-title-top">
-                          <h3 className="area-title">{area.name}</h3>
-                        </div>
-                        <p className="area-tagline">{area.description}</p>
+                  {/* Visual Showcase: Crisp High-Resolution Photography */}
+                  <div className="pillar-media-frame">
+                    <div className="pillar-media-inner">
+                      <img 
+                        src={bgImage} 
+                        alt={area.name} 
+                        className="pillar-media-img" 
+                        loading="lazy"
+                      />
+                      <div className="pillar-media-gradient" />
+                      
+                      {/* Floating Glass Badges */}
+                      <div className="pillar-media-top-badge">
+                        <span className="pillar-badge-icon" style={{ backgroundColor: accentColor }}>
+                          <AreaIcon size={14} color="#FFFFFF" strokeWidth={2.4} />
+                        </span>
+                        <span className="pillar-badge-name">
+                          {area.name.split('&')[0].trim()}
+                        </span>
                       </div>
 
+                      <div className="pillar-media-bottom-badge">
+                        <span className="pillar-live-dot" style={{ backgroundColor: accentColor }} />
+                        <span>Verified Field Intervention • 2025-26</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Narrative & Interactive Metrics Breakdown */}
+                  <div className="pillar-content-wrap">
+                    {/* Pillar Index & SDG Chips */}
+                    <div className="pillar-header-meta">
+                      <span className="pillar-order-badge" style={{ color: accentColor, borderColor: `${accentColor}40`, backgroundColor: `${accentColor}12` }}>
+                        Pillar 0{idx + 1}
+                      </span>
                       {area.sdg_alignment && (
-                        <div className="seq-block seq-block-2 sdg-pill-group">
-                          {area.sdg_alignment.split(',').map((sdg, i) => (
-                            <span key={i} className="sdg-badge-item">
-                              <span className="sdg-dot" />
+                        <div className="pillar-sdg-list">
+                          {area.sdg_alignment.split(',').slice(0, 2).map((sdg, sIdx) => (
+                            <span key={sIdx} className="pillar-sdg-tag">
+                              <span className="pillar-sdg-bullet" style={{ backgroundColor: accentColor }} />
                               {sdg.trim()}
                             </span>
                           ))}
@@ -354,33 +383,43 @@ export default function ImpactPage() {
                       )}
                     </div>
 
-                    {/* Metrics Grid appearing with smooth sequence and progress bar fill */}
-                    <div className="seq-block seq-block-3 area-metrics-grid">
+                    <h3 className="pillar-title">{area.name}</h3>
+                    <p className="pillar-tagline">{area.description}</p>
+
+                    {/* Interactive Metrics Grid with Smooth Scroll-Triggered Progress Fill */}
+                    <div className="pillar-metrics-grid">
                       {areaMetrics.map((m, mIdx) => (
                         <div 
-                          key={m.id} 
-                          className={`area-metric-box seq-metric-item seq-metric-${mIdx}`}
-                          style={{ '--metric-pct': `${Math.min(m.percentage, 100)}%` }}
+                          key={m.id || `m-${mIdx}`} 
+                          className={`pillar-metric-card metric-delay-${mIdx}`}
                         >
-                          <div className="metric-box-top">
-                            <span className="metric-name-text">{m.name}</span>
-                            <span className="metric-type-badge">{m.metric_type}</span>
+                          <div className="metric-card-top">
+                            <span className="metric-card-label">{m.name}</span>
+                            <span className="metric-type-pill">{m.metric_type}</span>
                           </div>
-                          <div className="metric-num-line">
-                            <span className="metric-achieved">{Number(m.achieved_value).toLocaleString()}</span>
-                            <span className="metric-target">/ {Number(m.target_value).toLocaleString()} {m.unit}</span>
+
+                          <div className="metric-card-values">
+                            <span className="metric-val-achieved">{Number(m.achieved_value).toLocaleString()}</span>
+                            <span className="metric-val-target">/ {Number(m.target_value).toLocaleString()} {m.unit}</span>
                           </div>
-                          <div className="metric-track">
+
+                          <div className="metric-progress-track">
                             <div 
-                              className="metric-fill" 
+                              className="metric-progress-fill" 
                               style={{ 
                                 width: isRevealed ? `${Math.min(m.percentage, 100)}%` : '0%', 
-                                backgroundColor: area.color_accent || '#10B981' 
+                                backgroundColor: accentColor,
+                                boxShadow: isRevealed ? `0 0 10px ${accentColor}80` : 'none',
                               }} 
                             />
                           </div>
-                          <div className="metric-bottom-info">
-                            <span className="metric-pct-sub">{m.percentage}% of target achieved</span>
+
+                          <div className="metric-card-bottom">
+                            <span className="metric-pct-highlight" style={{ color: accentColor }}>
+                              <TrendingUp size={13} strokeWidth={2.5} />
+                              <strong>{m.percentage}%</strong> achieved
+                            </span>
+                            <span className="metric-verified-tag">Audited</span>
                           </div>
                         </div>
                       ))}
@@ -390,6 +429,7 @@ export default function ImpactPage() {
               );
             })}
           </div>
+
         </div>
       </section>
 
@@ -585,378 +625,394 @@ export default function ImpactPage() {
           margin-bottom: 2.75rem;
         }
 
-        /* Focus Area Containers List */
+        /* -------------------------------------------------------------
+           FOCUS SECTION: Editorial 2-Column Split Showcase & Scroll Entrance
+           ------------------------------------------------------------- */
+        .impact-focus-section {
+          padding: 5rem 0 6rem 0;
+          position: relative;
+        }
+
         .impact-areas-list {
           display: flex;
           flex-direction: column;
-          gap: 2.75rem;
+          gap: 3.5rem;
         }
 
-        /* ------------------------------------------------------------------
-           BUILDING SCROLL SEQUENCES: Combining Animations + Cascading Blocks
-           ------------------------------------------------------------------ */
-        .seq-animated-card {
+        /* The Main Pillar Showcase Card with Scroll Entrance */
+        .impact-pillar-card {
+          display: flex;
+          flex-direction: column;
+          background: #FFFFFF;
+          border-radius: 24px;
+          border: 1px solid rgba(226, 232, 240, 0.9);
+          box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.06), 0 20px 25px -5px rgba(0, 0, 0, 0.02);
+          overflow: hidden;
+          opacity: 0;
+          transform: translateY(48px);
+          transition: opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1),
+                      transform 0.85s cubic-bezier(0.16, 1, 0.3, 1),
+                      box-shadow 0.35s ease,
+                      border-color 0.35s ease;
           will-change: transform, opacity;
         }
 
-        /* TECHNIQUE 1: Combining Animations (Fade paired with exactly 20px upward movement) */
-        .seq-mode-combining {
-          opacity: 0;
-          transform: translateY(20px);
-          transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
-                      transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .seq-mode-combining.is-revealed {
+        .impact-pillar-card.is-revealed {
           opacity: 1;
           transform: translateY(0);
         }
 
-        /* TECHNIQUE 2: Sequencing Across Elements (Three text blocks that fade in one after another as you scroll) */
-        .seq-mode-sequencing .seq-block {
-          opacity: 0;
-          transform: translateY(20px);
-          transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1),
-                      transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+        .impact-pillar-card:hover {
+          box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.12), 0 0 0 1px var(--pillar-accent);
+          border-color: var(--pillar-accent);
         }
 
-        .seq-mode-sequencing.is-revealed .seq-block-1 {
-          opacity: 1;
-          transform: translateY(0);
-          transition-delay: 60ms;
-        }
-
-        .seq-mode-sequencing.is-revealed .seq-block-2 {
-          opacity: 1;
-          transform: translateY(0);
-          transition-delay: 200ms;
-        }
-
-        .seq-mode-sequencing.is-revealed .seq-block-3 {
-          opacity: 1;
-          transform: translateY(0);
-          transition-delay: 340ms;
-        }
-
-        /* TECHNIQUE 3: Full Orchestration (Combining animations on container + Sequencing across internal blocks) */
-        .seq-mode-orchestrated {
-          opacity: 0;
-          transform: translateY(20px);
-          transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1),
-                      transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .seq-mode-orchestrated.is-revealed {
-          opacity: 1;
-          transform: translateY(0);
-        }
-
-        .seq-mode-orchestrated .seq-block {
-          opacity: 0;
-          transform: translateY(16px);
-          transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
-                      transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .seq-mode-orchestrated.is-revealed .seq-block-1 {
-          opacity: 1;
-          transform: translateY(0);
-          transition-delay: 90ms;
-        }
-
-        .seq-mode-orchestrated.is-revealed .seq-block-2 {
-          opacity: 1;
-          transform: translateY(0);
-          transition-delay: 220ms;
-        }
-
-        .seq-mode-orchestrated.is-revealed .seq-block-3 {
-          opacity: 1;
-          transform: translateY(0);
-          transition-delay: 360ms;
-        }
-
-        /* Metric items sequential staggering */
-        .seq-animated-card .seq-metric-item {
-          opacity: 0;
-          transform: translateY(14px);
-          transition: opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1),
-                      transform 0.55s cubic-bezier(0.16, 1, 0.3, 1),
-                      border-color var(--transition-fast),
-                      box-shadow var(--transition-fast);
-        }
-
-        .seq-animated-card.is-revealed .seq-metric-0 {
-          opacity: 1;
-          transform: translateY(0);
-          transition-delay: 420ms;
-        }
-
-        .seq-animated-card.is-revealed .seq-metric-1 {
-          opacity: 1;
-          transform: translateY(0);
-          transition-delay: 560ms;
-        }
-
-        /* When combining only, metric items fade with parent container */
-        .seq-mode-combining .seq-block,
-        .seq-mode-combining .seq-metric-item {
-          opacity: 1;
-          transform: none;
-        }
-
-        /* -------------------------------------------------------------
-           FOCUS AREA CONTAINER: Blurred Background Photo & Glass Card
-           ------------------------------------------------------------- */
-        .impact-area-row {
-          position: relative;
-          overflow: hidden;
-          padding: 0;
-          background: #FFFFFF;
-          border-radius: var(--radius-xl);
-          border: 1px solid rgba(16, 185, 129, 0.22);
-          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-          transition: box-shadow 0.4s ease, border-color 0.4s ease, transform 0.4s ease;
-        }
-
-        .impact-area-row:hover {
-          box-shadow: 0 20px 45px rgba(0, 0, 0, 0.1), 0 0 20px rgba(16, 185, 129, 0.12);
-          border-color: rgba(16, 185, 129, 0.4);
-        }
-
-        /* High Resolution Blurred Background Image for each container */
-        .area-bg-layer {
-          position: absolute;
-          inset: -25px;
-          background-size: cover;
-          background-position: center 35%;
-          filter: blur(8px) saturate(1.2) brightness(0.96);
-          transform: scale(1.08);
-          opacity: 0.18;
-          pointer-events: none;
-          z-index: 0;
-          transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.5s ease, filter 0.5s ease;
-        }
-
-        .impact-area-row:hover .area-bg-layer {
-          transform: scale(1.12);
-          opacity: 0.28;
-          filter: blur(6px) saturate(1.25) brightness(0.98);
-        }
-
-        .area-bg-overlay {
-          position: absolute;
-          inset: 0;
-          background: linear-gradient(
-            135deg,
-            rgba(255, 255, 255, 0.94) 0%,
-            rgba(255, 255, 255, 0.88) 50%,
-            rgba(240, 253, 244, 0.92) 100%
-          );
-          pointer-events: none;
-          z-index: 1;
-        }
-
-        .area-card-inner {
-          position: relative;
-          z-index: 2;
-          padding: 2.5rem;
-          backdrop-filter: blur(12px);
-          -webkit-backdrop-filter: blur(12px);
-        }
-
-        .impact-area-header {
-          display: flex;
-          flex-direction: column;
-          gap: 1rem;
-          margin-bottom: 2rem;
-          padding-bottom: 1.5rem;
-          border-bottom: 1px solid rgba(0, 0, 0, 0.07);
-        }
-
-        @media (min-width: 768px) {
-          .impact-area-header {
+        @media (min-width: 960px) {
+          .impact-pillar-card {
             flex-direction: row;
-            justify-content: space-between;
-            align-items: flex-start;
+            align-items: stretch;
+          }
+
+          .impact-pillar-card.is-reversed {
+            flex-direction: row-reverse;
           }
         }
 
-        .area-title-wrap {
-          flex: 1;
+        /* Visual Showcase Column (Media Frame) */
+        .pillar-media-frame {
+          flex: 1 1 44%;
+          min-height: 300px;
+          position: relative;
+          overflow: hidden;
+          background: #0F172A;
         }
 
-        .area-title-top {
-          display: flex;
-          align-items: center;
-          gap: 0.85rem;
-          flex-wrap: wrap;
-          margin-bottom: 0.45rem;
+        @media (min-width: 960px) {
+          .pillar-media-frame {
+            min-height: 440px;
+          }
         }
 
-        .area-title {
-          font-size: 1.65rem;
-          font-weight: 800;
-          color: var(--slate-900);
-          margin: 0;
-          letter-spacing: -0.015em;
+        .pillar-media-inner {
+          position: relative;
+          width: 100%;
+          height: 100%;
+          overflow: hidden;
         }
 
-        .area-sequence-badge {
+        .pillar-media-img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          display: block;
+          transform: scale(1.08);
+          transition: transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .impact-pillar-card.is-revealed .pillar-media-img {
+          transform: scale(1);
+        }
+
+        .impact-pillar-card:hover .pillar-media-img {
+          transform: scale(1.05);
+        }
+
+        /* Media Vignette Scrim */
+        .pillar-media-gradient {
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(
+            180deg,
+            rgba(15, 23, 42, 0.4) 0%,
+            transparent 45%,
+            rgba(15, 23, 42, 0.82) 100%
+          );
+          pointer-events: none;
+        }
+
+        /* Floating Top Badge on Image */
+        .pillar-media-top-badge {
+          position: absolute;
+          top: 1.25rem;
+          left: 1.25rem;
           display: inline-flex;
           align-items: center;
-          gap: 0.35rem;
-          font-size: 0.725rem;
+          gap: 0.6rem;
+          padding: 0.4rem 0.85rem 0.4rem 0.5rem;
+          background: rgba(15, 23, 42, 0.75);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          border: 1px solid rgba(255, 255, 255, 0.22);
+          border-radius: 9999px;
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+          z-index: 2;
+        }
+
+        .pillar-badge-icon {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+        }
+
+        .pillar-badge-name {
+          font-size: 0.8rem;
           font-weight: 700;
-          color: #047857;
-          background: #ECFDF5;
-          padding: 0.25rem 0.65rem;
-          border-radius: var(--radius-pill);
-          border: 1px solid rgba(16, 185, 129, 0.3);
+          color: #FFFFFF;
+          letter-spacing: 0.02em;
         }
 
-        .area-tagline {
-          font-size: 0.975rem;
-          color: var(--slate-600);
-          max-width: 680px;
-          line-height: 1.55;
-          margin: 0;
+        /* Floating Bottom Status on Image */
+        .pillar-media-bottom-badge {
+          position: absolute;
+          bottom: 1.25rem;
+          left: 1.25rem;
+          right: 1.25rem;
+          display: inline-flex;
+          align-items: center;
+          gap: 0.55rem;
+          font-size: 0.775rem;
+          font-weight: 600;
+          color: rgba(255, 255, 255, 0.95);
+          background: rgba(0, 0, 0, 0.55);
+          backdrop-filter: blur(10px);
+          -webkit-backdrop-filter: blur(10px);
+          padding: 0.55rem 0.95rem;
+          border-radius: 12px;
+          border: 1px solid rgba(255, 255, 255, 0.16);
+          z-index: 2;
         }
 
-        .sdg-pill-group {
+        .pillar-live-dot {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          box-shadow: 0 0 10px currentColor;
+          animation: pillarPulseDot 2s infinite ease-in-out;
+        }
+
+        @keyframes pillarPulseDot {
+          0%, 100% { transform: scale(1); opacity: 1; }
+          50% { transform: scale(1.35); opacity: 0.65; }
+        }
+
+        /* Narrative & Content Column */
+        .pillar-content-wrap {
+          flex: 1 1 56%;
+          padding: 2.25rem 2rem;
           display: flex;
-          flex-wrap: wrap;
-          gap: 0.5rem;
+          flex-direction: column;
+          justify-content: center;
+          background: #FFFFFF;
         }
 
-        .sdg-badge-item {
-          background: #D1FAE5;
-          color: #065F46;
+        @media (min-width: 960px) {
+          .pillar-content-wrap {
+            padding: 2.75rem 3.25rem;
+          }
+        }
+
+        /* Pillar Meta Row (Pillar Number & SDG Tags) */
+        .pillar-header-meta {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          flex-wrap: wrap;
+          margin-bottom: 1.1rem;
+        }
+
+        .pillar-order-badge {
+          display: inline-flex;
+          align-items: center;
           font-size: 0.75rem;
-          font-weight: 700;
-          padding: 0.35rem 0.75rem;
-          border-radius: var(--radius-pill);
-          border: 1px solid rgba(16, 185, 129, 0.25);
-          display: inline-flex;
-          align-items: center;
-          gap: 0.35rem;
+          font-weight: 800;
+          padding: 0.3rem 0.75rem;
+          border-radius: 9999px;
+          border: 1px solid;
+          letter-spacing: 0.05em;
+          text-transform: uppercase;
         }
 
-        .sdg-dot {
+        .pillar-sdg-list {
+          display: flex;
+          align-items: center;
+          gap: 0.45rem;
+          flex-wrap: wrap;
+        }
+
+        .pillar-sdg-tag {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.4rem;
+          font-size: 0.725rem;
+          font-weight: 600;
+          color: var(--slate-600);
+          background: var(--slate-100);
+          padding: 0.25rem 0.65rem;
+          border-radius: 9999px;
+          border: 1px solid var(--slate-200);
+        }
+
+        .pillar-sdg-bullet {
           width: 5px;
           height: 5px;
           border-radius: 50%;
-          background: #059669;
         }
 
-        /* Area Metrics Grid */
-        .area-metrics-grid {
+        .pillar-title {
+          font-size: 1.75rem;
+          font-weight: 800;
+          color: var(--slate-900);
+          margin-bottom: 0.75rem;
+          line-height: 1.25;
+          letter-spacing: -0.02em;
+        }
+
+        @media (min-width: 960px) {
+          .pillar-title {
+            font-size: 2rem;
+          }
+        }
+
+        .pillar-tagline {
+          font-size: 1rem;
+          color: var(--slate-600);
+          line-height: 1.6;
+          margin-bottom: 2rem;
+        }
+
+        /* KPI Metric Cards Grid */
+        .pillar-metrics-grid {
           display: grid;
           grid-template-columns: 1fr;
-          gap: 1.5rem;
+          gap: 1.25rem;
         }
 
-        @media (min-width: 640px) {
-          .area-metrics-grid {
+        @media (min-width: 600px) {
+          .pillar-metrics-grid {
             grid-template-columns: repeat(2, 1fr);
           }
         }
 
-        .area-metric-box {
-          background: rgba(255, 255, 255, 0.85);
-          backdrop-filter: blur(8px);
-          -webkit-backdrop-filter: blur(8px);
-          border: 1px solid rgba(226, 232, 240, 0.95);
-          border-radius: var(--radius-lg);
-          padding: 1.65rem;
-          box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
-          transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
+        .pillar-metric-card {
+          background: #F8FAFC;
+          border: 1px solid #E2E8F0;
+          border-radius: 16px;
+          padding: 1.35rem 1.45rem;
+          display: flex;
+          flex-direction: column;
+          gap: 0.65rem;
+          transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+          opacity: 0;
+          transform: translateY(20px);
         }
 
-        .area-metric-box:hover {
+        .impact-pillar-card.is-revealed .metric-delay-0 {
+          opacity: 1;
+          transform: translateY(0);
+          transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.25s,
+                      transform 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.25s;
+        }
+
+        .impact-pillar-card.is-revealed .metric-delay-1 {
+          opacity: 1;
+          transform: translateY(0);
+          transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.4s,
+                      transform 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.4s;
+        }
+
+        .pillar-metric-card:hover {
           transform: translateY(-3px);
-          border-color: rgba(16, 185, 129, 0.45);
-          box-shadow: 0 10px 24px rgba(0, 0, 0, 0.07);
+          background: #FFFFFF;
+          border-color: rgba(16, 185, 129, 0.4);
+          box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.06);
         }
 
-        .metric-box-top {
+        .metric-card-top {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          margin-bottom: 0.75rem;
+          gap: 0.5rem;
         }
 
-        .metric-name-text {
-          font-size: 0.95rem;
+        .metric-card-label {
+          font-size: 0.875rem;
           font-weight: 700;
           color: var(--slate-800);
+          line-height: 1.3;
         }
 
-        .metric-type-badge {
-          font-size: 0.7rem;
-          font-weight: 700;
+        .metric-type-pill {
+          font-size: 0.675rem;
+          font-weight: 800;
           color: var(--slate-500);
           background: var(--slate-200);
-          padding: 0.2rem 0.5rem;
-          border-radius: var(--radius-sm);
+          padding: 0.15rem 0.45rem;
+          border-radius: 4px;
+          letter-spacing: 0.04em;
         }
 
-        .metric-num-line {
+        .metric-card-values {
           display: flex;
           align-items: baseline;
           gap: 0.35rem;
-          margin-bottom: 0.65rem;
+          flex-wrap: wrap;
         }
 
-        .metric-achieved {
+        .metric-val-achieved {
           font-family: var(--font-heading);
-          font-size: 1.75rem;
+          font-size: 1.65rem;
           font-weight: 800;
           color: var(--slate-900);
           line-height: 1.1;
         }
 
-        .metric-target {
-          font-size: 0.9rem;
+        .metric-val-target {
+          font-size: 0.85rem;
           color: var(--slate-500);
           font-weight: 500;
         }
 
-        .metric-track {
-          height: 8px;
-          background: var(--slate-200);
-          border-radius: var(--radius-pill);
+        /* Progress Bar Track */
+        .metric-progress-track {
+          width: 100%;
+          height: 7px;
+          background: #E2E8F0;
+          border-radius: 9999px;
           overflow: hidden;
-          margin-bottom: 0.45rem;
+          position: relative;
         }
 
-        .metric-fill {
+        .metric-progress-fill {
           height: 100%;
-          border-radius: var(--radius-pill);
-          transition: width 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+          border-radius: 9999px;
+          transition: width 1.3s cubic-bezier(0.16, 1, 0.3, 1) 0.55s, box-shadow 0.4s ease;
+          will-change: width;
         }
 
-        .metric-bottom-info {
+        .metric-card-bottom {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          margin-top: 0.35rem;
+          font-size: 0.775rem;
+          margin-top: 0.15rem;
         }
 
-        .metric-pct-sub {
-          font-size: 0.75rem;
-          color: var(--slate-500);
+        .metric-pct-highlight {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.3rem;
           font-weight: 600;
         }
 
-        .metric-trigger-tag {
-          font-size: 0.675rem;
-          font-weight: 700;
-          color: #059669;
-          background: #ECFDF5;
-          padding: 0.15rem 0.45rem;
-          border-radius: 4px;
+        .metric-verified-tag {
+          font-size: 0.7rem;
+          color: var(--slate-400);
+          font-weight: 500;
         }
+
 
         /* -------------------------------------------------------------
            MORPHING PUBLICATION CARDS: Immersive Cover to Square
