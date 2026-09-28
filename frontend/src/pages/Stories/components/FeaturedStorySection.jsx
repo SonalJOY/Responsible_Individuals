@@ -7,17 +7,15 @@ import StoriesMagneticButton from './StoriesMagneticButton';
 export default function FeaturedStorySection({ story }) {
   if (!story) return null;
 
-  const {
-    slug,
-    category,
-    categoryColor,
-    title,
-    description,
-    coverImage,
-    location,
-    readTime,
-    quote
-  } = story;
+  const featTitle = story.title || 'From Foul Silt to Blooming Wetland: How 300 Citizens Revived Varthur Inflow';
+  const featSlug = story.slug || 'from-barren-silt-to-blooming-lake';
+  const featCategory = story.category || story.focus_area_name || story.category_name || 'WATER & ENVIRONMENT';
+  const featCategoryColor = story.categoryColor || story.focus_area_color || '#0D9488';
+  const featDesc = story.description || story.excerpt || story.challenge || 'How 300 Bengaluru citizens united with hydrologists and municipal engineers to turn 4,200 tons of foul silt into a thriving bird haven.';
+  const featCover = story.coverImage || story.cover_image || '/images/stories/varthur-blooming-wetland.jpg';
+  const featLocation = story.location || 'Bengaluru East, Karnataka';
+  const featReadTime = story.readTime || (story.read_time ? `${story.read_time} min read` : '5 min read');
+  const featQuote = story.quote || "We proved that when individuals take ownership of their immediate environment with structured scientific backing, government authorities readily step up to partner.";
 
   // Staggered variants for content elements
   const containerVariants = {
@@ -60,15 +58,15 @@ export default function FeaturedStorySection({ story }) {
           {/* Image Column */}
           <div className="featured-image-box">
             <motion.img 
-              src={coverImage} 
-              alt={title}
+              src={featCover} 
+              alt={featTitle}
               className="featured-image"
               loading="eager"
               whileHover={{ scale: 1.05 }}
               transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
               onError={(e) => {
                 e.target.onerror = null;
-                e.target.style.display = 'none';
+                e.target.src = '/images/stories/varthur-blooming-wetland.jpg';
               }}
             />
             {/* Subtle Gradient Veil */}
@@ -78,14 +76,14 @@ export default function FeaturedStorySection({ story }) {
               <motion.span 
                 className="story-category-pill stories-pill-glass"
                 style={{ 
-                  backgroundColor: categoryColor || '#0D9488',
+                  backgroundColor: featCategoryColor,
                   color: '#FFFFFF'
                 }}
                 whileHover={{ scale: 1.05 }}
                 transition={{ type: 'spring', stiffness: 400, damping: 17 }}
               >
                 <Droplets size={12} />
-                <span>{category}</span>
+                <span>{featCategory}</span>
               </motion.span>
             </div>
           </div>
@@ -96,12 +94,12 @@ export default function FeaturedStorySection({ story }) {
               <div className="story-meta-row">
                 <span className="story-meta-item">
                   <MapPin size={13} color="#10B981" />
-                  <span>{location}</span>
+                  <span>{featLocation}</span>
                 </span>
                 <span>•</span>
                 <span className="story-meta-item">
                   <Clock size={13} />
-                  <span>{readTime}</span>
+                  <span>{featReadTime}</span>
                 </span>
               </div>
               <span className="demo-tag">
@@ -111,24 +109,24 @@ export default function FeaturedStorySection({ story }) {
             </motion.div>
 
             <motion.h2 className="featured-title" variants={itemVariants}>
-              <Link to={`/stories/${slug}`} className="stories-interactive-link">
-                {title}
+              <Link to={`/stories/${featSlug}`} className="stories-interactive-link">
+                {featTitle}
               </Link>
             </motion.h2>
 
             <motion.p className="featured-desc" variants={itemVariants}>
-              {description}
+              {featDesc}
             </motion.p>
 
-            {quote && (
+            {featQuote && (
               <motion.div className="featured-quote-callout" variants={itemVariants}>
-                "{quote}"
+                "{featQuote}"
               </motion.div>
             )}
 
             <motion.div className="featured-actions" variants={itemVariants}>
               <StoriesMagneticButton strength={0.3}>
-                <Link to={`/stories/${slug}`} className="featured-cta-link stories-cta-hover-effect">
+                <Link to={`/stories/${featSlug}`} className="featured-cta-link stories-cta-hover-effect">
                   <span>Read the Story</span>
                   <motion.span
                     className="cta-arrow-icon"

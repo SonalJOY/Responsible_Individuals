@@ -6,16 +6,14 @@ import { ArrowRight, MapPin, Clock } from 'lucide-react';
 export default function StoryEditorialCard({ story, index = 0 }) {
   if (!story) return null;
 
-  const {
-    slug,
-    category,
-    categoryColor,
-    title,
-    description,
-    coverImage,
-    location,
-    readTime
-  } = story;
+  const cardTitle = story.title || 'Community Impact Narrative';
+  const cardSlug = story.slug || '';
+  const cardCategory = story.category || story.focus_area_name || story.category_name || 'Water & Environment';
+  const cardCategoryColor = story.categoryColor || story.focus_area_color || '#10B981';
+  const cardDesc = story.description || story.excerpt || story.challenge || 'Transforming local challenges into sustainable community solutions.';
+  const cardCover = story.coverImage || story.cover_image || '/images/stories/varthur-blooming-wetland.jpg';
+  const cardLocation = story.location || 'Bengaluru, Karnataka';
+  const cardReadTime = story.readTime || (story.read_time ? `${story.read_time} min read` : '4 min read');
 
   const cardRef = useRef(null);
   const [canTilt, setCanTilt] = useState(false);
@@ -73,15 +71,15 @@ export default function StoryEditorialCard({ story, index = 0 }) {
       {/* Image Thumbnail with Overlay */}
       <div className="story-card-img-box">
         <motion.img 
-          src={coverImage} 
-          alt={title} 
+          src={cardCover} 
+          alt={cardTitle} 
           className="story-card-img"
           loading="lazy"
           whileHover={{ scale: 1.07 }}
           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           onError={(e) => {
             e.target.onerror = null;
-            e.target.style.display = 'none';
+            e.target.src = '/images/stories/varthur-blooming-wetland.jpg';
           }}
         />
         {/* Subtle Shimmer Gradient Veil */}
@@ -91,13 +89,13 @@ export default function StoryEditorialCard({ story, index = 0 }) {
           <motion.span 
             className="story-category-pill stories-pill-glass"
             style={{ 
-              backgroundColor: categoryColor || '#10B981',
+              backgroundColor: cardCategoryColor,
               color: '#FFFFFF'
             }}
             whileHover={{ scale: 1.04 }}
             transition={{ type: 'spring', stiffness: 350 }}
           >
-            {category}
+            {cardCategory}
           </motion.span>
         </div>
       </div>
@@ -105,39 +103,39 @@ export default function StoryEditorialCard({ story, index = 0 }) {
       <div className="story-card-body">
         <div className="story-card-meta">
           <div className="story-meta-row">
-            {location && (
+            {cardLocation && (
               <span className="story-meta-item">
                 <MapPin size={12} color="#10B981" />
-                <span>{location}</span>
+                <span>{cardLocation}</span>
               </span>
             )}
-            {location && readTime && <span>•</span>}
-            {readTime && (
+            {cardLocation && cardReadTime && <span>•</span>}
+            {cardReadTime && (
               <span className="story-meta-item">
                 <Clock size={12} />
-                <span>{readTime}</span>
+                <span>{cardReadTime}</span>
               </span>
             )}
           </div>
         </div>
 
         <h3 className="story-card-title">
-          <Link to={`/stories/${slug}`} className="stories-interactive-link">
-            {title}
+          <Link to={`/stories/${cardSlug}`} className="stories-interactive-link">
+            {cardTitle}
           </Link>
         </h3>
 
         <p className="story-card-desc">
-          {description}
+          {cardDesc}
         </p>
       </div>
 
       <div className="story-card-footer">
-        <span className="demo-tag">Prototype Story</span>
+        <span className="demo-tag">Impact Narrative</span>
         <Link 
-          to={`/stories/${slug}`} 
+          to={`/stories/${cardSlug}`} 
           className="story-card-read-link stories-read-btn-effect" 
-          aria-label={`Read story: ${title}`}
+          aria-label={`Read story: ${cardTitle}`}
         >
           <span>Read Story</span>
           <motion.span

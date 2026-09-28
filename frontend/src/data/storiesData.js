@@ -6,42 +6,144 @@
 
 export const featuredStory = {
   id: 'story-featured-01',
-  slug: 'when-water-returned-to-the-village',
-  category: 'WATER & COMMUNITIES',
+  slug: 'from-barren-silt-to-blooming-lake',
+  category: 'WATER & ENVIRONMENT',
   categoryColor: '#0D9488',
   categoryBg: '#F0FDFA',
-  title: 'When Water Returned to the Village',
-  subtitle: "How a community-led water restoration effort helped families build a more resilient future.",
-  description: "How a community-led water restoration effort helped families build a more resilient future.",
-  excerpt: "How a community-led water restoration effort helped families build a more resilient future.",
-  location: 'Chikkaballapur District, Karnataka',
-  readTime: '4 min read',
+  title: 'From Foul Silt to Blooming Wetland: How 300 Citizens Revived Varthur Inflow',
+  subtitle: 'A citizen-driven ecological breakthrough transforming an 8-year stagnant toxic storm drain into a self-filtering wetland biome.',
+  description: 'How 300 Bengaluru citizens united with hydrologists and municipal engineers to turn 4,200 tons of foul silt into a thriving bird haven.',
+  excerpt: 'How 300 Bengaluru citizens united with hydrologists and municipal engineers to turn 4,200 tons of foul silt into a thriving bird haven.',
+  location: 'Bengaluru East, Karnataka',
+  readTime: '5 min read',
   date: 'March 2026',
-  coverImage: 'https://images.unsplash.com/photo-1541888946425-d0fbb186f5f7?auto=format&fit=crop&w=1200&q=80',
-  heroImage: 'https://images.unsplash.com/photo-1541888946425-d0fbb186f5f7?auto=format&fit=crop&w=1600&q=80',
+  coverImage: '/images/stories/varthur-blooming-wetland.jpg',
+  heroImage: '/images/stories/varthur-blooming-wetland.jpg',
   supportingImages: [
     {
-      url: 'https://images.unsplash.com/photo-1584467735815-f778f274e296?auto=format&fit=crop&w=800&q=80',
-      caption: 'Community contour trenches slowing surface runoff along the village watershed slope.'
+      url: '/images/stories/varthur-volunteers-desilting.jpg',
+      caption: 'Community desilting squads clearing 4,200 tons of toxic sludge and planting native wetland reed beds.'
     },
     {
-      url: 'https://images.unsplash.com/photo-1509099836639-18ba1795216d?auto=format&fit=crop&w=800&q=80',
-      caption: 'Resident committee members inspecting the replenished masonry stepwell catchment.'
+      url: '/images/stories/citizen-water-monitoring.jpg',
+      caption: 'Citizen science volunteers conducting multi-parameter water quality testing at the inlet swale.'
     }
   ],
-  quote: "When the first monsoon rains filled the desilted channels, you could feel the relief across every household.",
-  quoteAuthor: "Resident Watershed Committee",
-  quoteRole: "Prototype community voice",
+  quote: "We proved that when individuals take ownership of their immediate environment with structured scientific backing, government authorities readily step up to partner.",
+  quoteAuthor: "Meera Sundararajan",
+  quoteRole: "Resident Coordinator, Kaikondrahalli & Varthur Catchment Stewardship",
   
+  metrics: [
+    { label: 'Silt Removed', value: '4,200 Tons', sub: 'Bio-composted offsite' },
+    { label: 'Contaminant Drop', value: '-74% BOD', sub: 'Water quality turnaround' },
+    { label: 'Avian Species', value: '42 Species', sub: 'Nesting on new islands' },
+    { label: 'Aquifer Recharged', value: '+45 Feet', sub: 'Borewell water level gain' }
+  ],
+
   // Structured Narrative
-  challenge: "Successive low-rainfall seasons and heavily silted runoff channels had left village open wells dry by mid-February. Farming families faced a shrinking groundwater table, which reduced winter cultivation and created an unsustainable reliance on costly private water tankers for daily household needs.",
-  response: "Local residents, women's self-help groups, and hydrology field mentors convened under the village banyan tree to map historical drainage topography. Over four consecutive weekends, community teams desilted ancient check structures, excavated continuous contour trenches, and cleared invasive scrub blocking natural feeder streams.",
-  people: "Eighty-two resident volunteers participated across the intervention, uniting generational knowledge from village elders with modern soil-moisture contour mapping. Local youth formed an ongoing stewardship patrol to inspect bunds and monitor silt traps before each seasonal downpour.",
-  change: "Recharging groundwater aquifer lines stabilized open well water levels through late summer, reducing household expenditure on emergency water deliveries. More importantly, the project fostered a shared stewardship ethic that has transformed how the community protects its collective commons.",
-  keyTakeaway: "Lasting environmental resilience does not require complex machinery—it begins when a community understands its watershed and commits to collective stewardship."
+  challenge: "For over eight years, the stormwater drain had degenerated into a stagnant blackwater channel choked with construction debris and industrial effluent. Groundwater borewells had plummeted below 900 feet, and raw sewage odors forced families to keep windows sealed year-round.",
+  response: "Responsible Individuals partnered with neighborhood collectives, municipal engineers, and wetland hydrologists. Over consecutive weekends, 300 citizen volunteers cleared debris, dredged toxic silt berms, and installed floating bio-retention islands anchored with native vetiver and canna roots.",
+  people: "From software engineers and retired geologists to school students and municipal staff, 300 community members worked side-by-side every Saturday. A weekly volunteer water monitoring brigade was formed to track dissolved oxygen and nitrogen levels.",
+  change: "Open reflective water has returned, 42 bird species have established nesting habitats on the restored islands, and surrounding borewells recharged by an average of 45 feet, drastically cutting tanker dependencies for thousands of families.",
+  keyTakeaway: "We proved that when individuals take ownership of their immediate environment with structured scientific backing, government authorities readily step up to partner."
 };
 
 export const fieldStories = [
+  {
+    id: 'story-kolar-iot',
+    slug: 'first-generation-coder-from-kolar',
+    category: 'EDUCATION & YOUTH',
+    categoryColor: '#3B82F6',
+    categoryBg: '#EFF6FF',
+    title: 'Cracking the Code: How 15-Year-Old Anitha Built an IoT Soil Sensor for Her Village',
+    subtitle: 'From zero computer exposure to state robotics laureate—transforming dryland agriculture through grassroots STEM.',
+    description: '15-year-old Anitha created an automated solar soil moisture alert system to protect dryland farming harvests.',
+    excerpt: '15-year-old Anitha created an automated solar soil moisture alert system to protect dryland farming harvests.',
+    location: 'Kolar District, Karnataka',
+    readTime: '4 min read',
+    date: 'March 2026',
+    coverImage: '/images/stories/rural-stem-sensor-lab.jpg',
+    heroImage: '/images/stories/rural-stem-sensor-lab.jpg',
+    supportingImages: [
+      {
+        url: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=800&q=80',
+        caption: 'Hands-on experiential learning kits bring foundational science principles to life.'
+      }
+    ],
+    quote: "The STEM lab showed me that science is not just exam textbooks — it is a tool to solve my father’s struggles in the field.",
+    quoteAuthor: "Anitha M.",
+    quoteRole: "Student Fellow & State Science Laureate",
+    challenge: "Anitha had never touched a computer until 9th grade. Her father, a dryland farmer, suffered repeated crop losses from irregular soil moisture cycles and erratic rainfall patterns.",
+    response: "Through Responsible Individuals STEM Lab program, Anitha received hands-on robotics training, micro-controller programming, and mentorship from volunteer software engineers.",
+    people: "Rural educators, passionate corporate engineer mentors, and fellow girl students collaborated over weekend workshops to prototype functional agricultural sensors.",
+    change: "Anitha won the State Science Exhibition with her solar-powered automated soil moisture alarm, and has received a full engineering fellowship scholarship.",
+    keyTakeaway: "When rural students receive real tools rather than dry textbooks, they engineer solutions that safeguard their communities."
+  },
+  {
+    id: 'story-varthur-repeat',
+    slug: 'from-barren-silt-to-blooming-lake',
+    category: 'WATER & ENVIRONMENT',
+    categoryColor: '#0D9488',
+    categoryBg: '#F0FDFA',
+    title: 'From Foul Silt to Blooming Wetland: How 300 Citizens Revived Varthur Inflow',
+    subtitle: 'A citizen-driven ecological breakthrough transforming an 8-year stagnant toxic storm drain into a self-filtering wetland biome.',
+    description: 'How 300 Bengaluru citizens united with hydrologists and municipal engineers to turn 4,200 tons of foul silt into a thriving bird haven.',
+    excerpt: 'How 300 Bengaluru citizens united with hydrologists and municipal engineers to turn 4,200 tons of foul silt into a thriving bird haven.',
+    location: 'Bengaluru East, Karnataka',
+    readTime: '5 min read',
+    date: 'March 2026',
+    coverImage: '/images/stories/varthur-blooming-wetland.jpg',
+    heroImage: '/images/stories/varthur-blooming-wetland.jpg',
+    supportingImages: [
+      {
+        url: '/images/stories/varthur-volunteers-desilting.jpg',
+        caption: 'Community desilting squads clearing 4,200 tons of toxic sludge and planting native wetland reed beds.'
+      },
+      {
+        url: '/images/stories/citizen-water-monitoring.jpg',
+        caption: 'Citizen science volunteers conducting multi-parameter water quality testing at the inlet swale.'
+      }
+    ],
+    quote: "We proved that when individuals take ownership of their immediate environment with structured scientific backing, government authorities readily step up to partner.",
+    quoteAuthor: "Meera Sundararajan",
+    quoteRole: "Resident Coordinator, Kaikondrahalli & Varthur Catchment Stewardship",
+    challenge: "For over eight years, the stormwater drain had degenerated into a stagnant blackwater channel choked with construction debris and industrial effluent. Groundwater borewells had plummeted below 900 feet, and raw sewage odors forced families to keep windows sealed year-round.",
+    response: "Responsible Individuals partnered with neighborhood collectives, municipal engineers, and wetland hydrologists. Over consecutive weekends, 300 citizen volunteers cleared debris, dredged toxic silt berms, and installed floating bio-retention islands anchored with native vetiver and canna roots.",
+    people: "From software engineers and retired geologists to school students and municipal staff, 300 community members worked side-by-side every Saturday.",
+    change: "Open reflective water has returned, 42 bird species have established nesting habitats on the restored islands, and surrounding borewells recharged by an average of 45 feet.",
+    keyTakeaway: "We proved that when individuals take ownership of their immediate environment with structured scientific backing, government authorities readily step up to partner."
+  },
+  {
+    id: 'story-chikkaballapur',
+    slug: 'when-water-returned-to-the-village',
+    category: 'WATER & COMMUNITIES',
+    categoryColor: '#0D9488',
+    categoryBg: '#F0FDFA',
+    title: 'When Water Returned to the Village',
+    subtitle: "How a community-led water restoration effort helped families build a more resilient future.",
+    description: "How a community-led water restoration effort helped families build a more resilient future.",
+    excerpt: "How a community-led water restoration effort helped families build a more resilient future.",
+    location: 'Chikkaballapur District, Karnataka',
+    readTime: '4 min read',
+    date: 'February 2026',
+    coverImage: 'https://images.unsplash.com/photo-1541888946425-d0fbb186f5f7?auto=format&fit=crop&w=1200&q=80',
+    heroImage: 'https://images.unsplash.com/photo-1541888946425-d0fbb186f5f7?auto=format&fit=crop&w=1600&q=80',
+    supportingImages: [
+      {
+        url: 'https://images.unsplash.com/photo-1584467735815-f778f274e296?auto=format&fit=crop&w=800&q=80',
+        caption: 'Community contour trenches slowing surface runoff along the village watershed slope.'
+      }
+    ],
+    quote: "When the first monsoon rains filled the desilted channels, you could feel the relief across every household.",
+    quoteAuthor: "Resident Watershed Committee",
+    quoteRole: "Village Elder & Water Custodian",
+    challenge: "Successive low-rainfall seasons and heavily silted runoff channels had left village open wells dry by mid-February.",
+    response: "Local residents, women's self-help groups, and hydrology field mentors convened to map historical drainage topography and restore check structures.",
+    people: "Eighty-two resident volunteers participated across the intervention, uniting generational knowledge with modern contour mapping.",
+    change: "Recharging groundwater aquifer lines stabilized open well water levels through late summer, reducing household expenditure on emergency water deliveries.",
+    keyTakeaway: "Lasting environmental resilience begins when a community understands its watershed and commits to collective stewardship."
+  },
+
   {
     id: 'story-01',
     slug: 'a-classroom-beyond-four-walls',

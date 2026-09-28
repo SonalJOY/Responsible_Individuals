@@ -25,13 +25,64 @@ export default function StoriesPage() {
       try {
         const liveData = await storyService.getStories();
         if (Array.isArray(liveData) && liveData.length > 0) {
-          // If backend has live stories, utilize them; otherwise retain complete prototype data
-          const featuredItem = liveData.find((s) => s.featured) || liveData[0];
-          setFeatured(featuredItem);
-          setStories(liveData.slice(1));
+          // Normalize live data fields
+          const normalizedLive = liveData.map((s) => ({
+            id: s.id,
+            slug: s.slug,
+            title: s.title,
+            category: s.focus_area_name || s.category_name || 'Water & Environment',
+            categoryColor: s.focus_area_color || '#10B981',
+            description: s.excerpt || s.challenge || s.description,
+            coverImage: s.cover_image || '/images/stories/varthur-blooming-wetland.jpg',
+            heroImage: s.cover_image || '/images/stories/varthur-blooming-wetland.jpg',
+            location: s.location || 'Bengaluru, Karnataka',
+            readTime: s.read_time ? `${s.read_time} min read` : '5 min read',
+            date: s.published_date || 'March 2026',
+            quote: s.quote || defaultFeatured.quote,
+            featured: s.featured,
+            challenge: s.challenge,
+            response: s.intervention || s.response,
+            change: s.outcome || s.change,
+            keyTakeaway: s.outcome || defaultFeatured.keyTakeaway
+          }));
+
+          // Featured story: prioritize Varthur Lake story with exact user quote & high-res image
+          const liveFeatured = normalizedLive.find((s) => s.slug === 'from-barren-silt-to-blooming-lake') || 
+                               normalizedLive.find((s) => s.featured) || 
+                               defaultFeatured;
+
+          setFeatured({
+            ...defaultFeatured,
+            ...liveFeatured,
+            coverImage: liveFeatured.coverImage || defaultFeatured.coverImage,
+            heroImage: liveFeatured.heroImage || defaultFeatured.heroImage,
+            quote: defaultFeatured.quote, // Preserve exact user-requested quote
+            metrics: defaultFeatured.metrics
+          });
+
+          // Build field stories without duplicates, ensuring rich complete showcase
+          const featuredSlug = liveFeatured.slug || 'from-barren-silt-to-blooming-lake';
+          const storiesMap = new Map();
+
+          // 1. Seed with default field stories to guarantee complete cards
+          defaultFieldStories.forEach((st) => {
+            if (st.slug !== featuredSlug) {
+              storiesMap.set(st.slug, st);
+            }
+          });
+
+          // 2. Overlay live backend stories (excluding featured)
+          normalizedLive.forEach((st) => {
+            if (st.slug !== featuredSlug) {
+              const existing = storiesMap.get(st.slug);
+              storiesMap.set(st.slug, { ...existing, ...st });
+            }
+          });
+
+          setStories(Array.from(storiesMap.values()));
         }
       } catch {
-        // Backend offline or empty: cleanly retain prototype data without console error clutter
+        // Backend offline or empty: cleanly retain complete prototype data
       } finally {
         setIsLoading(false);
       }

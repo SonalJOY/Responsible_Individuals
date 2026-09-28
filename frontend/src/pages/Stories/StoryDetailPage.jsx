@@ -1,24 +1,77 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { 
   ArrowLeft, ArrowRight, MapPin, Clock, Calendar, 
   Quote, Sparkles, CheckCircle2, Users, AlertCircle, Compass 
 } from 'lucide-react';
 import { getStoryBySlug, getRelatedStories } from '../../data/storiesData';
+import { storyService } from '../../services/api';
 import StoryEditorialCard from './components/StoryEditorialCard';
 import './stories.css';
 
 export default function StoryDetailPage() {
   const { slug } = useParams();
-  const story = getStoryBySlug(slug);
+  const initialStory = getStoryBySlug(slug);
+  const [story, setStory] = useState(initialStory);
+  const [loading, setLoading] = useState(!initialStory);
   const relatedStories = getRelatedStories(slug, 3);
 
   // Scroll to top whenever slug changes
   useEffect(() => {
     window.scrollTo(0, 0);
+
+    let isMounted = true;
+    async function fetchStoryDetails() {
+      try {
+        const liveDetail = await storyService.getStoryDetail(slug);
+        if (isMounted && liveDetail) {
+          setStory((prev) => ({
+            ...(prev || {}),
+            ...liveDetail,
+            title: liveDetail.title || prev?.title,
+            heroImage: liveDetail.cover_image || prev?.heroImage || '/images/stories/varthur-blooming-wetland.jpg',
+            coverImage: liveDetail.cover_image || prev?.coverImage || '/images/stories/varthur-blooming-wetland.jpg',
+            category: liveDetail.focus_area_name || prev?.category || 'Water & Environment',
+            categoryColor: liveDetail.focus_area_color || prev?.categoryColor || '#0D9488',
+            quote: liveDetail.quote || prev?.quote,
+            quoteAuthor: liveDetail.quote_author || prev?.quoteAuthor,
+            challenge: liveDetail.challenge || prev?.challenge,
+            response: liveDetail.intervention || prev?.response,
+            change: liveDetail.outcome || prev?.change,
+            supportingImages: (prev?.supportingImages && prev.supportingImages.length > 0)
+              ? prev.supportingImages
+              : [
+                  ...(liveDetail.before_image ? [{ url: liveDetail.before_image, caption: 'Community desilting squads clearing 4,200 tons of toxic sludge.' }] : []),
+                  ...(liveDetail.after_image ? [{ url: liveDetail.after_image, caption: 'Citizen science volunteers conducting multi-parameter water testing.' }] : [])
+                ]
+          }));
+        }
+      } catch {
+        // Backend offline or error; retain prototype data seamlessly
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    }
+
+    fetchStoryDetails();
+
+    return () => {
+      isMounted = false;
+    };
   }, [slug]);
 
-  if (!story) {
+  if (loading) {
+    return (
+      <div className="story-detail-root">
+        <div className="container" style={{ padding: '8rem 1.5rem', textAlign: 'center' }}>
+          <div className="loading-spinner" style={{ margin: '0 auto 1.5rem auto' }} />
+          <p style={{ color: 'var(--slate-600)', fontSize: '1.1rem' }}>Loading field narrative...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!story && !loading) {
     return (
       <div className="story-detail-root">
         <div className="container" style={{ padding: '7rem 1.5rem', textAlign: 'center' }}>
@@ -38,25 +91,57 @@ export default function StoryDetailPage() {
     );
   }
 
-  const {
-    category,
-    categoryColor,
-    title,
-    subtitle,
-    location,
-    readTime,
-    date,
-    heroImage,
-    supportingImages = [],
-    quote,
-    quoteAuthor,
-    quoteRole,
-    challenge,
-    response,
-    people,
-    change,
-    keyTakeaway
-  } = story;
+  const isVarthur = slug === 'from-barren-silt-to-blooming-lake';
+
+  const title = story?.title || 'From Foul Silt to Blooming Wetland: How 300 Citizens Revived Varthur Inflow';
+  const subtitle = story?.subtitle || 'A citizen-driven ecological breakthrough transforming an 8-year stagnant toxic storm drain into a self-filtering wetland biome.';
+  const category = story?.category || story?.focus_area_name || 'Water & Environment';
+  const categoryColor = story?.categoryColor || story?.focus_area_color || '#0D9488';
+  const location = story?.location || 'Bengaluru East, Karnataka';
+  const readTime = story?.readTime || (story?.read_time ? `${story.read_time} min read` : '5 min read');
+  const date = story?.date || story?.published_date || 'March 2026';
+  const heroImage = story?.heroImage || story?.cover_image || story?.coverImage || '/images/stories/varthur-blooming-wetland.jpg';
+
+  // Ensure exact user-requested quote
+  const quote = (isVarthur || !story?.quote)
+    ? "We proved that when individuals take ownership of their immediate environment with structured scientific backing, government authorities readily step up to partner."
+    : story.quote;
+
+  const quoteAuthor = (isVarthur || !story?.quoteAuthor)
+    ? "Meera Sundararajan"
+    : (story.quoteAuthor || story.quote_author || 'Meera Sundararajan');
+
+  const quoteRole = (isVarthur || !story?.quoteRole)
+    ? "Resident Coordinator, Kaikondrahalli & Varthur Catchment Stewardship"
+    : (story.quoteRole || 'Grassroots Project Leader');
+
+  const challenge = story?.challenge || "For over eight years, the stormwater drain had degenerated into a stagnant blackwater channel choked with construction debris and industrial effluent. Groundwater borewells had plummeted below 900 feet, and raw sewage odors forced families to keep windows sealed year-round.";
+  const response = story?.response || story?.intervention || "Responsible Individuals partnered with neighborhood collectives, municipal engineers, and wetland hydrologists. Over consecutive weekends, 300 citizen volunteers cleared debris, dredged toxic silt berms, and installed floating bio-retention islands anchored with native vetiver and canna roots.";
+  const people = story?.people || "From software engineers and retired geologists to school students and municipal staff, 300 community members worked side-by-side every Saturday. A weekly volunteer water monitoring brigade was formed to track dissolved oxygen and nitrogen levels.";
+  const change = story?.change || story?.outcome || "Open reflective water has returned, 42 bird species have established nesting habitats on the restored islands, and surrounding borewells recharged by an average of 45 feet, drastically cutting tanker dependencies for thousands of families.";
+  const keyTakeaway = story?.keyTakeaway || quote;
+
+  const metrics = (story?.metrics && story.metrics.length > 0)
+    ? story.metrics
+    : (isVarthur ? [
+        { label: 'Silt Removed', value: '4,200 Tons', sub: 'Bio-composted offsite' },
+        { label: 'Contaminant Drop', value: '-74% BOD', sub: 'Water quality turnaround' },
+        { label: 'Avian Species', value: '42 Species', sub: 'Nesting on new islands' },
+        { label: 'Aquifer Recharged', value: '+45 Feet', sub: 'Borewell water level gain' }
+      ] : []);
+
+  const supportingImages = (story?.supportingImages && story.supportingImages.length > 0)
+    ? story.supportingImages
+    : (isVarthur ? [
+        {
+          url: '/images/stories/varthur-volunteers-desilting.jpg',
+          caption: 'Community desilting squads clearing 4,200 tons of toxic sludge and planting native wetland reed beds.'
+        },
+        {
+          url: '/images/stories/citizen-water-monitoring.jpg',
+          caption: 'Citizen science volunteers conducting multi-parameter water quality testing at the inlet swale.'
+        }
+      ] : []);
 
   return (
     <div className="story-detail-root">
@@ -78,14 +163,14 @@ export default function StoryDetailPage() {
               <span 
                 className="story-category-pill"
                 style={{ 
-                  backgroundColor: categoryColor || '#10B981',
+                  backgroundColor: categoryColor,
                   color: '#FFFFFF'
                 }}
               >
                 {category}
               </span>
               <span className="demo-tag">
-                Prototype Story Narrative
+                Impact Narrative
               </span>
             </div>
 
@@ -130,7 +215,7 @@ export default function StoryDetailPage() {
               loading="eager"
               onError={(e) => {
                 e.target.onerror = null;
-                e.target.style.display = 'none';
+                e.target.src = '/images/stories/varthur-blooming-wetland.jpg';
               }}
             />
           </div>
@@ -138,6 +223,19 @@ export default function StoryDetailPage() {
             Field documentation from community initiatives in {location || 'the field'}.
           </p>
         </div>
+
+        {/* Key Impact Metrics Ribbon */}
+        {metrics && metrics.length > 0 && (
+          <div className="story-detail-metrics-ribbon" role="region" aria-label="Key Impact Metrics">
+            {metrics.map((m, idx) => (
+              <div key={idx} className="story-detail-metric-card">
+                <span className="story-metric-val">{m.value}</span>
+                <span className="story-metric-lbl">{m.label}</span>
+                {m.sub && <span className="story-metric-sub">{m.sub}</span>}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Main Narrative Body */}
@@ -211,7 +309,9 @@ export default function StoryDetailPage() {
                   loading="lazy"
                   onError={(e) => {
                     e.target.onerror = null;
-                    e.target.style.display = 'none';
+                    e.target.src = idx === 0 
+                      ? '/images/stories/varthur-volunteers-desilting.jpg'
+                      : '/images/stories/citizen-water-monitoring.jpg';
                   }}
                 />
                 {imgItem.caption && (
@@ -266,8 +366,8 @@ export default function StoryDetailPage() {
           </div>
 
           <div className="field-stories-grid">
-            {relatedStories.map((relStory) => (
-              <StoryEditorialCard key={relStory.id} story={relStory} />
+            {relatedStories.map((relStory, rIdx) => (
+              <StoryEditorialCard key={relStory.id || rIdx} story={relStory} index={rIdx} />
             ))}
           </div>
         </div>
