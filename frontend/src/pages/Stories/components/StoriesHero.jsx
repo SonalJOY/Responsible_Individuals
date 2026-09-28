@@ -1,7 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { motion } from 'motion/react';
 import { Play, Pause, ChevronDown, Sparkles } from 'lucide-react';
-import stockVideo from '../../../assets/stock.mp4';
 
 export default function StoriesHero() {
   const videoRef = useRef(null);
@@ -75,7 +74,7 @@ export default function StoriesHero() {
           playsInline
           poster="https://images.unsplash.com/photo-1541888946425-d0fbb186f5f7?auto=format&fit=crop&w=1600&q=80"
         >
-          <source src={stockVideo} type="video/mp4" />
+          <source src="/videos/stock.mp4" type="video/mp4" />
           <source src="/videos/hero-impact.webm" type="video/webm" />
         </video>
         {/* Multi-tier Cinematic Overlays */}
