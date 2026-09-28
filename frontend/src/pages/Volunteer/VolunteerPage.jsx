@@ -4,7 +4,8 @@ import {
   useVolunteerOpportunities, 
   useVolunteerInterests, 
   useVolunteerProfile, 
-  useVolunteerApplication 
+  useVolunteerApplication,
+  useMyVolunteerApplications
 } from '../../hooks/useVolunteer';
 import { 
   HeartHandshake, MapPin, Clock, CheckCircle2, 
@@ -41,6 +42,11 @@ export default function VolunteerPage() {
 
   const { interests } = useVolunteerInterests();
   const { profile } = useVolunteerProfile(user);
+  const { 
+    myApplications, 
+    loading: myAppsLoading, 
+    refetchApplications 
+  } = useMyVolunteerApplications(user);
   
   const { 
     submitting, 
@@ -88,6 +94,15 @@ export default function VolunteerPage() {
   const pwdReqs = checkPasswordRequirements(formData.password);
   const pwdStrength = evaluatePasswordStrength(formData.password);
 
+  // Check if current authenticated user has already applied for selected opportunity
+  const existingApplication = user && selectedOpp && Array.isArray(myApplications)
+    ? myApplications.find((app) => 
+        String(app.opportunity) === String(selectedOpp.id) ||
+        (app.opportunity_id && String(app.opportunity_id) === String(selectedOpp.id)) ||
+        (app.opportunity_slug && selectedOpp.slug && app.opportunity_slug === selectedOpp.slug)
+      )
+    : null;
+
   // Sync authenticated user profile data into form whenever user / profile is available
   useEffect(() => {
     if (user) {
@@ -113,6 +128,9 @@ export default function VolunteerPage() {
     setLoginError('');
     setFieldErrors({});
     setTouched({});
+    if (user) {
+      refetchApplications();
+    }
     setModalOpen(true);
   };
 
@@ -192,6 +210,7 @@ export default function VolunteerPage() {
     try {
       await login(loginCreds.email, loginCreds.password);
       // Switches seamlessly into authenticated application mode
+      refetchApplications();
     } catch (err) {
       console.error(err);
       setLoginError(err?.response?.data?.detail || 'Invalid email or password. Please try again.');
@@ -259,6 +278,7 @@ export default function VolunteerPage() {
           skills: formData.skills.trim(),
           availability: formData.availability,
         });
+        refetchApplications();
       } else {
         // Visitor registration + application flow
         const regPayload = {
@@ -284,6 +304,7 @@ export default function VolunteerPage() {
         };
 
         await registerAndApply(regPayload, applyPayload, registerVolunteer);
+        refetchApplications();
       }
     } catch {
       // Error is cleanly populated in custom hook and displayed in error banner
@@ -478,11 +499,13 @@ export default function VolunteerPage() {
         title={
           successApplication 
             ? 'Application Submitted' 
-            : `Volunteer Application: ${selectedOpp?.title || ''}`
+            : existingApplication
+              ? 'Application Status'
+              : `Volunteer Application: ${selectedOpp?.title || ''}`
         }
       >
         {successApplication ? (
-          /* Confirmation State */
+          /* Confirmation State for fresh submission */
           <div className="application-success-box">
             <div className="success-icon-wrap">
               <CheckCircle2 size={48} color="#10B981" />
@@ -499,6 +522,93 @@ export default function VolunteerPage() {
               style={{ marginTop: '1.5rem', width: '100%' }}
             >
               Done & Return to Opportunities
+            </button>
+          </div>
+        ) : user && myAppsLoading && !existingApplication ? (
+          /* Loading State while checking existing applications */
+          <div className="app-status-loading">
+            <div className="spinner-indicator" />
+            <p>Checking your application status...</p>
+          </div>
+        ) : existingApplication ? (
+          /* Application Already Submitted / Status View */
+          <div className="existing-app-status-box">
+            <div className="app-status-icon-wrap">
+              {existingApplication.status === 'APPROVED' ? (
+                <CheckCircle2 size={48} color="#10B981" />
+              ) : existingApplication.status === 'REJECTED' ? (
+                <AlertCircle size={48} color="#EF4444" />
+              ) : (
+                <Clock size={48} color="#F59E0B" />
+              )}
+            </div>
+
+            <h3 className="app-status-title">Application Already Submitted</h3>
+            <p className="app-status-subtitle">
+              You have already submitted an application for this volunteer initiative. Below is the current status of your application:
+            </p>
+
+            <div className={`app-status-card status-${(existingApplication.status || 'PENDING').toLowerCase()}`}>
+              <div className="app-status-card-header">
+                <span className="app-status-role-title">{selectedOpp?.title || existingApplication.opportunity_title}</span>
+                <span className={`app-status-pill pill-${(existingApplication.status || 'PENDING').toLowerCase()}`}>
+                  {existingApplication.status === 'APPROVED'
+                    ? 'Application Approved'
+                    : existingApplication.status === 'REJECTED'
+                      ? 'Application Not Selected'
+                      : existingApplication.status === 'WAITLISTED'
+                        ? 'Waitlisted'
+                        : 'Pending Review'}
+                </span>
+              </div>
+
+              <div className="app-status-details-grid">
+                {existingApplication.created_at && (
+                  <div className="app-status-detail-item">
+                    <span className="detail-label">Submitted On</span>
+                    <span className="detail-value">
+                      {new Date(existingApplication.created_at).toLocaleDateString('en-IN', {
+                        day: 'numeric',
+                        month: 'short',
+                        year: 'numeric',
+                      })}
+                    </span>
+                  </div>
+                )}
+                {selectedOpp?.location && (
+                  <div className="app-status-detail-item">
+                    <span className="detail-label">Location</span>
+                    <span className="detail-value">{selectedOpp.location}</span>
+                  </div>
+                )}
+                {selectedOpp?.commitment && (
+                  <div className="app-status-detail-item">
+                    <span className="detail-label">Commitment</span>
+                    <span className="detail-value">{selectedOpp.commitment}</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="app-status-message">
+                {existingApplication.status === 'APPROVED' ? (
+                  <p>Congratulations! Your application has been approved. Our team will contact you with orientation and on-ground scheduling details.</p>
+                ) : existingApplication.status === 'REJECTED' ? (
+                  <p>Thank you for your interest. While this role was not matched at this time, we encourage you to explore other open opportunities.</p>
+                ) : existingApplication.status === 'WAITLISTED' ? (
+                  <p>You are currently on the waitlist. If an opening becomes available, our coordinators will reach out directly.</p>
+                ) : (
+                  <p>Your application is currently under review by our coordinators. We typically process applications within 48 to 72 hours.</p>
+                )}
+              </div>
+            </div>
+
+            <button 
+              type="button"
+              onClick={closeApplyModal} 
+              className="btn btn-primary" 
+              style={{ width: '100%', marginTop: '1.25rem' }}
+            >
+              Close
             </button>
           </div>
         ) : (
@@ -1356,6 +1466,126 @@ export default function VolunteerPage() {
           width: 14px;
           font-size: 0.85rem;
           font-weight: 700;
+        }
+        .app-status-loading {
+          text-align: center;
+          padding: 3rem 1rem;
+        }
+        .app-status-loading p {
+          color: var(--text-muted);
+          font-size: 0.9rem;
+          margin-top: 0.5rem;
+        }
+        .existing-app-status-box {
+          text-align: center;
+          padding: 0.5rem 0;
+        }
+        .app-status-icon-wrap {
+          margin-bottom: 0.75rem;
+        }
+        .app-status-title {
+          font-size: 1.35rem;
+          font-weight: 700;
+          color: var(--slate-900);
+          margin-bottom: 0.35rem;
+        }
+        .app-status-subtitle {
+          color: var(--text-muted);
+          font-size: 0.9rem;
+          line-height: 1.5;
+          margin-bottom: 1.25rem;
+        }
+        .app-status-card {
+          background: #F8FAFC;
+          border: 1px solid var(--border-subtle);
+          border-radius: var(--radius-lg);
+          padding: 1.25rem;
+          text-align: left;
+        }
+        .app-status-card.status-approved {
+          border-color: #A7F3D0;
+          background: #F0FDF4;
+        }
+        .app-status-card.status-rejected {
+          border-color: #FECACA;
+          background: #FEF2F2;
+        }
+        .app-status-card.status-waitlisted {
+          border-color: #DDD6FE;
+          background: #F5F3FF;
+        }
+        .app-status-card-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          flex-wrap: wrap;
+          gap: 0.5rem;
+          margin-bottom: 1rem;
+        }
+        .app-status-role-title {
+          font-weight: 700;
+          font-size: 1.05rem;
+          color: var(--slate-900);
+        }
+        .app-status-pill {
+          font-size: 0.75rem;
+          font-weight: 800;
+          padding: 0.3rem 0.75rem;
+          border-radius: var(--radius-pill);
+          letter-spacing: 0.03em;
+        }
+        .pill-pending {
+          background: #FEF3C7;
+          color: #92400E;
+        }
+        .pill-approved {
+          background: #DCFCE7;
+          color: #15803D;
+        }
+        .pill-rejected {
+          background: #FEE2E2;
+          color: #B91C1C;
+        }
+        .pill-waitlisted {
+          background: #EDE9FE;
+          color: #6D28D9;
+        }
+        .app-status-details-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+          gap: 0.75rem;
+          padding: 0.75rem 0;
+          border-top: 1px solid var(--border-subtle);
+          border-bottom: 1px solid var(--border-subtle);
+          margin-bottom: 0.85rem;
+        }
+        .app-status-detail-item {
+          display: flex;
+          flex-direction: column;
+          gap: 0.15rem;
+        }
+        .app-status-detail-item .detail-label {
+          font-size: 0.7rem;
+          font-weight: 700;
+          color: var(--slate-500);
+          text-transform: uppercase;
+        }
+        .app-status-detail-item .detail-value {
+          font-size: 0.85rem;
+          font-weight: 600;
+          color: var(--slate-800);
+        }
+        .app-status-message {
+          font-size: 0.825rem;
+          color: var(--slate-600);
+          background: rgba(255, 255, 255, 0.8);
+          padding: 0.75rem;
+          border-radius: var(--radius-md);
+          border: 1px solid rgba(0, 0, 0, 0.05);
+          line-height: 1.5;
+        }
+        .app-status-message p {
+          margin: 0;
         }
       `}</style>
     </div>
