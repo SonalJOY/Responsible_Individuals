@@ -21,6 +21,17 @@ export default function Navbar() {
     setDropdownOpen(null);
   };
 
+  const handleDropdownItemClick = (e, targetPath, hash) => {
+    closeMenus();
+    if (hash && (location.pathname === targetPath || location.pathname === `${targetPath}/`)) {
+      const id = hash.replace('#', '');
+      const element = document.getElementById(id);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  };
+
   const isActive = (path) => location.pathname === path;
 
   return (
@@ -43,17 +54,64 @@ export default function Navbar() {
             Home
           </Link>
 
-          {/* About Dropdown */}
-          <div className="nav-dropdown-wrapper" onMouseEnter={() => toggleDropdown('about')} onMouseLeave={() => toggleDropdown(null)}>
-            <button className={`nav-link dropdown-btn ${location.pathname.startsWith('/about') ? 'active' : ''}`}>
-              About <ChevronDown size={14} />
-            </button>
+          {/* About Dropdown with Separate Text Link & Chevron Toggle */}
+          <div 
+            className="nav-dropdown-wrapper" 
+            onMouseEnter={() => setDropdownOpen('about')} 
+            onMouseLeave={() => setDropdownOpen(null)}
+          >
+            <div className={`nav-split-link ${location.pathname.startsWith('/about') ? 'active' : ''}`}>
+              <Link 
+                to="/about" 
+                className="nav-link nav-split-text"
+                onClick={closeMenus}
+              >
+                About
+              </Link>
+              <button 
+                type="button"
+                className={`nav-chevron-btn ${dropdownOpen === 'about' ? 'is-open' : ''}`}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  toggleDropdown('about');
+                }}
+                aria-label="Toggle About submenu"
+                aria-expanded={dropdownOpen === 'about'}
+              >
+                <ChevronDown size={14} className="nav-chevron-icon" />
+              </button>
+            </div>
             {dropdownOpen === 'about' && (
               <div className="dropdown-menu">
-                <Link to="/about" className="dropdown-item" onClick={closeMenus}>Our Story & Vision</Link>
-                <Link to="/about#approach" className="dropdown-item" onClick={closeMenus}>8-Step Approach</Link>
-                <Link to="/about#leadership" className="dropdown-item" onClick={closeMenus}>Leadership & Team</Link>
-                <Link to="/partners" className="dropdown-item" onClick={closeMenus}>CSR & Partners</Link>
+                <Link 
+                  to="/about#vision" 
+                  className="dropdown-item" 
+                  onClick={(e) => handleDropdownItemClick(e, '/about', '#vision')}
+                >
+                  Our Story & Vision
+                </Link>
+                <Link 
+                  to="/about#approach" 
+                  className="dropdown-item" 
+                  onClick={(e) => handleDropdownItemClick(e, '/about', '#approach')}
+                >
+                  8-Step Approach
+                </Link>
+                <Link 
+                  to="/about#leadership" 
+                  className="dropdown-item" 
+                  onClick={(e) => handleDropdownItemClick(e, '/about', '#leadership')}
+                >
+                  Leadership & Team
+                </Link>
+                <Link 
+                  to="/about#csr-partners" 
+                  className="dropdown-item" 
+                  onClick={(e) => handleDropdownItemClick(e, '/about', '#csr-partners')}
+                >
+                  CSR & Partners
+                </Link>
               </div>
             )}
           </div>
@@ -253,6 +311,51 @@ export default function Navbar() {
           height: 2px;
           background: var(--primary-600);
           border-radius: var(--radius-pill);
+        }
+        .nav-split-link {
+          display: inline-flex;
+          align-items: center;
+          position: relative;
+          gap: 0.1rem;
+        }
+        .nav-split-link.active::after {
+          content: '';
+          position: absolute;
+          bottom: -2px;
+          left: 0;
+          right: 0;
+          height: 2px;
+          background: var(--primary-600);
+          border-radius: var(--radius-pill);
+        }
+        .nav-split-link .nav-link.active::after {
+          display: none;
+        }
+        .nav-split-text {
+          padding-right: 0.1rem;
+          text-decoration: none;
+        }
+        .nav-chevron-btn {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          background: none;
+          border: none;
+          color: var(--slate-700);
+          padding: 0.5rem 0.2rem;
+          cursor: pointer;
+          transition: color var(--transition-fast);
+        }
+        .nav-chevron-btn:hover,
+        .nav-split-link.active .nav-chevron-btn,
+        .nav-chevron-btn.is-open {
+          color: var(--primary-800);
+        }
+        .nav-chevron-btn.is-open .nav-chevron-icon {
+          transform: rotate(180deg);
+        }
+        .nav-chevron-icon {
+          transition: transform var(--transition-fast);
         }
         .dropdown-btn {
           display: inline-flex;
