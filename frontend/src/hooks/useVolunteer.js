@@ -247,3 +247,43 @@ export function useVolunteerApplication() {
     setError,
   };
 }
+
+/**
+ * Hook to manage and retrieve authenticated volunteer's submitted applications.
+ */
+export function useMyVolunteerApplications(user) {
+  const [myApplications, setMyApplications] = useState([]);
+  const [loading, setLoading] = useState(Boolean(user));
+  const [error, setError] = useState(null);
+
+  const fetchMyApplications = useCallback(async () => {
+    if (!user) {
+      setMyApplications([]);
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await volunteerService.getMyApplications();
+      setMyApplications(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error('Error fetching my volunteer applications:', err);
+      setError('Failed to retrieve your submitted applications.');
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    fetchMyApplications();
+  }, [fetchMyApplications]);
+
+  return {
+    myApplications,
+    loading,
+    error,
+    refetchApplications: fetchMyApplications,
+  };
+}
+
