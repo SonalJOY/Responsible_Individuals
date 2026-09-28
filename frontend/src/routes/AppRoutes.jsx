@@ -15,6 +15,7 @@ import VolunteerPage from '../pages/Volunteer/VolunteerPage';
 import DonatePage from '../pages/Donate/DonatePage';
 import EventsPage from '../pages/Events/EventsPage';
 import StoriesPage from '../pages/Stories/StoriesPage';
+import StoryDetailPage from '../pages/Stories/StoryDetailPage';
 import GalleryPage from '../pages/Gallery/GalleryPage';
 import PartnersPage from '../pages/Partners/PartnersPage';
 import CareersPage from '../pages/Careers/CareersPage';
@@ -41,6 +42,7 @@ export default function AppRoutes() {
         <Route path="donate" element={<DonatePage />} />
         <Route path="events" element={<EventsPage />} />
         <Route path="stories" element={<StoriesPage />} />
+        <Route path="stories/:slug" element={<StoryDetailPage />} />
         <Route path="gallery" element={<GalleryPage />} />
         <Route path="partners" element={<PartnersPage />} />
         <Route path="careers" element={<CareersPage />} />

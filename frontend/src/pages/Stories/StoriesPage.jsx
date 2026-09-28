@@ -1,83 +1,95 @@
 import React, { useEffect, useState } from 'react';
+import { motion } from 'motion/react';
 import { storyService } from '../../services/api';
-import StoryCard from '../../components/common/StoryCard';
+import { featuredStory as defaultFeatured, fieldStories as defaultFieldStories, communityMoments } from '../../data/storiesData';
+import StoriesScrollProgress from './components/StoriesScrollProgress';
+import StoriesBackToTop from './components/StoriesBackToTop';
+import StoriesHero from './components/StoriesHero';
+import FeaturedStorySection from './components/FeaturedStorySection';
+import StoryEditorialCard from './components/StoryEditorialCard';
+import StoryQuoteSection from './components/StoryQuoteSection';
+import StoriesBehindWorkSection from './components/StoriesBehindWorkSection';
+import FromCommunitySection from './components/FromCommunitySection';
+import './stories.css';
 
 export default function StoriesPage() {
-  const [stories, setStories] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [featured, setFeatured] = useState(defaultFeatured);
+  const [stories, setStories] = useState(defaultFieldStories);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    async function loadStories() {
+    // Scroll to top on page mount
+    window.scrollTo(0, 0);
+
+    async function loadLiveStoriesIfAvailable() {
       try {
-        const data = await storyService.getStories();
-        setStories(data);
-      } catch (err) {
-        console.error(err);
+        const liveData = await storyService.getStories();
+        if (Array.isArray(liveData) && liveData.length > 0) {
+          // If backend has live stories, utilize them; otherwise retain complete prototype data
+          const featuredItem = liveData.find((s) => s.featured) || liveData[0];
+          setFeatured(featuredItem);
+          setStories(liveData.slice(1));
+        }
+      } catch {
+        // Backend offline or empty: cleanly retain prototype data without console error clutter
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     }
-    loadStories();
+    loadLiveStoriesIfAvailable();
   }, []);
 
   return (
     <div className="stories-page-root">
-      <section className="stories-hero">
-        <div className="container">
-          <span className="section-badge">Voices of Transformation</span>
-          <h1 className="stories-hero-title">Stories of Change</h1>
-          <p className="stories-hero-subtitle">
-            Explore first-person accounts of students, dryland farmers, resident stewards, and youth whose lives have been impacted by our projects.
-          </p>
-        </div>
-      </section>
+      {/* Stories Scroll Progress Indicator */}
+      <StoriesScrollProgress />
 
-      <section className="section bg-light-alt">
+      {/* Hero Section — Enhanced with Cinematic Background Video & Motion */}
+      <StoriesHero />
+
+      {/* SECTION 1 — FEATURED STORY */}
+      <FeaturedStorySection story={featured} />
+
+      {/* SECTION 2 — STORIES FROM THE FIELD */}
+      <section className="field-stories-section" aria-label="Stories from the Field">
         <div className="container">
-          <div className="stories-grid">
-            {stories.map((story) => (
-              <StoryCard key={story.id} story={story} />
+          <motion.div
+            className="section-header"
+            initial={{ opacity: 0, y: 25 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-50px' }}
+            transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
+          >
+            <span className="section-badge">Field Narratives</span>
+            <h2 className="section-title">Stories from the Field</h2>
+            <p className="section-subtitle">
+              First-hand moments from the people and communities working toward a better future.
+            </p>
+          </motion.div>
+
+          <div className="field-stories-grid">
+            {stories.map((story, idx) => (
+              <StoryEditorialCard
+                key={story.id || story.slug || idx}
+                story={story}
+                index={idx}
+              />
             ))}
           </div>
         </div>
       </section>
 
-      <style>{`
-        .stories-hero {
-          background: linear-gradient(135deg, #091712 0%, #0F4C3A 100%);
-          color: white;
-          padding: 5rem 0 4rem 0;
-          text-align: center;
-        }
-        .stories-hero .section-badge {
-          background: rgba(16, 185, 129, 0.2);
-          color: #34D399;
-          border-color: rgba(52, 211, 153, 0.4);
-        }
-        .stories-hero-title {
-          color: white;
-          font-size: 2.75rem;
-          font-weight: 800;
-          margin-bottom: 1.25rem;
-        }
-        .stories-hero-subtitle {
-          font-size: 1.15rem;
-          color: #CBD5E1;
-          max-width: 700px;
-          margin: 0 auto;
-          line-height: 1.65;
-        }
-        .stories-grid {
-          display: grid;
-          grid-template-columns: 1fr;
-          gap: 2rem;
-        }
-        @media (min-width: 768px) {
-          .stories-grid {
-            grid-template-columns: repeat(2, 1fr);
-          }
-        }
-      `}</style>
+      {/* SECTION 3 — STORY QUOTE / HUMAN VOICE */}
+      <StoryQuoteSection />
+
+      {/* SECTION 4 — STORIES BEHIND THE WORK (Every Number Has a Story + Metrics) */}
+      <StoriesBehindWorkSection />
+
+      {/* SECTION 5 — FROM THE COMMUNITY GALLERY */}
+      <FromCommunitySection moments={communityMoments} />
+
+      {/* Stories Back to Top Floating Button */}
+      <StoriesBackToTop />
     </div>
   );
 }
