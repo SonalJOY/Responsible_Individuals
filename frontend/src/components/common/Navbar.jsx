@@ -1,16 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { 
-  Heart, Menu, X, Shield, ChevronDown, 
-  ExternalLink, User, LogOut, LayoutDashboard 
+  Heart, Menu, X, ChevronDown, 
+  User, LogOut, LayoutDashboard 
 } from 'lucide-react';
+import riLogo from '../../assets/ri-logo.png';
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(null);
+  const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
   const { user, logout, isAdmin } = useAuth();
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 30);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const toggleDropdown = (name) => {
     setDropdownOpen(dropdownOpen === name ? null : name);
@@ -24,12 +34,16 @@ export default function Navbar() {
   const isActive = (path) => location.pathname === path;
 
   return (
-    <header className="navbar-container">
+    <header className={`navbar-container navbar-entrance ${isScrolled ? 'scrolled' : ''}`}>
       <div className="container nav-inner">
-        {/* Brand Logo */}
+        {/* Brand Logo with Transparent Background Official Emblem */}
         <Link to="/" className="brand-logo" onClick={closeMenus}>
-          <div className="logo-icon-wrapper">
-            <Shield className="logo-icon" size={24} />
+          <div className="logo-image-wrapper">
+            <img 
+              src={riLogo} 
+              alt="Responsible Individuals Logo" 
+              className="navbar-ri-logo" 
+            />
           </div>
           <div className="logo-text">
             <span className="logo-title">RESPONSIBLE</span>
@@ -68,7 +82,7 @@ export default function Navbar() {
 
           {/* Get Involved Dropdown */}
           <div className="nav-dropdown-wrapper" onMouseEnter={() => toggleDropdown('involved')} onMouseLeave={() => toggleDropdown(null)}>
-            <button className={`nav-link dropdown-btn ${['/volunteer', '/donate', '/partners'].includes(location.pathname) ? 'active' : ''}`}>
+            <button className={`nav-link dropdown-btn ${['/volunteer', '/donate', '/partners', '/events'].includes(location.pathname) ? 'active' : ''}`}>
               Get Involved <ChevronDown size={14} />
             </button>
             {dropdownOpen === 'involved' && (
@@ -98,7 +112,7 @@ export default function Navbar() {
         <div className="nav-actions">
           {isAdmin && (
             <Link to="/admin-portal" className="admin-pill-link" title="Admin Portal">
-              <LayoutDashboard size={16} />
+              <LayoutDashboard size={15} />
               <span>Admin</span>
             </Link>
           )}
@@ -114,8 +128,8 @@ export default function Navbar() {
             <Link to="/login" className="login-link">Sign In</Link>
           )}
 
-          <Link to="/donate" className="btn btn-amber nav-donate-btn">
-            <Heart size={16} fill="currentColor" />
+          <Link to="/donate" className="btn-nav-donate">
+            <Heart size={15} fill="currentColor" />
             <span>Donate</span>
           </Link>
 
@@ -161,7 +175,7 @@ export default function Navbar() {
                   <User size={18} /> Sign In
                 </Link>
               )}
-              <Link to="/donate" className="btn btn-amber mobile-btn" onClick={closeMenus}>
+              <Link to="/donate" className="btn-nav-donate mobile-btn-donate" onClick={closeMenus}>
                 <Heart size={18} fill="currentColor" /> Donate Now
               </Link>
             </div>
@@ -174,34 +188,65 @@ export default function Navbar() {
           position: sticky;
           top: 0;
           z-index: 100;
-          background: rgba(255, 255, 255, 0.95);
-          backdrop-filter: blur(10px);
-          -webkit-backdrop-filter: blur(10px);
+          background: rgba(253, 251, 247, 0.94);
+          backdrop-filter: blur(14px);
+          -webkit-backdrop-filter: blur(14px);
           border-bottom: 1px solid var(--border-subtle);
-          transition: all var(--transition-fast);
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        
+        /* Subtle Entrance Animation on Load */
+        .navbar-entrance {
+          animation: navSlideDown 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes navSlideDown {
+          0% {
+            opacity: 0;
+            transform: translateY(-12px);
+          }
+          100% {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .navbar-container.scrolled {
+          background: rgba(253, 251, 247, 0.98);
+          box-shadow: 0 8px 24px rgba(8, 41, 31, 0.06);
+          border-bottom-color: rgba(232, 226, 214, 0.9);
         }
         .nav-inner {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          height: 76px;
+          height: 78px;
+          transition: height 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .navbar-container.scrolled .nav-inner {
+          height: 66px;
         }
         .brand-logo {
           display: flex;
           align-items: center;
-          gap: 0.75rem;
+          gap: 0.85rem;
           text-decoration: none;
         }
-        .logo-icon-wrapper {
-          width: 42px;
-          height: 42px;
-          border-radius: var(--radius-md);
-          background: linear-gradient(135deg, #0F4C3A 0%, #10B981 100%);
+        .logo-image-wrapper {
+          width: 44px;
+          height: 44px;
           display: flex;
           align-items: center;
           justify-content: center;
-          color: white;
-          box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+          filter: drop-shadow(0 2px 8px rgba(16, 185, 129, 0.15));
+        }
+        .navbar-ri-logo {
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
+          transition: transform var(--transition-fast);
+        }
+        .brand-logo:hover .navbar-ri-logo {
+          transform: scale(1.06);
         }
         .logo-text {
           display: flex;
@@ -210,21 +255,21 @@ export default function Navbar() {
         .logo-title {
           font-family: var(--font-heading);
           font-weight: 800;
-          font-size: 1.15rem;
-          color: var(--primary-900);
+          font-size: 1.1rem;
+          color: var(--charcoal-900);
           letter-spacing: 0.04em;
           line-height: 1.1;
         }
         .logo-subtitle {
-          font-size: 0.72rem;
+          font-size: 0.7rem;
           font-weight: 700;
-          color: var(--primary-600);
+          color: #059669;
           letter-spacing: 0.12em;
         }
         .desktop-nav {
           display: none;
           align-items: center;
-          gap: 1.5rem;
+          gap: 1.65rem;
         }
         @media (min-width: 1024px) {
           .desktop-nav {
@@ -234,15 +279,16 @@ export default function Navbar() {
         .nav-link {
           font-size: 0.925rem;
           font-weight: 600;
-          color: var(--slate-700);
+          color: var(--charcoal-700);
           padding: 0.5rem 0.25rem;
           position: relative;
           background: none;
           border: none;
           cursor: pointer;
+          transition: color var(--transition-fast);
         }
         .nav-link:hover, .nav-link.active {
-          color: var(--primary-800);
+          color: #059669;
         }
         .nav-link.active::after {
           content: '';
@@ -251,7 +297,7 @@ export default function Navbar() {
           left: 0;
           right: 0;
           height: 2px;
-          background: var(--primary-600);
+          background: #10B981;
           border-radius: var(--radius-pill);
         }
         .dropdown-btn {
@@ -266,31 +312,31 @@ export default function Navbar() {
           position: absolute;
           top: 100%;
           left: 0;
-          width: 230px;
-          background: var(--white);
+          width: 235px;
+          background: #FFFFFF;
           border: 1px solid var(--border-subtle);
-          border-radius: var(--radius-md);
-          box-shadow: var(--shadow-lg);
+          border-radius: 16px;
+          box-shadow: 0 16px 36px rgba(8, 41, 31, 0.12);
           padding: 0.5rem 0;
           z-index: 110;
           animation: fadeIn 0.2s ease-out;
         }
         .dropdown-item {
           display: block;
-          padding: 0.6rem 1.25rem;
+          padding: 0.65rem 1.35rem;
           font-size: 0.875rem;
-          font-weight: 500;
-          color: var(--slate-700);
+          font-weight: 600;
+          color: var(--charcoal-700);
           transition: background var(--transition-fast);
         }
         .dropdown-item:hover {
-          background: var(--slate-50);
-          color: var(--primary-800);
+          background: var(--cream-100);
+          color: #059669;
         }
         .nav-actions {
           display: flex;
           align-items: center;
-          gap: 1rem;
+          gap: 1.1rem;
         }
         .admin-pill-link {
           display: inline-flex;
@@ -300,19 +346,19 @@ export default function Navbar() {
           background: #EEF2FF;
           color: #4F46E5;
           border-radius: var(--radius-pill);
-          font-size: 0.8rem;
+          font-size: 0.78rem;
           font-weight: 700;
           text-transform: uppercase;
         }
         .user-greeting {
           font-size: 0.875rem;
           font-weight: 600;
-          color: var(--slate-700);
+          color: var(--charcoal-800);
         }
         .logout-icon-btn {
           background: none;
           border: none;
-          color: var(--slate-400);
+          color: var(--text-muted);
           cursor: pointer;
           padding: 0.25rem;
           margin-left: 0.35rem;
@@ -323,21 +369,36 @@ export default function Navbar() {
         .login-link {
           font-size: 0.9rem;
           font-weight: 600;
-          color: var(--slate-700);
+          color: var(--charcoal-800);
         }
         .login-link:hover {
-          color: var(--primary-800);
+          color: #059669;
         }
-        .nav-donate-btn {
-          padding: 0.55rem 1.25rem;
+        .btn-nav-donate {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.45rem;
+          background: #10B981;
+          color: #042F1A;
+          font-weight: 700;
           font-size: 0.9rem;
+          padding: 0.55rem 1.35rem;
+          border-radius: var(--radius-pill);
+          box-shadow: 0 4px 14px rgba(16, 185, 129, 0.25);
+          transition: all var(--transition-fast);
+        }
+        .btn-nav-donate:hover {
+          background: #059669;
+          color: #FFFFFF;
+          transform: translateY(-2px);
+          box-shadow: 0 6px 18px rgba(16, 185, 129, 0.35);
         }
         .mobile-toggle-btn {
           display: flex;
           align-items: center;
           background: none;
           border: none;
-          color: var(--slate-800);
+          color: var(--charcoal-900);
           cursor: pointer;
         }
         @media (min-width: 1024px) {
@@ -346,7 +407,7 @@ export default function Navbar() {
           }
         }
         .mobile-drawer {
-          background: var(--white);
+          background: #FFFFFF;
           border-top: 1px solid var(--border-subtle);
           padding: 1.5rem;
           box-shadow: var(--shadow-xl);
@@ -361,9 +422,9 @@ export default function Navbar() {
         .mobile-nav-link {
           font-size: 1.05rem;
           font-weight: 600;
-          color: var(--slate-800);
+          color: var(--charcoal-900);
           padding: 0.5rem 0;
-          border-bottom: 1px solid var(--slate-100);
+          border-bottom: 1px solid var(--cream-200);
         }
         .mobile-auth-section {
           margin-top: 1.5rem;
@@ -373,6 +434,11 @@ export default function Navbar() {
         }
         .mobile-btn {
           width: 100%;
+        }
+        .mobile-btn-donate {
+          display: flex;
+          justify-content: center;
+          padding: 0.85rem;
         }
       `}</style>
     </header>

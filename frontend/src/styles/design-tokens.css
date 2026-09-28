@@ -34,14 +34,27 @@
   --slate-50: #F8FAFC;
   --white: #FFFFFF;
 
+  /* Editorial Warm Palette (HopeRise Inspired) */
+  --cream-50: #FDFBF7;
+  --cream-100: #F7F3EB;
+  --cream-200: #EFE9DD;
+  --cream-300: #E4DAC9;
+  --cream-400: #D2C4AE;
+  --charcoal-950: #0C1210;
+  --charcoal-900: #121816;
+  --charcoal-800: #1A2320;
+  --charcoal-700: #273530;
+  --charcoal-600: #3D4E47;
+
   /* Semantic Variables */
-  --bg-main: #FAFCFB;
+  --bg-main: var(--cream-50);
+  --bg-cream: var(--cream-100);
   --bg-card: #FFFFFF;
-  --bg-card-alt: #F8FAFC;
-  --text-main: #0F172A;
-  --text-muted: #64748B;
-  --text-light: #94A3B8;
-  --border-subtle: #E2E8F0;
+  --bg-card-alt: var(--cream-200);
+  --text-main: var(--charcoal-900);
+  --text-muted: #5C6E67;
+  --text-light: #8A9E96;
+  --border-subtle: #E8E2D6;
   --border-focus: #10B981;
 
   /* Typography */
