@@ -1,0 +1,21 @@
+Welcome to the Community, {{ full_name }}!
+
+Thank you for registering as a volunteer with Responsible Individuals. Your account and volunteer profile have been successfully established.
+
+REGISTRATION SUMMARY:
+- Volunteer Name: {{ full_name }}
+- Registered Email: {{ email }}
+{% if city %}- Location: {{ city }}{% if state %}, {{ state }}{% endif %}
+{% endif %}{% if interests_list %}- Selected Focus Areas: {{ interests_list }}
+{% endif %}
+
+WHAT'S NEXT?
+1. Explore Active Roles: Browse open community opportunities across lake rejuvenation, robotics mentoring, and zero-waste initiatives.
+2. Apply with Intent: Submit applications for roles matching your schedule and skills.
+3. Track Verified Impact: Log your on-ground participation hours and earn verifiable certificates of recognition.
+
+We are thrilled to have you with us in making meaningful, measurable change.
+
+Warm regards,
+Responsible Individuals Volunteer Team
+Contact: {{ contact_email }}

@@ -1,0 +1,41 @@
+{% extends "volunteers/emails/base_email.html" %}
+
+{% block content %}
+<h2>Application Waitlisted: {{ opportunity_title }}</h2>
+
+<p>Dear {{ full_name }},</p>
+
+<p>Thank you for applying for <strong>{{ opportunity_title }}</strong>. We have received an overwhelming response for this role, and all immediate slots are currently allocated.</p>
+
+<p>Your application has been placed on the <span class="status-badge status-waitlisted">Waitlist</span>.</p>
+
+<div class="info-card">
+  <div class="info-card-item">
+    <span class="info-label">Opportunity:</span>
+    <span class="info-value">{{ opportunity_title }}</span>
+  </div>
+  {% if location %}
+  <div class="info-card-item">
+    <span class="info-label">Location:</span>
+    <span class="info-value">{{ location }}</span>
+  </div>
+  {% endif %}
+  <div class="info-card-item">
+    <span class="info-label">Current Status:</span>
+    <span class="status-badge status-waitlisted">Waitlisted</span>
+  </div>
+  {% if review_notes %}
+  <div class="info-card-item">
+    <span class="info-label">Coordinator Notes:</span>
+    <span class="info-value">{{ review_notes }}</span>
+  </div>
+  {% endif %}
+</div>
+
+<p><strong>What Does This Mean?</strong></p>
+<p>If an accepted applicant's availability changes or if additional spots open up in this initiative, waitlisted volunteers will be contacted in priority order.</p>
+
+<p>In the meantime, feel free to explore other open opportunities on our platform.</p>
+
+<p style="margin-top: 24px;">Warm regards,<br><strong>Responsible Individuals Volunteer Team</strong></p>
+{% endblock %}

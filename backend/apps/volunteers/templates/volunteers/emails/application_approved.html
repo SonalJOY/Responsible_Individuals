@@ -1,0 +1,45 @@
+{% extends "volunteers/emails/base_email.html" %}
+
+{% block content %}
+<h2>Congratulations, Your Application is Approved!</h2>
+
+<p>Dear {{ full_name }},</p>
+
+<p>We are delighted to let you know that your application for <strong>{{ opportunity_title }}</strong> has been <span class="status-badge status-approved">Approved</span>.</p>
+
+<div class="info-card">
+  <div class="info-card-item">
+    <span class="info-label">Opportunity:</span>
+    <span class="info-value">{{ opportunity_title }}</span>
+  </div>
+  {% if location %}
+  <div class="info-card-item">
+    <span class="info-label">Location:</span>
+    <span class="info-value">{{ location }}</span>
+  </div>
+  {% endif %}
+  {% if commitment %}
+  <div class="info-card-item">
+    <span class="info-label">Commitment:</span>
+    <span class="info-value">{{ commitment }}</span>
+  </div>
+  {% endif %}
+  {% if review_notes %}
+  <div class="info-card-item">
+    <span class="info-label">Coordinator Notes:</span>
+    <span class="info-value">{{ review_notes }}</span>
+  </div>
+  {% endif %}
+</div>
+
+<p><strong>Next Steps:</strong></p>
+<ul style="padding-left: 20px; color: #475569; margin-bottom: 20px;">
+  <li style="margin-bottom: 8px;">Our on-ground initiative team will reach out with the orientation schedule and team briefing.</li>
+  <li style="margin-bottom: 8px;">Ensure your phone number and availability details are up to date on your profile.</li>
+  <li style="margin-bottom: 8px;">After each activity session, your verified contribution hours will be recorded on your profile.</li>
+</ul>
+
+<p>We look forward to creating meaningful change together!</p>
+
+<p style="margin-top: 24px;">Warm regards,<br><strong>Responsible Individuals Volunteer Team</strong></p>
+{% endblock %}

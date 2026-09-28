@@ -1,0 +1,23 @@
+Congratulations, Your Application is Approved! - Responsible Individuals
+
+Dear {{ full_name }},
+
+We are delighted to let you know that your application for {{ opportunity_title }} has been Approved.
+
+OPPORTUNITY DETAILS:
+- Opportunity: {{ opportunity_title }}
+{% if location %}- Location: {{ location }}
+{% endif %}{% if commitment %}- Commitment: {{ commitment }}
+{% endif %}{% if review_notes %}- Coordinator Notes: {{ review_notes }}
+{% endif %}
+
+NEXT STEPS:
+1. Our on-ground initiative team will reach out with the orientation schedule and team briefing.
+2. Ensure your phone number and availability details are up to date on your profile.
+3. After each activity session, your verified contribution hours will be recorded on your profile.
+
+We look forward to creating meaningful change together!
+
+Warm regards,
+Responsible Individuals Volunteer Team
+Contact: {{ contact_email }}
