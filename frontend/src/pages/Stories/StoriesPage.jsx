@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from 'react';
+import { motion } from 'motion/react';
 import { storyService } from '../../services/api';
 import { featuredStory as defaultFeatured, fieldStories as defaultFieldStories, communityMoments } from '../../data/storiesData';
+import StoriesScrollProgress from './components/StoriesScrollProgress';
+import StoriesBackToTop from './components/StoriesBackToTop';
+import StoriesHero from './components/StoriesHero';
 import FeaturedStorySection from './components/FeaturedStorySection';
 import StoryEditorialCard from './components/StoryEditorialCard';
 import StoryQuoteSection from './components/StoryQuoteSection';
@@ -11,9 +15,10 @@ import './stories.css';
 export default function StoriesPage() {
   const [featured, setFeatured] = useState(defaultFeatured);
   const [stories, setStories] = useState(defaultFieldStories);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    // Scroll to top on page load
+    // Scroll to top on page mount
     window.scrollTo(0, 0);
 
     async function loadLiveStoriesIfAvailable() {
@@ -27,6 +32,8 @@ export default function StoriesPage() {
         }
       } catch {
         // Backend offline or empty: cleanly retain prototype data without console error clutter
+      } finally {
+        setIsLoading(false);
       }
     }
     loadLiveStoriesIfAvailable();
@@ -34,16 +41,11 @@ export default function StoriesPage() {
 
   return (
     <div className="stories-page-root">
-      {/* Hero Section — EXACT Existing Hero Design & Copy Preserved */}
-      <section className="stories-hero">
-        <div className="container">
-          <span className="section-badge">Voices of Transformation</span>
-          <h1 className="stories-hero-title">Stories of Change</h1>
-          <p className="stories-hero-subtitle">
-            Explore first-person accounts of students, dryland farmers, resident stewards, and youth whose lives have been impacted by our projects.
-          </p>
-        </div>
-      </section>
+      {/* Stories Scroll Progress Indicator */}
+      <StoriesScrollProgress />
+
+      {/* Hero Section — Enhanced with Cinematic Background Video & Motion */}
+      <StoriesHero />
 
       {/* SECTION 1 — FEATURED STORY */}
       <FeaturedStorySection story={featured} />
@@ -51,17 +53,27 @@ export default function StoriesPage() {
       {/* SECTION 2 — STORIES FROM THE FIELD */}
       <section className="field-stories-section" aria-label="Stories from the Field">
         <div className="container">
-          <div className="section-header">
+          <motion.div
+            className="section-header"
+            initial={{ opacity: 0, y: 25 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-50px' }}
+            transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
+          >
             <span className="section-badge">Field Narratives</span>
             <h2 className="section-title">Stories from the Field</h2>
             <p className="section-subtitle">
               First-hand moments from the people and communities working toward a better future.
             </p>
-          </div>
+          </motion.div>
 
           <div className="field-stories-grid">
-            {stories.map((story) => (
-              <StoryEditorialCard key={story.id || story.slug} story={story} />
+            {stories.map((story, idx) => (
+              <StoryEditorialCard
+                key={story.id || story.slug || idx}
+                story={story}
+                index={idx}
+              />
             ))}
           </div>
         </div>
@@ -70,11 +82,14 @@ export default function StoriesPage() {
       {/* SECTION 3 — STORY QUOTE / HUMAN VOICE */}
       <StoryQuoteSection />
 
-      {/* SECTION 4 — STORIES BEHIND THE WORK */}
+      {/* SECTION 4 — STORIES BEHIND THE WORK (Every Number Has a Story + Metrics) */}
       <StoriesBehindWorkSection />
 
-      {/* SECTION 5 — FROM THE COMMUNITY */}
+      {/* SECTION 5 — FROM THE COMMUNITY GALLERY */}
       <FromCommunitySection moments={communityMoments} />
+
+      {/* Stories Back to Top Floating Button */}
+      <StoriesBackToTop />
     </div>
   );
 }

@@ -237,43 +237,109 @@ export const communityMoments = [
     id: 'moment-01',
     title: 'Participatory Watershed Mapping',
     tag: 'Water & Communities',
+    badge: 'Water & Communities',
+    typeTag: 'Field Survey',
     image: 'https://images.unsplash.com/photo-1541888946425-d0fbb186f5f7?auto=format&fit=crop&w=600&q=80',
-    location: 'Chikkaballapur'
+    location: 'Chikkaballapur',
+    meta: 'Chikkaballapur • Hydrology Action',
+    themeColor: '#0284C7',
+    description: 'Community teams and hydrology experts walking runoff channels to revive traditional stone bunds and check dams.',
+    stats: [
+      { label: 'Catchment Mapped', value: '18 Swales' },
+      { label: 'Families Engaged', value: '120 Farmers' },
+      { label: 'Water Security', value: '+35%' }
+    ],
+    abstract: 'The Participatory Watershed Mapping initiative in Chikkaballapur mobilized agrarian families across five village panchayats. By documenting historical runoff drainage patterns and desilting key feeder channels, the community restored traditional catchment integrity before the monsoon, directly recharging 28 community open wells.'
   },
   {
     id: 'moment-02',
     title: 'Courtyard Learning Circle',
     tag: 'Education',
+    badge: 'Foundational Learning',
+    typeTag: 'Youth Mentorship',
     image: 'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&w=600&q=80',
-    location: 'Rural Kolar'
+    location: 'Rural Kolar',
+    meta: 'Rural Kolar • Experiential STEM',
+    themeColor: '#8B5CF6',
+    description: 'Evening peer tutoring and science circles hosted in open village courtyards by high school youth fellows.',
+    stats: [
+      { label: 'Active Learners', value: '45 Children' },
+      { label: 'Youth Fellows', value: '6 Mentors' },
+      { label: 'Reading Fluency', value: '92%' }
+    ],
+    abstract: 'Courtyard Learning Circles transform village verandas into vibrant learning hubs after dusk. High-school fellows facilitate interactive STEM experiments, multilingual storytelling, and numeracy kits, eliminating after-school learning drop-offs and fostering community-wide academic curiosity.'
   },
   {
     id: 'moment-03',
     title: 'Morning Sapling Care',
     tag: 'Youth & Greenery',
+    badge: 'Youth & Greenery',
+    typeTag: 'Urban Micro-Forest',
     image: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=600&q=80',
-    location: 'East Bengaluru'
+    location: 'East Bengaluru',
+    meta: 'East Bengaluru • Native Canopy',
+    themeColor: '#10B981',
+    description: 'Neighborhood citizen collectives nurturing 500+ indigenous trees along lake peripheries and school zones.',
+    stats: [
+      { label: 'Native Trees', value: '520 Saplings' },
+      { label: 'Weekly Stewards', value: '34 Vol.' },
+      { label: 'Survival Rate', value: '88%' }
+    ],
+    abstract: 'The Morning Sapling Care initiative gathers volunteers every weekend at dawn to weed, mulch, and install drip irrigation for native shade trees. Focusing on multi-tiered native species like Honge, Neem, and Mahua, the initiative creates cooling urban canopy corridors in peri-urban tech corridors.'
   },
   {
     id: 'moment-04',
     title: 'Soil & Seed Preservation',
     tag: 'Regenerative Agriculture',
+    badge: 'Regenerative Agriculture',
+    typeTag: 'Heirloom Ecology',
     image: 'https://images.unsplash.com/photo-1500651230702-0e2d8a49d4ad?auto=format&fit=crop&w=600&q=80',
-    location: 'Tumakuru Drylands'
+    location: 'Tumakuru Drylands',
+    meta: 'Tumakuru Drylands • Soil Heritage',
+    themeColor: '#D97706',
+    description: 'Conserving drought-hardy millets and native legumes while implementing compost mulching across drylands.',
+    stats: [
+      { label: 'Seeds Saved', value: '26 Types' },
+      { label: 'Natural Mulch', value: '40 Acres' },
+      { label: 'Water Loss', value: '-40%' }
+    ],
+    abstract: 'Faced with rising drought vulnerability, Tumakuru dryland farmers established a community seed bank safeguarding 26 drought-resistant heirloom grains and pulses. By combining seed sharing with organic mulching and microbial soil inoculants, participatory farms have cut reliance on commercial inputs and enriched topsoil biodiversity.'
   },
   {
     id: 'moment-05',
     title: 'Open Civic Dialogue',
     tag: 'Community',
+    badge: 'Civic Governance',
+    typeTag: 'Participatory Forum',
     image: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=600&q=80',
-    location: 'South District'
+    location: 'South District',
+    meta: 'South District • Grassroots Sabhas',
+    themeColor: '#EC4899',
+    description: 'Bi-monthly open assemblies connecting ward citizens, local leaders, and sanitation workers for equitable civic solutions.',
+    stats: [
+      { label: 'Active Voices', value: '140+ Citizens' },
+      { label: 'Action Points', value: '12 Wards' },
+      { label: 'Resolution Rate', value: '100%' }
+    ],
+    abstract: 'Open Civic Dialogues bridge the gap between ward residents, frontline municipal staff, and local governance representatives. Through transparent agenda setting and open voting, assemblies have resolved waste segregation bottlenecks, established safe pedestrian walkways, and secured reliable lighting in underserved neighborhoods.'
   },
   {
     id: 'moment-06',
     title: 'Citizen Water Monitoring',
     tag: 'Volunteers',
+    badge: 'Ecological Science',
+    typeTag: 'Water Watch',
     image: 'https://images.unsplash.com/photo-1593113598332-cd288d649433?auto=format&fit=crop&w=600&q=80',
-    location: 'Peri-urban Wetlands'
+    location: 'Peri-urban Wetlands',
+    meta: 'Peri-urban Wetlands • Water Watch',
+    themeColor: '#059669',
+    description: 'Equipping college students and residents with portable testing kits to track pH, dissolved oxygen, and inlet health.',
+    stats: [
+      { label: 'Monitored Inlets', value: '24 Sites' },
+      { label: 'Trained Testers', value: '58 Vol.' },
+      { label: 'Testing Standard', value: 'ISO 10500' }
+    ],
+    abstract: 'The Citizen Water Monitoring program trains community volunteers to conduct rigorous scientific testing on peri-urban wetland inflows. By recording dissolved oxygen levels, phosphate presence, and microbial trends every fortnight, citizens provide public health alerts and safeguard urban biodiversity reserves.'
   }
 ];
 
