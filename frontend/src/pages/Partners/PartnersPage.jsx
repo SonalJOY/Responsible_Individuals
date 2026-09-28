@@ -51,7 +51,7 @@ export default function PartnersPage() {
   return (
     <div className="partners-page-root">
       {/* Hero */}
-      <section className="partners-hero">
+      <section id="csr-partners" className="partners-hero">
         <div className="container">
           <span className="section-badge">CSR & Institutional Alliances</span>
           <h1 className="partners-hero-title">Partner With Purpose</h1>
@@ -218,6 +218,7 @@ export default function PartnersPage() {
 
       <style>{`
         .partners-hero {
+          scroll-margin-top: 84px;
           background: linear-gradient(135deg, #091712 0%, #0F4C3A 100%);
           color: white;
           padding: 5rem 0 4rem 0;
