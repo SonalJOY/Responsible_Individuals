@@ -1,3 +1,4 @@
+
 import uuid
 import random
 from datetime import timedelta
@@ -11,7 +12,7 @@ from apps.core.models import TimeStampedModel
 
 
 class UserManager(BaseUserManager):
-    """Custom user manager where email is the unique identifier for auth."""
+    """Custom user manager using email for authentication."""
 
     def create_user(self, email, password=None, **extra_fields):
         if not email:
@@ -27,7 +28,6 @@ class UserManager(BaseUserManager):
 
         user.set_password(password)
         user.save(using=self._db)
-
         return user
 
     def create_superuser(self, email, password=None, **extra_fields):
@@ -92,32 +92,24 @@ class User(AbstractUser):
         null=True
     )
 
-    is_verified = models.BooleanField(
-        default=False
-    )
+    is_verified = models.BooleanField(default=False)
 
-    created_at = models.DateTimeField(
-        auto_now_add=True
-    )
-
-    updated_at = models.DateTimeField(
-        auto_now=True
-    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     objects = UserManager()
 
     USERNAME_FIELD = "email"
-
-    REQUIRED_FIELDS = [
-        "first_name",
-        "last_name"
-    ]
+    REQUIRED_FIELDS = ["first_name", "last_name"]
 
     class Meta:
         ordering = ["-created_at"]
 
     def __str__(self):
-        return f"{self.get_full_name() or self.email} ({self.get_role_display()})"
+        return (
+            f"{self.get_full_name() or self.email} "
+            f"({self.get_role_display()})"
+        )
 
     @property
     def is_admin_or_staff(self):
@@ -132,14 +124,7 @@ class User(AbstractUser):
 
 
 class Interest(models.Model):
-    """
-    A cause or activity a volunteer can express interest in.
-
-    Examples:
-    - Water Body Revival
-    - Robotics Mentoring
-    - Zero-Waste Drives
-    """
+    """A cause or activity a volunteer can express interest in."""
 
     name = models.CharField(
         max_length=100,
@@ -155,7 +140,6 @@ class Interest(models.Model):
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.name)
-
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -236,19 +220,18 @@ class UserProfile(TimeStampedModel):
 
 
 def generate_otp():
-    """
-    Generate a random 6-digit OTP.
-    """
+    """Generate a random six-digit OTP."""
     return f"{random.randint(0, 999999):06d}"
 
 
 class OTP(models.Model):
 
     PURPOSE_CHOICES = (
-    ("email", "Email"),
-    ("phone", "Phone"),
-    ("login", "Login"),
-)
+        ("email", "Email"),
+        ("phone", "Phone"),
+        ("login", "Login"),
+        ("reset", "Password reset"),
+    )
 
     OTP_VALIDITY_MINUTES = 10
 
@@ -268,13 +251,9 @@ class OTP(models.Model):
         choices=PURPOSE_CHOICES
     )
 
-    created_at = models.DateTimeField(
-        auto_now_add=True
-    )
+    created_at = models.DateTimeField(auto_now_add=True)
 
-    is_used = models.BooleanField(
-        default=False
-    )
+    is_used = models.BooleanField(default=False)
 
     @property
     def is_expired(self):

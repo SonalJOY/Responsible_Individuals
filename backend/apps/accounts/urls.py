@@ -1,3 +1,4 @@
+
 from django.urls import path
 from rest_framework_simplejwt.views import TokenRefreshView
 
@@ -12,11 +13,11 @@ from .views import (
     LoginView,
     LoginOTPVerifyView,
     InterestListView,
+    PasswordResetRequestView,
+    PasswordResetConfirmView,
 )
 
-
 app_name = "accounts"
-
 
 urlpatterns = [
     # Registration
@@ -51,6 +52,19 @@ urlpatterns = [
         "login/verify-otp/",
         LoginOTPVerifyView.as_view(),
         name="login_verify_otp",
+    ),
+
+    # Password reset
+    path(
+        "password-reset/",
+        PasswordResetRequestView.as_view(),
+        name="password_reset",
+    ),
+
+    path(
+        "password-reset/confirm/",
+        PasswordResetConfirmView.as_view(),
+        name="password_reset_confirm",
     ),
 
     # JWT refresh

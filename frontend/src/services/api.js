@@ -1,3 +1,4 @@
+
 import axios from 'axios';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || '/api/v1';
@@ -70,9 +71,6 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
-
-
-
 // ============================================================
 // AUTH SERVICE
 // ============================================================
@@ -89,10 +87,8 @@ export const authService = {
 
     // DO NOT save JWT here.
     // JWT is returned only after login OTP verification.
-
     return res.data;
   },
-
 
   // Login OTP - Step 2
   // Verify the OTP received by email.
@@ -105,7 +101,7 @@ export const authService = {
       }
     );
 
-    // JWT tokens are returned after successful OTP verification
+    // JWT tokens are returned after successful login OTP verification
     if (res.data.access) {
       localStorage.setItem(
         'ri_access_token',
@@ -126,7 +122,6 @@ export const authService = {
     return res.data;
   },
 
-
   // Register
   register: async (userData) => {
     const res = await api.post(
@@ -138,7 +133,6 @@ export const authService = {
     // JWT tokens are received after OTP verification.
     return res.data;
   },
-
 
   // Verify Registration OTP
   verifyOTP: async (identifier, code) => {
@@ -171,7 +165,6 @@ export const authService = {
     return res.data;
   },
 
-
   // Resend Registration OTP
   resendOTP: async (identifier) => {
     const res = await api.post(
@@ -184,6 +177,33 @@ export const authService = {
     return res.data;
   },
 
+  // Request Password Reset OTP
+  requestPasswordReset: async (email) => {
+    const res = await api.post(
+      '/auth/password-reset/',
+      { email }
+    );
+
+    return res.data;
+  },
+
+  // Confirm Password Reset using OTP
+  confirmPasswordReset: async (
+    email,
+    code,
+    newPassword
+  ) => {
+    const res = await api.post(
+      '/auth/password-reset/confirm/',
+      {
+        email,
+        code,
+        new_password: newPassword,
+      }
+    );
+
+    return res.data;
+  },
 
   // Get interests
   getInterests: async () => {
@@ -193,7 +213,6 @@ export const authService = {
 
     return res.data.results || res.data;
   },
-
 
   // Get current user from backend
   getMe: async () => {
@@ -208,7 +227,6 @@ export const authService = {
 
     return res.data;
   },
-
 
   // Logout
   logout: () => {
@@ -225,7 +243,6 @@ export const authService = {
     );
   },
 
-
   // Get currently stored user
   getCurrentUser: () => {
     const userStr = localStorage.getItem(
@@ -237,7 +254,6 @@ export const authService = {
       : null;
   },
 
-
   // Check whether user is logged in
   isLoggedIn: () => {
     return !!localStorage.getItem(
@@ -245,7 +261,6 @@ export const authService = {
     );
   },
 };
-
 
 // ============================================================
 // IMPACT SERVICE
@@ -286,7 +301,6 @@ export const impactService = {
   },
 };
 
-
 // ============================================================
 // PROJECT SERVICE
 // ============================================================
@@ -318,7 +332,6 @@ export const projectService = {
     return res.data.results || res.data;
   },
 };
-
 
 // ============================================================
 // EVENT SERVICE
@@ -353,7 +366,6 @@ export const eventService = {
   },
 };
 
-
 // ============================================================
 // STORY SERVICE
 // ============================================================
@@ -377,7 +389,6 @@ export const storyService = {
     return res.data;
   },
 };
-
 
 // ============================================================
 // GALLERY SERVICE
@@ -403,7 +414,6 @@ export const galleryService = {
   },
 };
 
-
 // ============================================================
 // VOLUNTEER SERVICE
 // ============================================================
@@ -426,44 +436,89 @@ export const volunteerService = {
 
     return res.data.results || res.data;
   },
+
   register: async (registrationData) => {
-    const res = await api.post('/volunteers/register/', registrationData);
+    const res = await api.post(
+      '/volunteers/register/',
+      registrationData
+    );
+
     if (res.data.access) {
-      localStorage.setItem('ri_access_token', res.data.access);
-      localStorage.setItem('ri_refresh_token', res.data.refresh);
-      localStorage.setItem('ri_user', JSON.stringify(res.data.user));
+      localStorage.setItem(
+        'ri_access_token',
+        res.data.access
+      );
+
+      localStorage.setItem(
+        'ri_refresh_token',
+        res.data.refresh
+      );
+
+      localStorage.setItem(
+        'ri_user',
+        JSON.stringify(res.data.user)
+      );
     }
+
     return res.data;
   },
+
   apply: async (applicationData) => {
-    const res = await api.post('/volunteers/apply/', applicationData);
+    const res = await api.post(
+      '/volunteers/apply/',
+      applicationData
+    );
+
     return res.data;
   },
+
   createProfile: async (profileData) => {
     const res = await api.post(
       '/volunteers/profiles/',
       profileData
     );
+
     return res.data;
   },
+
   getMyProfile: async () => {
-    const res = await api.get('/volunteers/my-profile/');
+    const res = await api.get(
+      '/volunteers/my-profile/'
+    );
+
     return res.data;
   },
+
   updateMyProfile: async (profileData) => {
-    const res = await api.patch('/volunteers/my-profile/', profileData);
+    const res = await api.patch(
+      '/volunteers/my-profile/',
+      profileData
+    );
+
     return res.data;
   },
+
   getMyApplications: async () => {
-    const res = await api.get('/volunteers/my-applications/');
+    const res = await api.get(
+      '/volunteers/my-applications/'
+    );
+
     return res.data.results || res.data;
   },
+
   getMyParticipations: async () => {
-    const res = await api.get('/volunteers/my-participations/');
+    const res = await api.get(
+      '/volunteers/my-participations/'
+    );
+
     return res.data.results || res.data;
   },
+
   getCertificates: async () => {
-    const res = await api.get('/volunteers/certificates/');
+    const res = await api.get(
+      '/volunteers/certificates/'
+    );
+
     return res.data.results || res.data;
   },
 };
@@ -471,6 +526,7 @@ export const volunteerService = {
 // ============================================================
 // DONATION SERVICE
 // ============================================================
+
 export const donationService = {
 
   getCampaigns: async () => {
@@ -499,7 +555,6 @@ export const donationService = {
   },
 };
 
-
 // ============================================================
 // PARTNER SERVICE
 // ============================================================
@@ -523,7 +578,6 @@ export const partnerService = {
     return res.data;
   },
 };
-
 
 // ============================================================
 // CAREER SERVICE
@@ -554,7 +608,6 @@ export const careerService = {
   },
 };
 
-
 // ============================================================
 // CONTACT SERVICE
 // ============================================================
@@ -579,7 +632,6 @@ export const contactService = {
     return res.data;
   },
 };
-
 
 // ============================================================
 // ADMIN SERVICE
@@ -651,7 +703,6 @@ export const adminService = {
     return res.data.results || res.data;
   },
 };
-
 
 // ============================================================
 // DEFAULT EXPORT

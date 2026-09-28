@@ -8,6 +8,8 @@ import {
     Lock,
     AlertCircle,
     ArrowRight,
+    CheckCircle2,
+    Circle,
 } from 'lucide-react';
 
 import api from '../../services/api';
@@ -20,6 +22,7 @@ export default function RegisterPage() {
         email: '',
         phone: '',
         password: '',
+        confirmPassword: '',
     });
 
     const [error, setError] = useState('');
@@ -31,6 +34,34 @@ export default function RegisterPage() {
             [e.target.name]: e.target.value,
         });
     };
+
+    // Live password requirement checks
+    const passwordRequirements = [
+        {
+            label: 'At least 12 characters',
+            met: form.password.length >= 12,
+        },
+        {
+            label: 'One uppercase letter',
+            met: /[A-Z]/.test(form.password),
+        },
+        {
+            label: 'One lowercase letter',
+            met: /[a-z]/.test(form.password),
+        },
+        {
+            label: 'One number',
+            met: /[0-9]/.test(form.password),
+        },
+        {
+            label: 'One special character',
+            met: /[^A-Za-z0-9\\s]/.test(form.password),
+        },
+        {
+            label: 'No spaces',
+            met: !/\\s/.test(form.password),
+        },
+    ];
 
     const handleRegister = async (e) => {
         e.preventDefault();
@@ -95,8 +126,13 @@ export default function RegisterPage() {
             return;
         }
 
-        if (form.password.length < 8) {
-            setError('Password must contain at least 8 characters.');
+        if (passwordRequirements.some((requirement) => !requirement.met)) {
+            setError('Please meet all the password requirements.');
+            return;
+        }
+
+        if (form.password !== form.confirmPassword) {
+            setError('Passwords do not match.');
             return;
         }
 
@@ -325,9 +361,9 @@ export default function RegisterPage() {
                                 type="password"
                                 name="password"
                                 required
-                                minLength={8}
+                                minLength={12}
                                 className="form-control"
-                                placeholder="Minimum 8 characters"
+                                placeholder="Create a strong password"
                                 value={form.password}
                                 onChange={handleChange}
                                 disabled={loading}
@@ -335,6 +371,51 @@ export default function RegisterPage() {
 
                         </div>
 
+                        {/* Password Requirements */}
+                        <div className="password-requirements">
+                            <h4>Password Requirements</h4>
+                            <div className="password-requirements-grid">
+                                {passwordRequirements.map((requirement) => (
+                                    <div
+                                        key={requirement.label}
+                                        className={`password-requirement ${requirement.met ? 'met' : ''
+                                            }`}
+                                    >
+                                        {requirement.met ? (
+                                            <CheckCircle2 size={16} />
+                                        ) : (
+                                            <Circle size={16} />
+                                        )}
+                                        <span>{requirement.label}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Confirm Password */}
+                    <div className="form-group">
+                        <label className="form-label">
+                            Confirm Password
+                        </label>
+
+                        <div className="input-icon-wrap">
+                            <Lock
+                                size={16}
+                                className="input-icon"
+                            />
+
+                            <input
+                                type="password"
+                                name="confirmPassword"
+                                required
+                                className="form-control"
+                                placeholder="Re-enter your password"
+                                value={form.confirmPassword}
+                                onChange={handleChange}
+                                disabled={loading}
+                            />
+                        </div>
                     </div>
 
 
@@ -459,6 +540,57 @@ export default function RegisterPage() {
           font-size: 0.75rem;
           color: var(--slate-500);
           margin-top: 0.35rem;
+        }
+
+        .password-requirements {
+          margin-top: 1rem;
+          padding: 1rem;
+          background: #F8FAFC;
+          border: 1px solid #E2E8F0;
+          border-radius: var(--radius-md);
+        }
+
+        .password-requirements h4 {
+          margin: 0 0 0.85rem;
+          color: var(--slate-700);
+          font-size: 0.9rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.03em;
+        }
+
+        .password-requirements-grid {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 0.8rem 1rem;
+        }
+
+        .password-requirement {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          color: var(--slate-500);
+          font-size: 0.8rem;
+          line-height: 1.35;
+        }
+
+        .password-requirement svg {
+          flex-shrink: 0;
+          color: #94A3B8;
+        }
+
+        .password-requirement.met {
+          color: #047857;
+        }
+
+        .password-requirement.met svg {
+          color: #059669;
+        }
+
+        @media (max-width: 480px) {
+          .password-requirements-grid {
+            grid-template-columns: 1fr;
+          }
         }
 
         .register-btn {

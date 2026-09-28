@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 
@@ -26,6 +27,7 @@ import LoginPage from '../pages/Auth/LoginPage';
 import RegisterPage from '../pages/Auth/RegisterPage';
 import VerifyOTPPage from '../pages/Auth/VerifyOTPPage';
 import LoginOTPPage from '../pages/Auth/LoginOTPPage';
+import ForgotPasswordPage from '../pages/Auth/ForgotPasswordPage';
 
 // Admin Pages
 import AdminDashboard from '../pages/Admin/AdminDashboard';
@@ -62,7 +64,12 @@ export default function AppRoutes() {
         <Route path="events" element={<EventsPage />} />
 
         <Route path="stories" element={<StoriesPage />} />
-        <Route path="stories/:slug" element={<StoryDetailPage />} />
+
+        <Route
+          path="stories/:slug"
+          element={<StoryDetailPage />}
+        />
+
         <Route path="gallery" element={<GalleryPage />} />
 
         <Route path="partners" element={<PartnersPage />} />
@@ -89,12 +96,18 @@ export default function AppRoutes() {
           path="verify-otp"
           element={<VerifyOTPPage />}
         />
+
         <Route
           path="login-otp"
           element={<LoginOTPPage />}
         />
-      </Route>
 
+        <Route
+          path="forgot-password"
+          element={<ForgotPasswordPage />}
+        />
+
+      </Route>
 
       {/* =========================
           ADMIN ROUTES
@@ -126,7 +139,6 @@ export default function AppRoutes() {
         />
 
       </Route>
-
 
       {/* =========================
           FALLBACK

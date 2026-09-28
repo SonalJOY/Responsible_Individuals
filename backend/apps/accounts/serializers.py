@@ -577,3 +577,86 @@ class LoginOTPSerializer(serializers.Serializer):
         )
 
         return user
+
+
+class PasswordResetRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+    def validate_email(self, value):
+        return value.strip().lower()
+
+    def save(self):
+        email = self.validated_data["email"]
+
+        user = User.objects.filter(
+            email__iexact=email,
+            is_active=True
+        ).first()
+
+        # Return the same response even if the email
+        # does not belong to an active account.
+        if user:
+            # Invalidate previous unused reset codes.
+            user.otps.filter(
+                purpose="reset",
+                is_used=False
+            ).update(is_used=True)
+
+            otp = OTP.objects.create(
+                user=user,
+                purpose="reset"
+            )
+
+            send_email_otp(user, otp.code)
+
+
+class PasswordResetConfirmSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    code = serializers.CharField(min_length=6, max_length=6)
+    new_password = serializers.CharField(
+        write_only=True,
+        validators=[validate_password]
+    )
+
+    def validate(self, attrs):
+        email = attrs["email"].strip()
+        code = attrs["code"].strip()
+
+        try:
+            user = User.objects.get(
+                email__iexact=email,
+                is_active=True
+            )
+        except User.DoesNotExist:
+            raise serializers.ValidationError(
+                "Invalid or expired reset code."
+            )
+
+        otp = user.otps.filter(
+            purpose="reset",
+            is_used=False,
+            code=code
+        ).order_by("-created_at").first()
+
+        if not otp or otp.is_expired:
+            raise serializers.ValidationError(
+                "Invalid or expired reset code."
+            )
+
+        attrs["user"] = user
+        attrs["otp"] = otp
+        return attrs
+
+    def save(self):
+        user = self.validated_data["user"]
+        otp = self.validated_data["otp"]
+
+        user.set_password(
+            self.validated_data["new_password"]
+        )
+        user.save(update_fields=["password"])
+
+        otp.is_used = True
+        otp.save(update_fields=["is_used"])
+
+        return user

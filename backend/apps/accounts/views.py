@@ -17,6 +17,8 @@ from .serializers import (
     ResendOTPSerializer,
     LoginSerializer,
     LoginOTPSerializer,
+    PasswordResetRequestSerializer,
+    PasswordResetConfirmSerializer,
 )
 from .permissions import IsAdminUserOrStaff
 
@@ -404,4 +406,43 @@ class UserListAdminView(APIView):
         return Response(
             serializer.data,
             status=status.HTTP_200_OK,
+        )
+
+
+class PasswordResetRequestView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = PasswordResetRequestSerializer(
+            data=request.data
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(
+            {
+                "message": (
+                    "If an active account exists for this "
+                    "email, a password reset code has been sent."
+                )
+            },
+            status=status.HTTP_200_OK
+        )
+
+
+class PasswordResetConfirmView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = PasswordResetConfirmSerializer(
+            data=request.data
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(
+            {
+                "message": "Password reset successfully. You can now log in."
+            },
+            status=status.HTTP_200_OK
         )
