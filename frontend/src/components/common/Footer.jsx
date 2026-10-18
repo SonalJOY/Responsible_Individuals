@@ -87,7 +87,7 @@ export default function Footer() {
 
             {subscribed ? (
               <div className="subscribe-success">
-                <CheckCircle2 size={18} color="#10B981" />
+                <CheckCircle2 size={18} color="var(--primary-saffron, #F97316)" />
                 <span>Thank you for subscribing!</span>
               </div>
             ) : (
@@ -137,10 +137,10 @@ export default function Footer() {
 
       <style>{`
         .footer-editorial-root {
-          background: #0C1210;
+          background: #0F172A;
           color: #94A3B8;
           padding: 5.5rem 0 2.5rem 0;
-          border-top: 1px solid #1C2723;
+          border-top: 1px solid #1E293B;
         }
         .footer-grid {
           display: grid;
@@ -190,14 +190,14 @@ export default function Footer() {
         .footer-subtitle {
           font-size: 0.68rem;
           font-weight: 700;
-          color: #10B981;
+          color: var(--primary-saffron, #F59E0B);
           letter-spacing: 0.12em;
         }
         .footer-desc {
           font-size: 0.9rem;
           line-height: 1.65;
           margin-bottom: 1.5rem;
-          color: #9DB0A7;
+          color: #94A3B8;
         }
         .tax-exemption-tag {
           display: flex;
@@ -211,8 +211,8 @@ export default function Footer() {
           border: 1px solid rgba(255, 255, 255, 0.08);
         }
         .tax-badge {
-          background: #10B981;
-          color: #042F1A;
+          background: var(--primary-saffron, #F59E0B);
+          color: #FFFFFF;
           font-size: 0.7rem;
           font-weight: 800;
           padding: 0.15rem 0.5rem;
@@ -232,18 +232,18 @@ export default function Footer() {
           gap: 0.75rem;
         }
         .footer-links a {
-          color: #9DB0A7;
+          color: #94A3B8;
           font-size: 0.925rem;
           transition: color var(--transition-fast);
         }
         .footer-links a:hover {
-          color: #10B981;
+          color: var(--primary-saffron, #F59E0B);
         }
         .footer-newsletter-text {
           font-size: 0.875rem;
           margin-bottom: 1rem;
           line-height: 1.55;
-          color: #9DB0A7;
+          color: #94A3B8;
         }
         .newsletter-form {
           display: flex;
@@ -253,15 +253,15 @@ export default function Footer() {
         .newsletter-input {
           width: 100%;
           padding: 0.75rem 3rem 0.75rem 1.15rem;
-          background: #15201C;
-          border: 1px solid #273630;
+          background: #1E293B;
+          border: 1px solid #334155;
           border-radius: var(--radius-pill);
           color: #FFFFFF;
           font-size: 0.875rem;
         }
         .newsletter-input:focus {
           outline: none;
-          border-color: #10B981;
+          border-color: var(--primary-saffron, #F59E0B);
         }
         .newsletter-btn {
           position: absolute;
@@ -269,8 +269,8 @@ export default function Footer() {
           top: 4px;
           bottom: 4px;
           width: 38px;
-          background: #10B981;
-          color: #042F1A;
+          background: var(--primary-saffron, #F59E0B);
+          color: #FFFFFF;
           border: none;
           border-radius: var(--radius-pill);
           cursor: pointer;
@@ -280,14 +280,14 @@ export default function Footer() {
           transition: background var(--transition-fast);
         }
         .newsletter-btn:hover {
-          background: #059669;
+          background: var(--primary-saffron-hover, #D97706);
           color: #FFFFFF;
         }
         .subscribe-success {
           display: flex;
           align-items: center;
           gap: 0.5rem;
-          color: #10B981;
+          color: var(--primary-saffron, #F59E0B);
           font-size: 0.875rem;
           font-weight: 600;
           margin-bottom: 1.5rem;
@@ -302,18 +302,18 @@ export default function Footer() {
           display: flex;
           align-items: center;
           gap: 0.6rem;
-          color: #9DB0A7;
+          color: #94A3B8;
         }
         .footer-bottom {
           margin-top: 4.5rem;
           padding-top: 1.75rem;
-          border-top: 1px solid #1C2723;
+          border-top: 1px solid #1E293B;
           display: flex;
           flex-direction: column;
           gap: 1.25rem;
           align-items: center;
           font-size: 0.825rem;
-          color: #6E8278;
+          color: #64748B;
         }
         @media (min-width: 768px) {
           .footer-bottom {
@@ -326,7 +326,7 @@ export default function Footer() {
           gap: 1.5rem;
         }
         .footer-bottom-links a {
-          color: #6E8278;
+          color: #64748B;
           transition: color var(--transition-fast);
         }
         .footer-bottom-links a:hover {
@@ -338,7 +338,7 @@ export default function Footer() {
           gap: 0.4rem;
           background: rgba(255, 255, 255, 0.05);
           border: 1px solid rgba(255, 255, 255, 0.1);
-          color: #9DB0A7;
+          color: #94A3B8;
           padding: 0.35rem 0.85rem;
           border-radius: var(--radius-pill);
           cursor: pointer;
@@ -347,9 +347,9 @@ export default function Footer() {
           transition: all var(--transition-fast);
         }
         .back-to-top-btn:hover {
-          background: rgba(16, 185, 129, 0.2);
-          color: #34D399;
-          border-color: rgba(16, 185, 129, 0.3);
+          background: rgba(245, 158, 11, 0.18);
+          color: var(--primary-saffron, #F59E0B);
+          border-color: rgba(245, 158, 11, 0.35);
         }
       `}</style>
     </footer>

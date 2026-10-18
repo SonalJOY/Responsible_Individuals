@@ -45,7 +45,7 @@ const JOURNEY_STEPS = [
     description: 'Borewell groundwater recharged by 45ft, student STEM pass rates surging to 78%, and self-sustaining citizen committees managing the site.',
     metric: '+45ft Borewell Recharge • 78% Pass Rate',
     icon: Award,
-    color: '#10B981',
+    color: '#0EA5E9',
     image: 'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&w=1000&q=80',
   },
 ];
@@ -448,14 +448,14 @@ export default function StoryJourney() {
         }
 
         .text-emerald {
-          color: #10B981;
+          color: var(--primary-saffron, #F97316);
         }
 
         .journey-title {
           font-family: var(--font-heading, "Cabinet Grotesk", sans-serif);
           font-size: clamp(2.3rem, 3.8vw, 3.4rem);
           font-weight: 800;
-          color: var(--charcoal-900, #08291F);
+          color: var(--text-primary, #0F172A);
           letter-spacing: -0.025em;
           line-height: 1.15;
           margin-bottom: 1.15rem;
@@ -500,10 +500,10 @@ export default function StoryJourney() {
           height: 480px;
           background: #FFFFFF;
           background-color: #FFFFFF;
-          border: 1px solid rgba(15, 76, 58, 0.12);
+          border: 1px solid var(--border-subtle, #E2E8F0);
           border-radius: 28px;
           overflow: hidden;
-          box-shadow: 0 20px 45px rgba(8, 41, 31, 0.08);
+          box-shadow: 0 20px 45px rgba(15, 23, 42, 0.08);
           display: flex;
           flex-direction: column;
           justify-content: space-between;
@@ -512,8 +512,8 @@ export default function StoryJourney() {
         }
 
         .journey-carousel-card:hover {
-          border-color: rgba(16, 185, 129, 0.4);
-          box-shadow: 0 25px 55px rgba(8, 41, 31, 0.14);
+          border-color: rgba(245, 158, 11, 0.4);
+          box-shadow: 0 25px 55px rgba(15, 23, 42, 0.12);
         }
 
         /* 45-50% Height Image Header (z-index: 22) */
@@ -522,7 +522,7 @@ export default function StoryJourney() {
           z-index: 22;
           width: 100%;
           height: 230px;
-          background: #08291F;
+          background: #0F172A;
           overflow: hidden;
         }
 
@@ -541,7 +541,7 @@ export default function StoryJourney() {
         .card-image-gradient-overlay {
           position: absolute;
           inset: 0;
-          background: linear-gradient(180deg, rgba(8, 41, 31, 0.25) 0%, rgba(8, 41, 31, 0.7) 100%);
+          background: linear-gradient(180deg, rgba(15, 23, 42, 0.2) 0%, rgba(15, 23, 42, 0.7) 100%);
           pointer-events: none;
         }
 
@@ -552,7 +552,7 @@ export default function StoryJourney() {
           display: inline-flex;
           align-items: center;
           gap: 0.5rem;
-          background: rgba(8, 41, 31, 0.75);
+          background: rgba(15, 23, 42, 0.75);
           backdrop-filter: blur(8px);
           -webkit-backdrop-filter: blur(8px);
           border: 1px solid;
@@ -600,7 +600,7 @@ export default function StoryJourney() {
           font-family: var(--font-heading, "Cabinet Grotesk", sans-serif);
           font-size: 1.45rem;
           font-weight: 800;
-          color: var(--charcoal-900, #08291F);
+          color: var(--text-primary, #0F172A);
           line-height: 1.28;
           margin-bottom: 0.75rem;
         }
@@ -617,13 +617,13 @@ export default function StoryJourney() {
           display: inline-flex;
           align-items: center;
           gap: 0.6rem;
-          background: rgba(15, 76, 58, 0.05);
-          border: 1px solid rgba(15, 76, 58, 0.1);
+          background: rgba(245, 158, 11, 0.08);
+          border: 1px solid rgba(245, 158, 11, 0.2);
           padding: 0.5rem 1rem;
           border-radius: var(--radius-pill, 9999px);
           font-size: 0.8rem;
           font-weight: 700;
-          color: var(--charcoal-800, #08291F);
+          color: var(--text-primary, #0F172A);
         }
 
         .metric-chip-dot {
@@ -649,22 +649,22 @@ export default function StoryJourney() {
           height: 44px;
           border-radius: var(--radius-pill, 9999px);
           background: #FFFFFF;
-          border: 1px solid var(--border-subtle, #E8E2D6);
-          color: var(--charcoal-900, #08291F);
+          border: 1px solid var(--border-subtle, #E2E8F0);
+          color: var(--text-primary, #0F172A);
           display: flex;
           align-items: center;
           justify-content: center;
           cursor: pointer;
-          box-shadow: 0 4px 12px rgba(8, 41, 31, 0.06);
+          box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
           transition: all 0.2s ease;
         }
 
         .carousel-nav-arrow:hover {
-          background: #10B981;
+          background: var(--primary-saffron, #F59E0B);
           color: #FFFFFF;
-          border-color: #10B981;
+          border-color: var(--primary-saffron, #F59E0B);
           transform: translateY(-2px);
-          box-shadow: 0 8px 18px rgba(16, 185, 129, 0.35);
+          box-shadow: 0 8px 18px rgba(245, 158, 11, 0.35);
         }
 
         .carousel-dots-wrap {
@@ -677,7 +677,7 @@ export default function StoryJourney() {
           width: 10px;
           height: 10px;
           border-radius: 9999px;
-          background: rgba(15, 76, 58, 0.2);
+          background: rgba(15, 23, 42, 0.2);
           border: none;
           padding: 0;
           cursor: pointer;
@@ -686,9 +686,9 @@ export default function StoryJourney() {
 
         .carousel-dot.active {
           width: 32px;
-          background: #10B981;
+          background: var(--primary-saffron, #F59E0B);
           border-radius: 9999px;
-          box-shadow: 0 2px 10px rgba(16, 185, 129, 0.4);
+          box-shadow: 0 2px 10px rgba(245, 158, 11, 0.4);
         }
 
         @media (max-width: 640px) {

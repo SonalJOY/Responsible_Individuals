@@ -226,7 +226,7 @@ export default function VerifyOTPPage() {
 
                         <ShieldCheck
                             size={28}
-                            color="#10B981"
+                            color="var(--primary-saffron, #F97316)"
                         />
 
                     </div>
@@ -415,7 +415,7 @@ export default function VerifyOTPPage() {
           width: 52px;
           height: 52px;
           border-radius: var(--radius-md);
-          background: #ECFDF5;
+          background: #FFF7ED;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -440,7 +440,7 @@ export default function VerifyOTPPage() {
 
 
         .verify-identifier {
-          color: #047857;
+          color: var(--primary-saffron, #F97316);
           font-size: 0.9rem;
           word-break: break-word;
         }
@@ -464,13 +464,13 @@ export default function VerifyOTPPage() {
           display: flex;
           align-items: center;
           gap: 0.5rem;
-          background: #ECFDF5;
-          color: #047857;
+          background: #FFF7ED;
+          color: var(--primary-saffron, #F97316);
           padding: 0.75rem 1rem;
           border-radius: var(--radius-md);
           font-size: 0.85rem;
           margin-bottom: 1.5rem;
-          border: 1px solid #6EE7B7;
+          border: 1px solid #FED7AA;
         }
 
 
@@ -520,13 +520,14 @@ export default function VerifyOTPPage() {
         .resend-btn {
           border: none;
           background: transparent;
-          color: #047857;
+          color: var(--primary-saffron, #F97316);
           font-weight: 700;
           cursor: pointer;
         }
 
 
         .resend-btn:hover {
+          color: #EA580C;
           text-decoration: underline;
         }
 
@@ -553,7 +554,7 @@ export default function VerifyOTPPage() {
 
 
         .back-register-link:hover {
-          color: #047857;
+          color: var(--primary-saffron, #F97316);
           text-decoration: underline;
         }
 

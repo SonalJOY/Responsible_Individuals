@@ -1,23 +1,46 @@
 :root {
-  /* Brand Primary Colors */
-  --primary-900: #08291F;
-  --primary-800: #0F4C3A;
-  --primary-700: #14634C;
-  --primary-600: #059669;
-  --primary-500: #10B981;
-  --primary-400: #34D399;
-  --primary-100: #D1FAE5;
-  --primary-50: #ECFDF5;
+  /* Centralized Global Palette Tokens */
+  --primary-saffron: #F59E0B;
+  --primary-saffron-hover: #D97706;
+  --primary-saffron-dark: #B45309;
+  --primary-saffron-light: #FDE68A;
+  --primary-saffron-50: #FFF7ED;
+
+  --secondary-light-blue: #7DD3FC;
+  --secondary-light-blue-hover: #38BDF8;
+  --secondary-blue-light: #F0F9FF;
+  --secondary-blue-100: #E0F2FE;
+  --secondary-blue-200: #BAE6FD;
+
+  --background: #FFFFFF;
+  --background-soft: #F8FAFC;
+  --surface-blue: #F0F9FF;
+  --surface-saffron: #FFF7ED;
+  --surface: #FFFFFF;
+  --text-primary: #0F172A;
+  --text-secondary: #475569;
+  --border: #E2E8F0;
+  --accent: #7DD3FC;
+
+  /* Brand Primary Colors (Saffron Palette) */
+  --primary-900: #78350F;
+  --primary-800: #92400E;
+  --primary-700: #B45309;
+  --primary-600: #D97706;
+  --primary-500: #F59E0B;
+  --primary-400: #FBBF24;
+  --primary-100: #FEF3C7;
+  --primary-50: #FFF7ED;
 
   /* Accent Tones */
   --accent-amber: #F59E0B;
   --accent-amber-light: #FEF3C7;
-  --accent-blue: #2563EB;
-  --accent-blue-light: #EFF6FF;
+  --accent-blue: #7DD3FC;
+  --accent-blue-light: #F0F9FF;
   --accent-rose: #E11D48;
   --accent-rose-light: #FFE4E6;
   --accent-violet: #7C3AED;
-  --accent-teal: #0D9488;
+  --accent-teal: #7DD3FC;
 
   /* Neutral Slate Palette */
   --slate-950: #090D16;
@@ -34,28 +57,28 @@
   --slate-50: #F8FAFC;
   --white: #FFFFFF;
 
-  /* Editorial Warm Palette (HopeRise Inspired) */
-  --cream-50: #FDFBF7;
-  --cream-100: #F7F3EB;
-  --cream-200: #EFE9DD;
-  --cream-300: #E4DAC9;
-  --cream-400: #D2C4AE;
-  --charcoal-950: #0C1210;
-  --charcoal-900: #121816;
-  --charcoal-800: #1A2320;
-  --charcoal-700: #273530;
-  --charcoal-600: #3D4E47;
+  /* Neutral & Off-White Palette */
+  --cream-50: #F8FAFC;
+  --cream-100: #F1F5F9;
+  --cream-200: #E2E8F0;
+  --cream-300: #CBD5E1;
+  --cream-400: #94A3B8;
+  --charcoal-950: #0B0F19;
+  --charcoal-900: #0F172A;
+  --charcoal-800: #1E293B;
+  --charcoal-700: #334155;
+  --charcoal-600: #475569;
 
   /* Semantic Variables */
-  --bg-main: var(--cream-50);
-  --bg-cream: var(--cream-100);
+  --bg-main: var(--background-soft, #F8FAFC);
+  --bg-cream: var(--surface-blue, #F0F9FF);
   --bg-card: #FFFFFF;
-  --bg-card-alt: var(--cream-200);
-  --text-main: var(--charcoal-900);
-  --text-muted: #5C6E67;
-  --text-light: #8A9E96;
-  --border-subtle: #E8E2D6;
-  --border-focus: #10B981;
+  --bg-card-alt: var(--surface-saffron, #FFF7ED);
+  --text-main: var(--text-primary, #0F172A);
+  --text-muted: var(--text-secondary, #475569);
+  --text-light: #64748B;
+  --border-subtle: var(--border, #E2E8F0);
+  --border-focus: var(--primary-saffron, #F59E0B);
 
   /* Typography */
   --font-heading: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -66,11 +89,11 @@
   --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08);
   --shadow-lg: 0 10px 30px rgba(15, 23, 42, 0.12);
   --shadow-xl: 0 20px 40px rgba(15, 23, 42, 0.16);
-  --shadow-primary: 0 8px 24px rgba(16, 185, 129, 0.25);
+  --shadow-primary: 0 8px 24px rgba(245, 158, 11, 0.28);
 
   --glass-bg: rgba(255, 255, 255, 0.85);
   --glass-border: rgba(255, 255, 255, 0.6);
-  --glass-shadow: 0 8px 32px 0 rgba(15, 76, 58, 0.08);
+  --glass-shadow: 0 8px 32px 0 rgba(125, 211, 252, 0.12);
 
   /* Transitions */
   --transition-fast: 0.18s cubic-bezier(0.16, 1, 0.3, 1);

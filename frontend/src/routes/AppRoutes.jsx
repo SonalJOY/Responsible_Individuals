@@ -1,43 +1,45 @@
 
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
+import GlobalPreloader from '../components/common/GlobalPreloader';
 
 // Layouts
 import PublicLayout from '../layouts/PublicLayout';
 import AdminLayout from '../layouts/AdminLayout';
 
-// Public Pages
-import HomePage from '../pages/Home/HomePage';
-import AboutPage from '../pages/About/AboutPage';
-import ProjectsPage from '../pages/Projects/ProjectsPage';
-import ProjectDetailPage from '../pages/Projects/ProjectDetailPage';
-import ImpactPage from '../pages/Impact/ImpactPage';
-import VolunteerPage from '../pages/Volunteer/VolunteerPage';
-import DonatePage from '../pages/Donate/DonatePage';
-import EventsPage from '../pages/Events/EventsPage';
-import StoriesPage from '../pages/Stories/StoriesPage';
-import StoryDetailPage from '../pages/Stories/StoryDetailPage';
-import GalleryPage from '../pages/Gallery/GalleryPage';
-import PartnersPage from '../pages/Partners/PartnersPage';
-import CareersPage from '../pages/Careers/CareersPage';
-import ContactPage from '../pages/Contact/ContactPage';
+// Public Pages (Lazy Loaded for route chunk preloading)
+const HomePage = lazy(() => import('../pages/Home/HomePage'));
+const AboutPage = lazy(() => import('../pages/About/AboutPage'));
+const ProjectsPage = lazy(() => import('../pages/Projects/ProjectsPage'));
+const ProjectDetailPage = lazy(() => import('../pages/Projects/ProjectDetailPage'));
+const ImpactPage = lazy(() => import('../pages/Impact/ImpactPage'));
+const VolunteerPage = lazy(() => import('../pages/Volunteer/VolunteerPage'));
+const DonatePage = lazy(() => import('../pages/Donate/DonatePage'));
+const EventsPage = lazy(() => import('../pages/Events/EventsPage'));
+const StoriesPage = lazy(() => import('../pages/Stories/StoriesPage'));
+const StoryDetailPage = lazy(() => import('../pages/Stories/StoryDetailPage'));
+const GalleryPage = lazy(() => import('../pages/Gallery/GalleryPage'));
+const PartnersPage = lazy(() => import('../pages/Partners/PartnersPage'));
+const CareersPage = lazy(() => import('../pages/Careers/CareersPage'));
+const ContactPage = lazy(() => import('../pages/Contact/ContactPage'));
 
 // Authentication Pages
-import LoginPage from '../pages/Auth/LoginPage';
-import RegisterPage from '../pages/Auth/RegisterPage';
-import VerifyOTPPage from '../pages/Auth/VerifyOTPPage';
-import LoginOTPPage from '../pages/Auth/LoginOTPPage';
-import ForgotPasswordPage from '../pages/Auth/ForgotPasswordPage';
+const LoginPage = lazy(() => import('../pages/Auth/LoginPage'));
+const RegisterPage = lazy(() => import('../pages/Auth/RegisterPage'));
+const VerifyOTPPage = lazy(() => import('../pages/Auth/VerifyOTPPage'));
+const LoginOTPPage = lazy(() => import('../pages/Auth/LoginOTPPage'));
+const ForgotPasswordPage = lazy(() => import('../pages/Auth/ForgotPasswordPage'));
 
 // Admin Pages
-import AdminDashboard from '../pages/Admin/AdminDashboard';
-import AdminVolunteers from '../pages/Admin/AdminVolunteers';
-import AdminDonations from '../pages/Admin/AdminDonations';
-import AdminEnquiries from '../pages/Admin/AdminEnquiries';
+const AdminDashboard = lazy(() => import('../pages/Admin/AdminDashboard'));
+const AdminVolunteers = lazy(() => import('../pages/Admin/AdminVolunteers'));
+const AdminDonations = lazy(() => import('../pages/Admin/AdminDonations'));
+const AdminEnquiries = lazy(() => import('../pages/Admin/AdminEnquiries'));
 
 export default function AppRoutes() {
   return (
-    <Routes>
+    <Suspense fallback={<GlobalPreloader isLoading={true} isExiting={false} message="Loading page..." />}>
+      <Routes>
 
       {/* =========================
           PUBLIC ROUTES
@@ -150,5 +152,6 @@ export default function AppRoutes() {
       />
 
     </Routes>
+    </Suspense>
   );
 }

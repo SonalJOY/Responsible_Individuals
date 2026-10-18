@@ -44,7 +44,7 @@ export default function GalleryCard({ item, index, onClick, isVisible }) {
             style={{
               width: '100%',
               height: '100%',
-              background: item.fallbackGradient || 'linear-gradient(135deg, #064E3B 0%, #0F172A 100%)',
+              background: item.fallbackGradient || 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -54,7 +54,7 @@ export default function GalleryCard({ item, index, onClick, isVisible }) {
               textAlign: 'center'
             }}
           >
-            <Leaf size={38} style={{ color: item.themeColor || '#34D399', marginBottom: '0.5rem' }} />
+            <Leaf size={38} style={{ color: item.themeColor || '#7DD3FC', marginBottom: '0.5rem' }} />
             <span style={{ fontSize: '0.85rem', fontWeight: 700, opacity: 0.9 }}>{item.category}</span>
           </div>
         )}
@@ -64,7 +64,7 @@ export default function GalleryCard({ item, index, onClick, isVisible }) {
         <div className="gallery-card-badge-container">
           <span
             className="gallery-card-tag"
-            style={{ backgroundColor: item.themeColor || '#0D9488' }}
+            style={{ backgroundColor: item.themeColor || '#F59E0B' }}
           >
             {item.category}
           </span>
@@ -87,7 +87,7 @@ export default function GalleryCard({ item, index, onClick, isVisible }) {
         <h3 className="gallery-card-title">{item.title}</h3>
 
         <div className="gallery-card-meta">
-          <MapPin size={13} style={{ color: item.themeColor || '#0D9488' }} />
+          <MapPin size={13} style={{ color: item.themeColor || '#F59E0B' }} />
           <span>{item.location}</span>
         </div>
       </div>

@@ -139,7 +139,7 @@ export default function LoginPage() {
           <div className="login-logo-wrap">
             <ShieldCheck
               size={28}
-              color="#10B981"
+              color="var(--primary-saffron, #F97316)"
             />
           </div>
 
@@ -278,7 +278,7 @@ export default function LoginPage() {
           width: 52px;
           height: 52px;
           border-radius: var(--radius-md);
-          background: #ECFDF5;
+          background: #FFF7ED;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -336,14 +336,14 @@ export default function LoginPage() {
         }
 
         .forgot-password-login-link a {
-          color: #059669;
+          color: var(--primary-saffron, #F97316);
           font-size: 0.875rem;
           font-weight: 600;
           text-decoration: none;
         }
 
         .forgot-password-login-link a:hover {
-          color: #047857;
+          color: #EA580C;
           text-decoration: underline;
         }
 
@@ -364,12 +364,13 @@ export default function LoginPage() {
         }
 
         .register-link {
-          color: #047857;
+          color: var(--primary-saffron, #F97316);
           font-weight: 700;
           text-decoration: none;
         }
 
         .register-link:hover {
+          color: #EA580C;
           text-decoration: underline;
         }
       `}</style>

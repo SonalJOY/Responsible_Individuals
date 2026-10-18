@@ -15,7 +15,7 @@ export default function LatestUpdates() {
       desc: 'Join 250 volunteers for our flagship monsoon plantation drive. We will install 800 native tree saplings and bio-mulch root beds along the shoreline.',
       registered: 142,
       capacity: 250,
-      gradient: 'linear-gradient(135deg, #091712 0%, #0F4C3A 60%, #10B981 100%)',
+      gradient: 'linear-gradient(135deg, #0F172A 0%, #1E293B 60%, #B45309 100%)',
     },
     {
       id: 2,
@@ -68,7 +68,7 @@ export default function LatestUpdates() {
         <div className="updates-header-row">
           <div>
             <div className="updates-badge">
-              <Sparkles size={14} className="text-emerald" />
+              <Sparkles size={14} className="text-accent" />
               <span>Ground Engagements</span>
             </div>
             <h2 className="updates-title">Latest Updates & Volunteer Drives</h2>
@@ -101,7 +101,7 @@ export default function LatestUpdates() {
 
             <div className="featured-update-info">
               <div className="update-venue-line">
-                <MapPin size={14} color="#059669" />
+                <MapPin size={14} color="var(--primary-saffron, #F97316)" />
                 <span>{featuredUpdate.location}</span>
                 <span className="time-tag">• {featuredUpdate.time}</span>
               </div>
@@ -114,7 +114,7 @@ export default function LatestUpdates() {
 
               <div className="featured-update-bottom">
                 <div className="attendance-chip">
-                  <Users size={14} color="#059669" />
+                  <Users size={14} color="var(--secondary-light-blue, #0EA5E9)" />
                   <span><strong>{featuredUpdate.registered}</strong> of {featuredUpdate.capacity} registered</span>
                 </div>
 
@@ -248,18 +248,19 @@ export default function LatestUpdates() {
           }
         }
         .featured-update-card {
-          background: var(--cream-50);
-          border: 1px solid var(--border-subtle);
-          border-radius: 32px;
+          background: #FFFFFF;
+          border: 1px solid var(--border-subtle, #E2E8F0);
+          border-radius: 28px;
           overflow: hidden;
-          box-shadow: var(--shadow-sm);
+          box-shadow: 0 16px 40px rgba(15, 23, 42, 0.08), 0 2px 6px rgba(15, 23, 42, 0.04);
           display: flex;
           flex-direction: column;
-          transition: transform var(--transition-normal);
+          transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.28s ease;
         }
         .featured-update-card:hover {
-          transform: translateY(-4px);
-          box-shadow: 0 20px 45px rgba(8, 41, 31, 0.1);
+          transform: translateY(-5px);
+          box-shadow: 0 24px 55px rgba(15, 23, 42, 0.12), 0 6px 16px rgba(15, 23, 42, 0.05);
+          border-color: rgba(249, 115, 22, 0.35);
         }
         .featured-update-art {
           height: 260px;
@@ -275,26 +276,26 @@ export default function LatestUpdates() {
           color: white;
         }
         .featured-pill {
-          background: rgba(0, 0, 0, 0.4);
+          background: rgba(0, 0, 0, 0.45);
           backdrop-filter: blur(8px);
-          border: 1px solid rgba(255, 255, 255, 0.2);
+          border: 1px solid rgba(255, 255, 255, 0.25);
           color: #FFFFFF;
           font-size: 0.75rem;
           font-weight: 800;
-          padding: 0.35rem 0.85rem;
+          padding: 0.35rem 0.95rem;
           border-radius: var(--radius-pill);
         }
         .event-meta-pill {
           display: flex;
           align-items: center;
           gap: 0.35rem;
-          background: rgba(0, 0, 0, 0.4);
+          background: rgba(0, 0, 0, 0.45);
           backdrop-filter: blur(8px);
-          border: 1px solid rgba(255, 255, 255, 0.2);
+          border: 1px solid rgba(255, 255, 255, 0.25);
           color: #E2E8F0;
           font-size: 0.75rem;
           font-weight: 600;
-          padding: 0.35rem 0.85rem;
+          padding: 0.35rem 0.95rem;
           border-radius: var(--radius-pill);
         }
         .featured-update-info {
@@ -308,11 +309,11 @@ export default function LatestUpdates() {
           align-items: center;
           gap: 0.4rem;
           font-size: 0.825rem;
-          color: var(--text-muted);
+          color: var(--text-secondary, #64748B);
           margin-bottom: 0.75rem;
         }
         .time-tag {
-          color: var(--charcoal-700);
+          color: var(--text-primary, #0F172A);
           font-weight: 600;
         }
         .featured-update-heading {
@@ -320,15 +321,15 @@ export default function LatestUpdates() {
           font-size: 1.75rem;
           font-weight: 800;
           line-height: 1.3;
-          color: var(--charcoal-900);
+          color: var(--text-primary, #0F172A);
           margin-bottom: 1rem;
         }
         .featured-update-heading a:hover {
-          color: #059669;
+          color: var(--primary-saffron, #F97316);
         }
         .featured-update-desc {
           font-size: 1rem;
-          color: var(--text-muted);
+          color: var(--text-secondary, #475569);
           line-height: 1.6;
           margin-bottom: 2rem;
           flex: 1;
@@ -340,32 +341,33 @@ export default function LatestUpdates() {
           justify-content: space-between;
           gap: 1rem;
           padding-top: 1.5rem;
-          border-top: 1px solid var(--border-subtle);
+          border-top: 1px solid var(--border-subtle, #E2E8F0);
         }
         .attendance-chip {
           display: flex;
           align-items: center;
           gap: 0.4rem;
           font-size: 0.85rem;
-          color: var(--charcoal-800);
+          color: var(--text-primary, #0F172A);
         }
         .btn-register-drive {
           display: inline-flex;
           align-items: center;
           gap: 0.5rem;
-          background: #10B981;
-          color: #042F1A;
+          background: var(--primary-saffron, #F97316);
+          color: #FFFFFF;
           font-weight: 700;
           font-size: 0.95rem;
           padding: 0.75rem 1.5rem;
           border-radius: var(--radius-pill);
-          box-shadow: 0 8px 20px rgba(16, 185, 129, 0.25);
+          box-shadow: 0 4px 14px rgba(249, 115, 22, 0.28);
           transition: all var(--transition-fast);
         }
         .btn-register-drive:hover {
-          background: #059669;
+          background: var(--primary-saffron-hover, #EA580C);
           color: #FFFFFF;
           transform: translateY(-2px);
+          box-shadow: 0 6px 18px rgba(234, 88, 12, 0.35);
         }
         .supporting-updates-stack {
           display: flex;
@@ -373,19 +375,20 @@ export default function LatestUpdates() {
           gap: 1.25rem;
         }
         .supporting-update-item {
-          background: var(--cream-50);
-          border: 1px solid var(--border-subtle);
-          border-radius: 24px;
+          background: #FFFFFF;
+          border: 1px solid var(--border-subtle, #E2E8F0);
+          border-radius: 20px;
           padding: 1.75rem;
           display: flex;
           flex-direction: column;
-          transition: all var(--transition-fast);
+          box-shadow: 0 4px 18px rgba(15, 23, 42, 0.05);
+          transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.28s ease;
         }
         .supporting-update-item:hover {
           background: #FFFFFF;
-          border-color: #10B981;
-          transform: translateY(-2px);
-          box-shadow: var(--shadow-md);
+          border-color: rgba(249, 115, 22, 0.35);
+          transform: translateY(-4px);
+          box-shadow: 0 14px 32px rgba(15, 23, 42, 0.1);
         }
         .supporting-item-top {
           display: flex;
@@ -396,7 +399,7 @@ export default function LatestUpdates() {
         .supporting-cat-badge {
           font-size: 0.72rem;
           font-weight: 800;
-          color: #059669;
+          color: var(--primary-saffron, #F97316);
           letter-spacing: 0.05em;
         }
         .supporting-date {
@@ -404,30 +407,30 @@ export default function LatestUpdates() {
           align-items: center;
           gap: 0.3rem;
           font-size: 0.78rem;
-          color: var(--text-muted);
+          color: var(--text-secondary, #64748B);
         }
         .supporting-item-title {
           font-family: var(--font-heading);
           font-size: 1.25rem;
           font-weight: 700;
-          color: var(--charcoal-900);
+          color: var(--text-primary, #0F172A);
           line-height: 1.35;
           margin-bottom: 0.5rem;
         }
         .supporting-item-title a:hover {
-          color: #059669;
+          color: var(--primary-saffron, #F97316);
         }
         .supporting-item-location {
           display: flex;
           align-items: center;
           gap: 0.3rem;
           font-size: 0.8rem;
-          color: var(--text-muted);
+          color: var(--text-secondary, #64748B);
           margin-bottom: 0.75rem;
         }
         .supporting-item-desc {
           font-size: 0.875rem;
-          color: var(--text-muted);
+          color: var(--text-secondary, #475569);
           line-height: 1.5;
           margin-bottom: 1.25rem;
         }
@@ -436,28 +439,28 @@ export default function LatestUpdates() {
           align-items: center;
           justify-content: space-between;
           padding-top: 0.85rem;
-          border-top: 1px solid var(--border-subtle);
+          border-top: 1px solid var(--border-subtle, #E2E8F0);
         }
         .spots-info {
           font-size: 0.78rem;
           font-weight: 600;
-          color: var(--charcoal-700);
+          color: var(--text-secondary, #475569);
         }
         .supporting-action-arrow {
           width: 32px;
           height: 32px;
           border-radius: var(--radius-pill);
           background: #FFFFFF;
-          border: 1px solid var(--border-subtle);
-          color: var(--charcoal-800);
+          border: 1px solid var(--border-subtle, #E2E8F0);
+          color: var(--text-primary, #0F172A);
           display: flex;
           align-items: center;
           justify-content: center;
           transition: all var(--transition-fast);
         }
         .supporting-update-item:hover .supporting-action-arrow {
-          background: #10B981;
-          border-color: #10B981;
+          background: var(--primary-saffron, #F97316);
+          border-color: var(--primary-saffron, #F97316);
           color: #FFFFFF;
           transform: translateX(3px);
         }

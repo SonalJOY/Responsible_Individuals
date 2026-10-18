@@ -250,16 +250,16 @@ export default function ProjectDetailPage() {
 
       <style>{`
         .detail-hero {
-          background: linear-gradient(135deg, #091712 0%, #0F4C3A 100%);
+          background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
           color: white;
           padding: 4.5rem 0 3.5rem 0;
-          border-bottom: 4px solid #10B981;
+          border-bottom: 4px solid var(--primary-saffron, #F59E0B);
         }
         .back-link {
           display: inline-flex;
           align-items: center;
           gap: 0.4rem;
-          color: #34D399;
+          color: var(--secondary-light-blue, #7DD3FC);
           font-weight: 600;
           font-size: 0.875rem;
           margin-bottom: 1.5rem;
@@ -286,7 +286,7 @@ export default function ProjectDetailPage() {
         }
         .detail-lead {
           font-size: 1.15rem;
-          color: #D1FAE5;
+          color: #E2E8F0;
           max-width: 820px;
           line-height: 1.65;
           margin-bottom: 2.5rem;

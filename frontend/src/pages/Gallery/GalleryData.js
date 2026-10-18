@@ -21,7 +21,7 @@ export const GALLERY_ITEMS = [
     accentBorder: 'rgba(13, 148, 136, 0.3)',
     image: 'https://images.unsplash.com/photo-1544654803-b69140b285a1?auto=format&fit=crop&w=1200&q=85',
     localFallback: '/images/gallery/lake_restoration.svg',
-    fallbackGradient: 'linear-gradient(135deg, #064E3B 0%, #0D9488 50%, #0F172A 100%)',
+    fallbackGradient: 'linear-gradient(135deg, #0F172A 0%, #0284C7 50%, #0F172A 100%)',
     description: 'Over 150 community volunteers and local school students gathered along the shorelines of Kaikondrahalli Lake to plant native wetland saplings and vetiver grasses. This bio-shield aids in natural water filtration, prevents soil erosion, and revives aquatic bird habitats in urban Bengaluru.'
   },
   {
@@ -46,12 +46,12 @@ export const GALLERY_ITEMS = [
     location: 'Indiranagar, Bengaluru',
     date: 'July 2024',
     impact: '600 Native Trees Planted',
-    themeColor: '#059669',
-    accentBg: 'rgba(5, 150, 105, 0.12)',
-    accentBorder: 'rgba(5, 150, 105, 0.3)',
+    themeColor: '#F59E0B',
+    accentBg: 'rgba(245, 158, 11, 0.12)',
+    accentBorder: 'rgba(245, 158, 11, 0.3)',
     image: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=1200&q=85',
     localFallback: '/images/gallery/urban_afforestation.svg',
-    fallbackGradient: 'linear-gradient(135deg, #064E3B 0%, #059669 50%, #0F172A 100%)',
+    fallbackGradient: 'linear-gradient(135deg, #78350F 0%, #F59E0B 50%, #0F172A 100%)',
     description: 'Transforming an underutilized patch of urban land into a dense Miyawaki mini-forest with 600 indigenous tree species. Local residents, youth volunteers, and corporate partners worked together to enrich soil, mulch, and plant native saplings.'
   },
   {

@@ -1,5 +1,6 @@
 @import './styles/design-tokens.css';
 @import './styles/animations.css';
+@import './styles/preloader.css';
 
 /* Global Reset & Base Styles */
 *, *::before, *::after {
@@ -130,19 +131,19 @@ img, svg, video {
 }
 
 .btn-primary {
-  background: var(--primary-800);
+  background: var(--primary-saffron, #F59E0B);
   color: var(--white);
-  box-shadow: 0 4px 14px rgba(15, 76, 58, 0.22);
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.28);
 }
 
 .btn-primary:hover {
-  background: var(--primary-700);
+  background: var(--primary-saffron-hover, #D97706);
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(15, 76, 58, 0.3);
+  box-shadow: 0 6px 20px rgba(217, 119, 6, 0.35);
 }
 
 .btn-accent {
-  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
   color: var(--white);
   box-shadow: var(--shadow-primary);
 }
@@ -164,15 +165,16 @@ img, svg, video {
 }
 
 .btn-secondary {
-  background: var(--white);
-  color: var(--slate-800);
-  border-color: var(--border-subtle);
+  background: var(--surface-blue, #F0F9FF);
+  color: #0284C7;
+  border-color: rgba(125, 211, 252, 0.5);
   box-shadow: var(--shadow-sm);
 }
 
 .btn-secondary:hover {
-  background: var(--slate-50);
-  border-color: var(--slate-300);
+  background: #E0F2FE;
+  border-color: var(--secondary-light-blue, #7DD3FC);
+  color: #0369A1;
   transform: translateY(-2px);
 }
 
@@ -211,7 +213,7 @@ img, svg, video {
 .card:hover {
   box-shadow: var(--shadow-md);
   transform: translateY(-4px);
-  border-color: rgba(16, 185, 129, 0.3);
+  border-color: rgba(245, 158, 11, 0.35);
 }
 
 .glass-card {
@@ -235,14 +237,14 @@ img, svg, video {
 }
 
 .badge-emerald {
-  background: var(--primary-50);
-  color: var(--primary-800);
-  border: 1px solid var(--primary-100);
+  background: var(--surface-saffron, #FFF7ED);
+  color: var(--primary-saffron-dark, #B45309);
+  border: 1px solid #FED7AA;
 }
 
 .badge-blue {
   background: var(--accent-blue-light);
-  color: var(--accent-blue);
+  color: #0284C7;
 }
 
 .badge-amber {
@@ -296,8 +298,8 @@ img, svg, video {
 
 .form-control:focus {
   outline: none;
-  border-color: var(--primary-500);
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+  border-color: var(--primary-saffron, #F59E0B);
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.18);
 }
 
 /* Editorial Sections & Transitions */
@@ -310,7 +312,7 @@ img, svg, video {
 }
 
 .bg-deep-forest {
-  background-color: #08291F;
+  background-color: #0F172A;
 }
 
 .curved-divider {

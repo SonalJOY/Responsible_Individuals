@@ -462,11 +462,11 @@ export default function VolunteerPage() {
 
                     <div className="opp-meta-list">
                       <div className="opp-meta-row">
-                        <MapPin size={16} color="#10B981" />
+                        <MapPin size={16} color="var(--primary-saffron, #F97316)" />
                         <span><strong>Location:</strong> {opp.location}</span>
                       </div>
                       <div className="opp-meta-row">
-                        <Clock size={16} color="#10B981" />
+                        <Clock size={16} color="var(--secondary-light-blue, #0EA5E9)" />
                         <span><strong>Commitment:</strong> {opp.commitment}</span>
                       </div>
                     </div>
@@ -508,7 +508,7 @@ export default function VolunteerPage() {
           /* Confirmation State for fresh submission */
           <div className="application-success-box">
             <div className="success-icon-wrap">
-              <CheckCircle2 size={48} color="#10B981" />
+              <CheckCircle2 size={48} color="var(--primary-saffron, #F97316)" />
             </div>
             <h3>Thank You, {formData.first_name || user?.first_name || 'Volunteer'}!</h3>
             <div className="success-status-pill">Status: PENDING REVIEW</div>
@@ -535,7 +535,7 @@ export default function VolunteerPage() {
           <div className="existing-app-status-box">
             <div className="app-status-icon-wrap">
               {existingApplication.status === 'APPROVED' ? (
-                <CheckCircle2 size={48} color="#10B981" />
+                <CheckCircle2 size={48} color="var(--primary-saffron, #F97316)" />
               ) : existingApplication.status === 'REJECTED' ? (
                 <AlertCircle size={48} color="#EF4444" />
               ) : (
@@ -635,7 +635,7 @@ export default function VolunteerPage() {
             {/* User Authentication Status Banner */}
             {user ? (
               <div className="authenticated-user-banner">
-                <UserCheck size={18} color="#10B981" />
+                <UserCheck size={18} color="var(--primary-saffron, #F97316)" />
                 <div>
                   <span>Applying as: <strong>{user.get_full_name || user.first_name || user.email}</strong></span>
                   <span className="auth-email-hint">{user.email}</span>
@@ -1033,15 +1033,15 @@ export default function VolunteerPage() {
         .volunteer-hero {
           position: relative;
           overflow: hidden;
-          background: linear-gradient(135deg, #091712 0%, #0F4C3A 100%);
+          background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
           color: white;
           padding: 5rem 0 4rem 0;
           text-align: center;
         }
         .volunteer-hero .section-badge {
-          background: rgba(16, 185, 129, 0.2);
-          color: #34D399;
-          border-color: rgba(52, 211, 153, 0.4);
+          background: rgba(125, 211, 252, 0.15);
+          color: #7DD3FC;
+          border-color: rgba(125, 211, 252, 0.35);
         }
         .volunteer-hero-title {
           color: white;
@@ -1131,8 +1131,8 @@ export default function VolunteerPage() {
         .spinner-indicator {
           width: 36px;
           height: 36px;
-          border: 3px solid rgba(16, 185, 129, 0.2);
-          border-top-color: #10B981;
+          border: 3px solid rgba(249, 115, 22, 0.2);
+          border-top-color: var(--primary-saffron, #F97316);
           border-radius: 50%;
           animation: spin 0.8s linear infinite;
           margin: 0 auto 1rem auto;
@@ -1334,9 +1334,9 @@ export default function VolunteerPage() {
           border-color: #CBD5E1;
         }
         .interest-chip.active {
-          background: #ECFDF5;
-          border-color: #10B981;
-          color: #065F46;
+          background: #FFF7ED;
+          border-color: var(--primary-saffron, #F97316);
+          color: #C2410C;
           font-weight: 700;
         }
         .application-success-box {

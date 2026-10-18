@@ -1301,7 +1301,7 @@ export default function AboutPage() {
           display: flex;
           align-items: center;
           justify-content: flex-start;
-          background-color: #071D16;
+          background-color: #0F172A;
           background-image: url('/images/about-hero.jpg');
           background-size: cover;
           background-position: center;
@@ -1323,9 +1323,9 @@ export default function AboutPage() {
           inset: 0;
           background: linear-gradient(
             180deg, 
-            rgba(0, 35, 28, 0.62) 0%, 
-            rgba(8, 41, 31, 0.56) 50%, 
-            rgba(0, 35, 28, 0.72) 100%
+            rgba(15, 23, 42, 0.72) 0%, 
+            rgba(15, 23, 42, 0.65) 50%, 
+            rgba(15, 23, 42, 0.82) 100%
           );
           z-index: 1;
           pointer-events: none;
@@ -1336,7 +1336,7 @@ export default function AboutPage() {
           left: 30%;
           width: 900px;
           height: 550px;
-          background: radial-gradient(circle, rgba(16, 185, 129, 0.22) 0%, rgba(15, 76, 58, 0.08) 55%, transparent 80%);
+          background: radial-gradient(circle, rgba(125, 211, 252, 0.18) 0%, rgba(245, 158, 11, 0.08) 55%, transparent 80%);
           pointer-events: none;
           z-index: 1;
         }
@@ -1353,9 +1353,9 @@ export default function AboutPage() {
           align-items: flex-start;
         }
         .about-hero .section-badge {
-          background: rgba(16, 185, 129, 0.2);
-          color: #34D399;
-          border: 1px solid rgba(52, 211, 153, 0.4);
+          background: rgba(125, 211, 252, 0.15);
+          color: #7DD3FC;
+          border: 1px solid rgba(125, 211, 252, 0.35);
           backdrop-filter: blur(8px);
           -webkit-backdrop-filter: blur(8px);
           display: inline-flex;
@@ -1371,7 +1371,7 @@ export default function AboutPage() {
           box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
         }
         .badge-sparkle-icon {
-          color: #34D399;
+          color: #7DD3FC;
         }
         .about-hero-title {
           color: #FFFFFF;
@@ -1432,7 +1432,7 @@ export default function AboutPage() {
           filter: drop-shadow(0 2px 14px rgba(0, 0, 0, 0.45));
         }
         .about-hero-line-2 .about-hero-warp-layer.warp-text {
-          filter: drop-shadow(0 2px 14px rgba(57, 217, 138, 0.35));
+          filter: drop-shadow(0 2px 14px rgba(245, 158, 11, 0.35));
         }
         .warp-text-fallback {
           position: absolute;
@@ -1460,12 +1460,12 @@ export default function AboutPage() {
           border-width: 0;
         }
         .hero-highlight-text {
-          color: #39D98A;
-          background: linear-gradient(135deg, #6EE7B7 0%, #39D98A 50%, #10B981 100%);
+          color: #F59E0B;
+          background: linear-gradient(135deg, #FDE68A 0%, #F59E0B 50%, #D97706 100%);
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
           display: inline-block;
-          filter: drop-shadow(0 2px 12px rgba(16, 185, 129, 0.35));
+          filter: drop-shadow(0 2px 12px rgba(245, 158, 11, 0.35));
         }
         .about-hero-subtitle {
           font-size: 1.18rem;
@@ -1500,8 +1500,8 @@ export default function AboutPage() {
           width: 8px;
           height: 8px;
           border-radius: 50%;
-          background: #10B981;
-          box-shadow: 0 0 8px #10B981;
+          background: #F59E0B;
+          box-shadow: 0 0 8px #F59E0B;
         }
         @media (max-width: 768px) {
           .about-hero {
@@ -1629,20 +1629,20 @@ export default function AboutPage() {
           cursor: default;
         }
         .editorial-photo-left {
-          border: 1px solid rgba(16, 185, 129, 0.22);
+          border: 1px solid rgba(245, 158, 11, 0.22);
         }
         .editorial-photo-left:hover {
           box-shadow: 0 16px 36px -6px rgba(15, 23, 42, 0.12),
-                      0 0 24px rgba(16, 185, 129, 0.16);
-          border-color: rgba(16, 185, 129, 0.45);
+                      0 0 24px rgba(245, 158, 11, 0.16);
+          border-color: rgba(245, 158, 11, 0.45);
         }
         .editorial-photo-right {
-          border: 1px solid rgba(37, 99, 235, 0.22);
+          border: 1px solid rgba(56, 189, 248, 0.25);
         }
         .editorial-photo-right:hover {
           box-shadow: 0 16px 36px -6px rgba(15, 23, 42, 0.12),
-                      0 0 24px rgba(37, 99, 235, 0.16);
-          border-color: rgba(37, 99, 235, 0.45);
+                      0 0 24px rgba(56, 189, 248, 0.16);
+          border-color: rgba(56, 189, 248, 0.45);
         }
 
         /* Photo Frame — Dominant Editorial Portrait Photography Panel (~3:4 Aspect Ratio) */
@@ -1683,12 +1683,12 @@ export default function AboutPage() {
           pointer-events: none;
         }
         .pin-emerald {
-          background: #10B981;
-          box-shadow: 0 0 8px rgba(16, 185, 129, 0.7);
+          background: #F59E0B;
+          box-shadow: 0 0 8px rgba(245, 158, 11, 0.7);
         }
         .pin-blue {
-          background: #3B82F6;
-          box-shadow: 0 0 8px rgba(59, 130, 246, 0.7);
+          background: #38BDF8;
+          box-shadow: 0 0 8px rgba(56, 189, 248, 0.7);
         }
 
         /* Text Meta under Image */
@@ -1710,14 +1710,14 @@ export default function AboutPage() {
           text-transform: uppercase;
         }
         .badge-emerald {
-          background: rgba(16, 185, 129, 0.12);
-          color: #047857;
-          border: 1px solid rgba(16, 185, 129, 0.24);
+          background: rgba(245, 158, 11, 0.14);
+          color: #B45309;
+          border: 1px solid rgba(245, 158, 11, 0.28);
         }
         .badge-blue {
-          background: rgba(37, 99, 235, 0.1);
-          color: #1D4ED8;
-          border: 1px solid rgba(37, 99, 235, 0.22);
+          background: rgba(56, 189, 248, 0.12);
+          color: #0369A1;
+          border: 1px solid rgba(56, 189, 248, 0.25);
         }
         .editorial-subline {
           font-size: 0.72rem;
@@ -1797,28 +1797,28 @@ export default function AboutPage() {
         }
         /* Vision Card specifics */
         .sticky-card-vision {
-          background: linear-gradient(175deg, #FEFDFB 0%, #F5FBF7 48%, #ECF6F0 100%);
-          border: 1px solid rgba(16, 185, 129, 0.22);
+          background: linear-gradient(175deg, #FEFDFB 0%, #FFFBF5 48%, #FFF7ED 100%);
+          border: 1px solid rgba(245, 158, 11, 0.25);
           transform: rotate(-1.5deg);
         }
         .sticky-vision-wrapper:hover .sticky-card-vision {
           box-shadow: 0 12px 24px -4px rgba(15, 23, 42, 0.08), 
                       0 32px 64px -12px rgba(15, 23, 42, 0.18), 
-                      0 0 35px rgba(16, 185, 129, 0.16);
-          border-color: rgba(16, 185, 129, 0.45);
+                      0 0 35px rgba(245, 158, 11, 0.18);
+          border-color: rgba(245, 158, 11, 0.5);
         }
         /* Mission Card specifics */
         .sticky-card-blue {
-          background: linear-gradient(175deg, #FEFDFB 0%, #F4F8FD 48%, #E9F2FB 100%);
-          border: 1px solid rgba(37, 99, 235, 0.22);
+          background: linear-gradient(175deg, #FEFDFB 0%, #F0F9FF 48%, #E0F2FE 100%);
+          border: 1px solid rgba(56, 189, 248, 0.25);
           transform: rotate(1.5deg);
           border-radius: 24px 18px 22px 18px;
         }
         .sticky-mission-wrapper:hover .sticky-card-blue {
           box-shadow: 0 12px 24px -4px rgba(15, 23, 42, 0.08), 
                       0 32px 64px -12px rgba(15, 23, 42, 0.18), 
-                      0 0 35px rgba(37, 99, 235, 0.16);
-          border-color: rgba(37, 99, 235, 0.45);
+                      0 0 35px rgba(56, 189, 248, 0.2);
+          border-color: rgba(56, 189, 248, 0.5);
         }
         /* Washi Tape Accent */
         .washi-tape {
@@ -1836,15 +1836,15 @@ export default function AboutPage() {
         }
         .washi-tape-emerald {
           transform: translateX(-50%) rotate(-1.5deg);
-          background: rgba(16, 185, 129, 0.28);
-          border-left: 2px dashed rgba(5, 150, 105, 0.38);
-          border-right: 2px dashed rgba(5, 150, 105, 0.38);
+          background: rgba(245, 158, 11, 0.3);
+          border-left: 2px dashed rgba(217, 119, 6, 0.45);
+          border-right: 2px dashed rgba(217, 119, 6, 0.45);
         }
         .washi-tape-blue {
           transform: translateX(-50%) rotate(2deg);
-          background: rgba(37, 99, 235, 0.25);
-          border-left: 2px dashed rgba(29, 78, 216, 0.38);
-          border-right: 2px dashed rgba(29, 78, 216, 0.38);
+          background: rgba(56, 189, 248, 0.28);
+          border-left: 2px dashed rgba(14, 165, 233, 0.45);
+          border-right: 2px dashed rgba(14, 165, 233, 0.45);
         }
         /* Subtle corner fold accent */
         .sticky-corner-fold {
@@ -1906,14 +1906,14 @@ export default function AboutPage() {
           text-transform: uppercase;
         }
         .tag-emerald {
-          background: rgba(16, 185, 129, 0.14);
-          color: #047857;
-          border: 1px solid rgba(16, 185, 129, 0.28);
+          background: rgba(245, 158, 11, 0.14);
+          color: #B45309;
+          border: 1px solid rgba(245, 158, 11, 0.28);
         }
         .tag-blue {
-          background: rgba(37, 99, 235, 0.12);
-          color: #1D4ED8;
-          border: 1px solid rgba(37, 99, 235, 0.25);
+          background: rgba(56, 189, 248, 0.14);
+          color: #0369A1;
+          border: 1px solid rgba(56, 189, 248, 0.3);
         }
         .sticky-tag-icon {
           flex-shrink: 0;
@@ -1950,12 +1950,12 @@ export default function AboutPage() {
           border-radius: var(--radius-pill);
         }
         .pillar-emerald {
-          background: rgba(16, 185, 129, 0.1);
-          color: #065F46;
+          background: rgba(245, 158, 11, 0.12);
+          color: #B45309;
         }
         .pillar-blue {
-          background: rgba(37, 99, 235, 0.1);
-          color: #1E40AF;
+          background: rgba(56, 189, 248, 0.12);
+          color: #0369A1;
         }
         @media (max-width: 1360px) and (min-width: 1080px) {
           .vision-mission-stage {
@@ -2159,8 +2159,8 @@ export default function AboutPage() {
           position: relative;
           width: 100%;
           height: 100%;
-          background: linear-gradient(175deg, #FEFDFB 0%, #F5FBF7 48%, #ECF6F0 100%);
-          border: 1px solid rgba(16, 185, 129, 0.22);
+          background: linear-gradient(175deg, #FEFDFB 0%, #FFFBF5 48%, #FFF7ED 100%);
+          border: 1px solid rgba(245, 158, 11, 0.25);
           border-radius: 18px 24px 18px 22px;
           box-shadow: 0 4px 6px -1px rgba(15, 23, 42, 0.04), 
                       0 16px 36px -8px rgba(15, 23, 42, 0.09), 
@@ -2176,37 +2176,37 @@ export default function AboutPage() {
           will-change: transform, box-shadow;
         }
 
-        /* Automatic Active Stage Emphasis (Subtle scale 1.03, rich emerald glow) */
+        /* Automatic Active Stage Emphasis */
         .flow-card-inner.is-active-flow-card {
-          border-color: rgba(16, 185, 129, 0.6);
-          box-shadow: 0 12px 28px -4px rgba(16, 185, 129, 0.22), 
+          border-color: rgba(245, 158, 11, 0.65);
+          box-shadow: 0 12px 28px -4px rgba(245, 158, 11, 0.22), 
                       0 24px 50px -10px rgba(15, 23, 42, 0.12), 
-                      0 0 25px rgba(16, 185, 129, 0.15);
+                      0 0 25px rgba(245, 158, 11, 0.15);
           transform: translateY(-4px) scale(1.03);
         }
         .flow-card-inner.is-active-flow-card .flow-card-num-badge {
-          background: #10B981;
+          background: #F59E0B;
           color: white;
           transform: scale(1.06);
         }
         .flow-card-inner.is-active-flow-card .flow-card-icon-badge {
-          background: #10B981;
+          background: #F59E0B;
           color: white;
           transform: scale(1.08) rotate(4deg);
         }
 
-        /* Hover Interaction (Subtle 1.035 max) */
+        /* Hover Interaction */
         .flow-card-node:hover .flow-card-inner,
         .flow-card-inner.is-hovered-flow-card {
           transform: translateY(-6px) scale(1.035);
-          border-color: rgba(16, 185, 129, 0.65);
+          border-color: rgba(245, 158, 11, 0.65);
           box-shadow: 0 16px 32px -4px rgba(15, 23, 42, 0.12), 
                       0 32px 64px -12px rgba(15, 23, 42, 0.18), 
-                      0 0 30px rgba(16, 185, 129, 0.2);
+                      0 0 30px rgba(245, 158, 11, 0.2);
           z-index: 10;
         }
 
-        /* Prominent Large Image Frame (215px high, identical to Vision/Mission .sticky-image-frame) */
+        /* Prominent Large Image Frame */
         .flow-card-img-wrap {
           position: relative;
           width: 100%;
@@ -2249,13 +2249,13 @@ export default function AboutPage() {
           top: 10px;
           left: 10px;
           background: rgba(15, 23, 42, 0.88);
-          color: #34D399;
+          color: #7DD3FC;
           font-family: var(--font-heading);
           font-size: 0.78rem;
           font-weight: 800;
           padding: 0.22rem 0.6rem;
           border-radius: 7px;
-          border: 1px solid rgba(52, 211, 153, 0.4);
+          border: 1px solid rgba(125, 211, 252, 0.4);
           backdrop-filter: blur(4px);
           transition: all 0.3s ease;
           z-index: 2;
@@ -2267,8 +2267,8 @@ export default function AboutPage() {
           width: 32px;
           height: 32px;
           border-radius: 50%;
-          background: #0F4C3A;
-          color: #34D399;
+          background: #0F172A;
+          color: #7DD3FC;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -2297,9 +2297,9 @@ export default function AboutPage() {
           font-weight: 800;
           letter-spacing: 0.07em;
           text-transform: uppercase;
-          background: rgba(16, 185, 129, 0.14);
-          color: #047857;
-          border: 1px solid rgba(16, 185, 129, 0.28);
+          background: rgba(245, 158, 11, 0.14);
+          color: #B45309;
+          border: 1px solid rgba(245, 158, 11, 0.28);
           font-family: var(--font-heading);
         }
         .flow-tag-icon {
@@ -2515,8 +2515,8 @@ export default function AboutPage() {
             width: 28px;
             height: 28px;
             border-radius: 50%;
-            background: #0F4C3A;
-            color: #34D399;
+            background: #0F172A;
+            color: #7DD3FC;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -2533,14 +2533,14 @@ export default function AboutPage() {
           .flow-mobile-category {
             display: inline-flex;
             font-size: 0.68rem;
-            color: #047857;
+            color: #B45309;
             font-weight: 800;
             letter-spacing: 0.06em;
             text-transform: uppercase;
-            background: rgba(16, 185, 129, 0.12);
+            background: rgba(245, 158, 11, 0.12);
             padding: 0.2rem 0.6rem;
             border-radius: var(--radius-pill);
-            border: 1px solid rgba(16, 185, 129, 0.25);
+            border: 1px solid rgba(245, 158, 11, 0.25);
             font-family: var(--font-heading);
           }
           .flow-mobile-title {
@@ -2578,7 +2578,7 @@ export default function AboutPage() {
           left: 2%;
           width: 500px;
           height: 500px;
-          background: radial-gradient(circle, rgba(16, 185, 129, 0.12) 0%, rgba(5, 150, 105, 0.02) 70%, transparent 100%);
+          background: radial-gradient(circle, rgba(245, 158, 11, 0.08) 0%, rgba(217, 119, 6, 0.01) 70%, transparent 100%);
           animation: auraDrift1 14s ease-in-out infinite alternate;
         }
         .methodology-ambient-aura-2 {
@@ -2586,7 +2586,7 @@ export default function AboutPage() {
           right: 2%;
           width: 540px;
           height: 540px;
-          background: radial-gradient(circle, rgba(52, 211, 153, 0.1) 0%, rgba(16, 185, 129, 0.02) 70%, transparent 100%);
+          background: radial-gradient(circle, rgba(125, 211, 252, 0.1) 0%, rgba(56, 189, 248, 0.02) 70%, transparent 100%);
           animation: auraDrift2 18s ease-in-out infinite alternate;
         }
         @keyframes auraDrift1 {
@@ -2648,12 +2648,12 @@ export default function AboutPage() {
         }
         .orbit-ellipse-line {
           fill: none;
-          stroke: rgba(16, 185, 129, 0.18);
+          stroke: rgba(245, 158, 11, 0.2);
           stroke-width: 2px;
         }
         .orbit-ellipse-dashed {
           fill: none;
-          stroke: rgba(16, 185, 129, 0.45);
+          stroke: rgba(245, 158, 11, 0.45);
           stroke-width: 2px;
           stroke-dasharray: 8 12;
           stroke-linecap: round;
@@ -2688,13 +2688,13 @@ export default function AboutPage() {
         .hub-outer-ring-1 {
           position: absolute;
           inset: -24px;
-          border: 1.5px dashed rgba(16, 185, 129, 0.38);
+          border: 1.5px dashed rgba(245, 158, 11, 0.38);
           animation: hubRingRotateCW 35s linear infinite;
         }
         .hub-outer-ring-2 {
           position: absolute;
           inset: -48px;
-          border: 1px dotted rgba(52, 211, 153, 0.25);
+          border: 1px dotted rgba(125, 211, 252, 0.35);
           animation: hubRingRotateCCW 45s linear infinite;
         }
         @keyframes hubRingRotateCW {
@@ -2720,19 +2720,19 @@ export default function AboutPage() {
           height: 100%;
           border-radius: 50%;
           overflow: hidden;
-          border: 3px solid #10B981;
-          box-shadow: 0 0 32px rgba(16, 185, 129, 0.28), 0 16px 36px rgba(0, 0, 0, 0.22);
+          border: 3px solid #F59E0B;
+          box-shadow: 0 0 32px rgba(245, 158, 11, 0.32), 0 16px 36px rgba(0, 0, 0, 0.22);
           animation: hubBreathe 6s ease-in-out infinite alternate;
-          background: #08291F;
+          background: #0F172A;
         }
         @keyframes hubBreathe {
           0% {
             transform: scale(1);
-            box-shadow: 0 0 24px rgba(16, 185, 129, 0.22), 0 14px 28px rgba(0, 0, 0, 0.18);
+            box-shadow: 0 0 24px rgba(245, 158, 11, 0.25), 0 14px 28px rgba(0, 0, 0, 0.18);
           }
           100% {
             transform: scale(1.02);
-            box-shadow: 0 0 40px rgba(16, 185, 129, 0.38), 0 20px 40px rgba(0, 0, 0, 0.26);
+            box-shadow: 0 0 40px rgba(245, 158, 11, 0.42), 0 20px 40px rgba(0, 0, 0, 0.26);
           }
         }
         .hub-core-img {
@@ -2744,7 +2744,7 @@ export default function AboutPage() {
         .hub-core-overlay {
           position: absolute;
           inset: 0;
-          background: radial-gradient(circle at center, rgba(7, 29, 22, 0.45) 0%, rgba(7, 29, 22, 0.88) 100%);
+          background: radial-gradient(circle at center, rgba(15, 23, 42, 0.45) 0%, rgba(15, 23, 42, 0.88) 100%);
         }
         .hub-core-content {
           position: absolute;
@@ -2762,18 +2762,18 @@ export default function AboutPage() {
           display: inline-flex;
           align-items: center;
           gap: 0.3rem;
-          background: rgba(16, 185, 129, 0.32);
-          border: 1px solid rgba(52, 211, 153, 0.55);
+          background: rgba(245, 158, 11, 0.25);
+          border: 1px solid rgba(245, 158, 11, 0.5);
           padding: 0.18rem 0.55rem;
           border-radius: var(--radius-pill);
           font-size: 0.66rem;
           font-weight: 800;
           letter-spacing: 0.08em;
-          color: #34D399;
+          color: #F59E0B;
           margin-bottom: 0.25rem;
         }
         .hub-sparkle-icon {
-          color: #34D399;
+          color: #F59E0B;
         }
         .hub-core-title {
           font-size: 1.1rem;
@@ -2947,17 +2947,17 @@ export default function AboutPage() {
 
         /* Active stage styling on inner card (subtle scale ~1.05 max) */
         .orbit-card-node.is-active-orbit-stage .orbit-card-inner {
-          border-color: rgba(52, 211, 153, 0.95);
-          box-shadow: 0 12px 28px -4px rgba(16, 185, 129, 0.3), 0 0 20px rgba(16, 185, 129, 0.2);
+          border-color: rgba(245, 158, 11, 0.95);
+          box-shadow: 0 12px 28px -4px rgba(245, 158, 11, 0.3), 0 0 20px rgba(245, 158, 11, 0.2);
           transform: scale(1.05);
         }
         .orbit-card-node.is-active-orbit-stage .orbit-card-num-badge {
-          background: #10B981;
+          background: #F59E0B;
           color: white;
           transform: scale(1.04);
         }
         .orbit-card-node.is-active-orbit-stage .orbit-card-icon-badge {
-          background: #10B981;
+          background: #F59E0B;
           color: white;
           transform: scale(1.08) rotate(4deg);
         }
@@ -2966,8 +2966,8 @@ export default function AboutPage() {
         .orbit-card-node:hover .orbit-card-inner,
         .orbit-card-node.is-hovered-orbit-stage .orbit-card-inner {
           transform: translateY(-4px) scale(1.04);
-          box-shadow: 0 18px 36px -6px rgba(16, 185, 129, 0.35), 0 0 22px rgba(16, 185, 129, 0.25);
-          border-color: #34D399;
+          box-shadow: 0 18px 36px -6px rgba(245, 158, 11, 0.35), 0 0 22px rgba(245, 158, 11, 0.25);
+          border-color: #F59E0B;
         }
         .orbit-card-node.is-active-orbit-stage:hover .orbit-card-inner {
           transform: translateY(-4px) scale(1.05);
@@ -2979,7 +2979,7 @@ export default function AboutPage() {
           height: 98px;
           border-radius: 13px 13px 0 0;
           overflow: hidden;
-          background: #08291F;
+          background: #0F172A;
         }
         .orbit-card-img {
           width: 100%;
@@ -2994,20 +2994,20 @@ export default function AboutPage() {
         .orbit-card-img-overlay {
           position: absolute;
           inset: 0;
-          background: linear-gradient(180deg, transparent 40%, rgba(7, 29, 22, 0.45) 100%);
+          background: linear-gradient(180deg, transparent 40%, rgba(15, 23, 42, 0.45) 100%);
         }
         .orbit-card-num-badge {
           position: absolute;
           top: 6px;
           left: 6px;
           background: rgba(15, 23, 42, 0.85);
-          color: #34D399;
+          color: #7DD3FC;
           font-family: var(--font-heading);
           font-size: 0.68rem;
           font-weight: 800;
           padding: 0.15rem 0.45rem;
           border-radius: 6px;
-          border: 1px solid rgba(52, 211, 153, 0.3);
+          border: 1px solid rgba(125, 211, 252, 0.3);
           backdrop-filter: blur(4px);
           transition: all 0.3s ease;
           z-index: 2;
@@ -3019,8 +3019,8 @@ export default function AboutPage() {
           width: 24px;
           height: 24px;
           border-radius: 50%;
-          background: #0F4C3A;
-          color: #34D399;
+          background: #0F172A;
+          color: #7DD3FC;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -3057,7 +3057,7 @@ export default function AboutPage() {
           opacity: 0;
           pointer-events: none;
           width: 210px;
-          background: rgba(7, 29, 22, 0.95);
+          background: rgba(15, 23, 42, 0.95);
           color: white;
           padding: 0.55rem 0.8rem;
           border-radius: 10px;
@@ -3065,7 +3065,7 @@ export default function AboutPage() {
           line-height: 1.35;
           text-align: center;
           box-shadow: 0 10px 24px rgba(0, 0, 0, 0.32);
-          border: 1px solid rgba(16, 185, 129, 0.5);
+          border: 1px solid rgba(245, 158, 11, 0.5);
           backdrop-filter: blur(8px);
           transition: opacity 0.25s ease, transform 0.25s ease;
           z-index: 100;
@@ -3074,7 +3074,7 @@ export default function AboutPage() {
           display: block;
           font-size: 0.64rem;
           font-weight: 800;
-          color: #34D399;
+          color: #7DD3FC;
           letter-spacing: 0.08em;
           margin-bottom: 0.15rem;
         }
@@ -3119,23 +3119,23 @@ export default function AboutPage() {
         }
         .orbit-nav-pill:hover,
         .orbit-nav-pill.is-active-pill {
-          background: #0F4C3A;
+          background: #0F172A;
           color: #FFFFFF;
-          border-color: #10B981;
+          border-color: #F59E0B;
           transform: translateY(-2px);
-          box-shadow: 0 6px 14px rgba(16, 185, 129, 0.25);
+          box-shadow: 0 6px 14px rgba(245, 158, 11, 0.25);
         }
         .pill-num {
           font-family: var(--font-heading);
           font-size: 0.72rem;
           font-weight: 800;
-          background: rgba(16, 185, 129, 0.15);
-          color: #047857;
+          background: rgba(245, 158, 11, 0.15);
+          color: #B45309;
           padding: 0.1rem 0.35rem;
           border-radius: 4px;
         }
         .orbit-nav-pill.is-active-pill .pill-num {
-          background: #10B981;
+          background: #F59E0B;
           color: white;
         }
         .pill-title {
@@ -3165,7 +3165,7 @@ export default function AboutPage() {
           width: 8px;
           height: 8px;
           border-radius: var(--radius-pill);
-          background: #10B981;
+          background: #F59E0B;
         }
 
         /* Mobile Flowing Journey (<768px) */
@@ -3308,13 +3308,13 @@ export default function AboutPage() {
             border-radius: var(--radius-lg);
             overflow: hidden;
             box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
-            border: 1px solid rgba(16, 185, 129, 0.3);
+            border: 1px solid rgba(245, 158, 11, 0.3);
           }
           .mobile-hub-img-wrap {
             position: relative;
             width: 100%;
             height: 180px;
-            background: #08291F;
+            background: #0F172A;
           }
           .mobile-hub-img {
             width: 100%;
@@ -3324,7 +3324,7 @@ export default function AboutPage() {
           .mobile-hub-overlay {
             position: absolute;
             inset: 0;
-            background: linear-gradient(180deg, rgba(7, 29, 22, 0.4) 0%, rgba(7, 29, 22, 0.9) 100%);
+            background: linear-gradient(180deg, rgba(15, 23, 42, 0.4) 0%, rgba(15, 23, 42, 0.9) 100%);
           }
           .mobile-hub-text {
             position: absolute;
@@ -3447,8 +3447,8 @@ export default function AboutPage() {
             width: 28px;
             height: 28px;
             border-radius: 50%;
-            background: #0F4C3A;
-            color: #34D399;
+            background: #0F172A;
+            color: #7DD3FC;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -3514,20 +3514,20 @@ export default function AboutPage() {
           position: relative;
         }
         .leadership-card:focus-visible {
-          box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.4), 0 16px 36px -6px rgba(15, 23, 42, 0.12);
-          border-color: #10B981;
+          box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.4), 0 16px 36px -6px rgba(15, 23, 42, 0.12);
+          border-color: #F59E0B;
         }
         .leadership-card:hover {
           transform: translateY(-5px) scale(1.02);
-          border-color: rgba(16, 185, 129, 0.38);
-          box-shadow: 0 18px 40px -8px rgba(15, 23, 42, 0.12), 0 0 25px rgba(16, 185, 129, 0.1);
+          border-color: rgba(245, 158, 11, 0.38);
+          box-shadow: 0 18px 40px -8px rgba(15, 23, 42, 0.12), 0 0 25px rgba(245, 158, 11, 0.15);
         }
         .leadership-photo-frame {
           position: relative;
           width: 100%;
           aspect-ratio: 4 / 3.4;
           overflow: hidden;
-          background: #08291F;
+          background: #0F172A;
         }
         .leadership-photo-img {
           width: 100%;
@@ -3542,7 +3542,7 @@ export default function AboutPage() {
         .leadership-photo-overlay {
           position: absolute;
           inset: 0;
-          background: linear-gradient(180deg, rgba(8, 41, 31, 0) 40%, rgba(8, 41, 31, 0.5) 100%);
+          background: linear-gradient(180deg, rgba(15, 23, 42, 0) 40%, rgba(15, 23, 42, 0.55) 100%);
           pointer-events: none;
         }
         .leadership-photo-badge {
@@ -3560,15 +3560,15 @@ export default function AboutPage() {
           gap: 0.35rem;
           font-size: 0.68rem;
           font-weight: 700;
-          color: #D1FAE5;
+          color: #7DD3FC;
           letter-spacing: 0.03em;
         }
         .photo-badge-dot {
           width: 6px;
           height: 6px;
           border-radius: 50%;
-          background: #10B981;
-          box-shadow: 0 0 6px #10B981;
+          background: #F59E0B;
+          box-shadow: 0 0 6px #F59E0B;
         }
         .leadership-card-body {
           padding: 1.35rem 1.25rem 1.25rem 1.25rem;
@@ -3584,17 +3584,17 @@ export default function AboutPage() {
           display: inline-block;
           font-size: 0.72rem;
           font-weight: 700;
-          color: var(--primary-700);
-          background: var(--primary-50);
-          border: 1px solid rgba(16, 185, 129, 0.22);
+          color: var(--primary-saffron-dark, #B45309);
+          background: var(--surface-saffron, #FFF7ED);
+          border: 1px solid rgba(245, 158, 11, 0.25);
           padding: 0.2rem 0.65rem;
           border-radius: var(--radius-pill);
           letter-spacing: 0.02em;
           transition: background 0.25s ease, border-color 0.25s ease;
         }
         .leadership-card:hover .leadership-role-tag {
-          background: #D1FAE5;
-          border-color: rgba(16, 185, 129, 0.4);
+          background: #FED7AA;
+          border-color: rgba(245, 158, 11, 0.45);
         }
         .leadership-member-name {
           font-size: 1.15rem;
@@ -3623,14 +3623,14 @@ export default function AboutPage() {
           gap: 0.45rem;
           font-size: 0.835rem;
           font-weight: 700;
-          color: var(--primary-700);
+          color: var(--primary-saffron, #F59E0B);
           transition: color 0.2s ease;
         }
         .view-btn-arrow {
           transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
         }
         .leadership-card:hover .leadership-view-btn {
-          color: var(--primary-600);
+          color: var(--primary-saffron-hover, #D97706);
         }
         .leadership-card:hover .view-btn-arrow {
           transform: translateX(4px);
@@ -3641,7 +3641,7 @@ export default function AboutPage() {
           position: fixed;
           inset: 0;
           z-index: 9999;
-          background: rgba(7, 29, 22, 0.62);
+          background: rgba(15, 23, 42, 0.72);
           backdrop-filter: blur(12px);
           -webkit-backdrop-filter: blur(12px);
           display: flex;
@@ -3673,12 +3673,12 @@ export default function AboutPage() {
           max-width: 820px;
           background: #FFFFFF;
           border-radius: 24px;
-          box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.35), 0 0 40px rgba(16, 185, 129, 0.15);
-          border: 1px solid rgba(16, 185, 129, 0.2);
+          box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.35), 0 0 40px rgba(245, 158, 11, 0.15);
+          border: 1px solid rgba(245, 158, 11, 0.2);
           max-height: 90vh;
           overflow-y: auto;
           scrollbar-width: thin;
-          scrollbar-color: rgba(16, 185, 129, 0.3) transparent;
+          scrollbar-color: rgba(245, 158, 11, 0.3) transparent;
         }
         .leadership-modal-dialog.dialog-enter {
           animation: modalDialogZoomIn 0.38s cubic-bezier(0.16, 1, 0.3, 1) forwards;
@@ -3725,14 +3725,14 @@ export default function AboutPage() {
           z-index: 10;
         }
         .leadership-modal-close:hover {
-          background: #D1FAE5;
-          color: var(--primary-800);
-          border-color: rgba(16, 185, 129, 0.35);
+          background: var(--surface-saffron, #FFF7ED);
+          color: var(--primary-saffron-dark, #B45309);
+          border-color: rgba(245, 158, 11, 0.45);
           transform: rotate(90deg);
         }
         .leadership-modal-close:focus-visible {
           outline: none;
-          box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.4);
+          box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.4);
         }
 
         .leadership-modal-grid {
@@ -3771,9 +3771,9 @@ export default function AboutPage() {
           border-radius: 20px;
           overflow: hidden;
           margin-bottom: 1.25rem;
-          box-shadow: 0 12px 30px -6px rgba(15, 23, 42, 0.18), 0 0 20px rgba(16, 185, 129, 0.12);
-          border: 1px solid rgba(16, 185, 129, 0.25);
-          background: #08291F;
+          box-shadow: 0 12px 30px -6px rgba(15, 23, 42, 0.18), 0 0 20px rgba(245, 158, 11, 0.15);
+          border: 1px solid rgba(245, 158, 11, 0.25);
+          background: #0F172A;
         }
         .modal-photo-img {
           width: 100%;
@@ -3796,9 +3796,9 @@ export default function AboutPage() {
           display: inline-block;
           font-size: 0.78rem;
           font-weight: 700;
-          color: var(--primary-700);
-          background: var(--primary-50);
-          border: 1px solid rgba(16, 185, 129, 0.25);
+          color: var(--primary-saffron-dark, #B45309);
+          background: var(--surface-saffron, #FFF7ED);
+          border: 1px solid rgba(245, 158, 11, 0.25);
           padding: 0.25rem 0.75rem;
           border-radius: var(--radius-pill);
           margin-bottom: 0.85rem;
@@ -3817,7 +3817,7 @@ export default function AboutPage() {
           }
         }
         .modal-loc-icon {
-          color: var(--primary-600);
+          color: var(--primary-saffron, #F59E0B);
         }
         .modal-focus-pills {
           display: flex;
@@ -3833,9 +3833,9 @@ export default function AboutPage() {
         .modal-focus-pill {
           font-size: 0.72rem;
           font-weight: 600;
-          color: #0F4C3A;
-          background: #F0FDF4;
-          border: 1px solid #BBF7D0;
+          color: var(--primary-saffron-dark, #B45309);
+          background: var(--surface-saffron, #FFF7ED);
+          border: 1px solid #FED7AA;
           padding: 0.2rem 0.55rem;
           border-radius: 6px;
         }
@@ -3888,16 +3888,16 @@ export default function AboutPage() {
           transition: all 0.22s ease;
         }
         .modal-contact-item:hover {
-          background: #F0FDF4;
-          border-color: rgba(16, 185, 129, 0.35);
+          background: var(--surface-saffron, #FFF7ED);
+          border-color: rgba(245, 158, 11, 0.35);
           transform: translateX(4px);
         }
         .contact-icon-box {
           width: 36px;
           height: 36px;
           border-radius: 8px;
-          background: #D1FAE5;
-          color: var(--primary-800);
+          background: #FEF3C7;
+          color: #B45309;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -3905,7 +3905,7 @@ export default function AboutPage() {
           transition: background 0.2s ease;
         }
         .modal-contact-item:hover .contact-icon-box {
-          background: #10B981;
+          background: #F59E0B;
           color: white;
         }
         .contact-icon-linkedin {
@@ -3935,7 +3935,7 @@ export default function AboutPage() {
           word-break: break-all;
         }
         .modal-contact-item:hover .contact-value {
-          color: var(--primary-800);
+          color: var(--primary-saffron-dark, #B45309);
         }
         .contact-ext-icon {
           color: var(--slate-400);
@@ -3943,7 +3943,7 @@ export default function AboutPage() {
           flex-shrink: 0;
         }
         .modal-contact-item:hover .contact-ext-icon {
-          color: var(--primary-600);
+          color: var(--primary-saffron, #F59E0B);
         }
 
         @media (prefers-reduced-motion: reduce) {

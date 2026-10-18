@@ -295,7 +295,7 @@ export default function Navbar() {
           display: flex;
           align-items: center;
           justify-content: center;
-          filter: drop-shadow(0 2px 8px rgba(16, 185, 129, 0.15));
+          filter: drop-shadow(0 2px 8px rgba(245, 158, 11, 0.18));
         }
         .navbar-ri-logo {
           width: 100%;
@@ -321,7 +321,7 @@ export default function Navbar() {
         .logo-subtitle {
           font-size: 0.7rem;
           font-weight: 700;
-          color: #059669;
+          color: var(--primary-saffron, #F59E0B);
           letter-spacing: 0.12em;
         }
         .desktop-nav {
@@ -346,7 +346,7 @@ export default function Navbar() {
           transition: color var(--transition-fast);
         }
         .nav-link:hover, .nav-link.active {
-          color: #059669;
+          color: var(--primary-saffron, #F59E0B);
         }
         .nav-link.active::after {
           content: '';
@@ -355,7 +355,7 @@ export default function Navbar() {
           left: 0;
           right: 0;
           height: 2px;
-          background: #10B981;
+          background: var(--primary-saffron, #F59E0B);
           border-radius: var(--radius-pill);
         }
         .nav-split-link {
@@ -371,7 +371,7 @@ export default function Navbar() {
           left: 0;
           right: 0;
           height: 2px;
-          background: var(--primary-600);
+          background: var(--primary-saffron, #F59E0B);
           border-radius: var(--radius-pill);
         }
         .nav-split-link .nav-link.active::after {
@@ -395,7 +395,7 @@ export default function Navbar() {
         .nav-chevron-btn:hover,
         .nav-split-link.active .nav-chevron-btn,
         .nav-chevron-btn.is-open {
-          color: var(--primary-800);
+          color: var(--primary-saffron, #F59E0B);
         }
         .nav-chevron-btn.is-open .nav-chevron-icon {
           transform: rotate(180deg);
@@ -419,7 +419,7 @@ export default function Navbar() {
           background: #FFFFFF;
           border: 1px solid var(--border-subtle);
           border-radius: 16px;
-          box-shadow: 0 16px 36px rgba(8, 41, 31, 0.12);
+          box-shadow: 0 16px 36px rgba(15, 23, 42, 0.12);
           padding: 0.5rem 0;
           z-index: 110;
           animation: fadeIn 0.2s ease-out;
@@ -433,8 +433,8 @@ export default function Navbar() {
           transition: background var(--transition-fast);
         }
         .dropdown-item:hover {
-          background: var(--cream-100);
-          color: #059669;
+          background: var(--surface-saffron, #FFF7ED);
+          color: var(--primary-saffron, #F59E0B);
         }
         .nav-actions {
           display: flex;
@@ -475,26 +475,26 @@ export default function Navbar() {
           color: var(--charcoal-800);
         }
         .login-link:hover {
-          color: #059669;
+          color: var(--primary-saffron, #F59E0B);
         }
         .btn-nav-donate {
           display: inline-flex;
           align-items: center;
           gap: 0.45rem;
-          background: #10B981;
-          color: #042F1A;
+          background: var(--primary-saffron, #F59E0B);
+          color: #FFFFFF;
           font-weight: 700;
           font-size: 0.9rem;
           padding: 0.55rem 1.35rem;
           border-radius: var(--radius-pill);
-          box-shadow: 0 4px 14px rgba(16, 185, 129, 0.25);
+          box-shadow: 0 4px 14px rgba(245, 158, 11, 0.28);
           transition: all var(--transition-fast);
         }
         .btn-nav-donate:hover {
-          background: #059669;
+          background: var(--primary-saffron-hover, #D97706);
           color: #FFFFFF;
           transform: translateY(-2px);
-          box-shadow: 0 6px 18px rgba(16, 185, 129, 0.35);
+          box-shadow: 0 6px 18px rgba(217, 119, 6, 0.35);
         }
         .mobile-toggle-btn {
           display: flex;

@@ -29,7 +29,7 @@ export default function AdminLayout() {
       <aside className="admin-sidebar">
         <div className="admin-brand">
           <div className="admin-logo-icon">
-            <ShieldCheck size={24} color="#10B981" />
+            <ShieldCheck size={24} color="var(--primary-saffron, #F97316)" />
           </div>
           <div>
             <h2 className="admin-brand-title">RI ADMIN</h2>
@@ -114,7 +114,7 @@ export default function AdminLayout() {
         }
         .admin-brand-sub {
           font-size: 0.7rem;
-          color: #10B981;
+          color: var(--primary-saffron, #F97316);
           text-transform: uppercase;
           letter-spacing: 0.05em;
         }
@@ -147,8 +147,8 @@ export default function AdminLayout() {
           color: #FFFFFF;
         }
         .admin-nav-item.active {
-          background: #10B981;
-          color: #042F1A;
+          background: var(--primary-saffron, #F97316);
+          color: #FFFFFF;
           font-weight: 700;
         }
         .admin-sidebar-footer {
@@ -193,8 +193,8 @@ export default function AdminLayout() {
           border-radius: var(--radius-pill);
         }
         .user-role-tag {
-          background: #10B981;
-          color: #042F1A;
+          background: var(--primary-saffron, #F97316);
+          color: #FFFFFF;
           font-size: 0.7rem;
           font-weight: 800;
           padding: 0.15rem 0.5rem;

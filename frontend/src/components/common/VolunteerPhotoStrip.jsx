@@ -91,7 +91,7 @@ export default function VolunteerPhotoStrip({ onExploreRoles }) {
                   '--card-w': `${story.cardWidth || 290}px`,
                   '--rot': `${story.rotation || 0}deg`,
                   '--v-offset': `${story.verticalOffset || 0}px`,
-                  '--accent-color': story.focusColor || '#10B981',
+                  '--accent-color': story.focusColor || 'var(--primary-saffron, #F97316)',
                 }}
               >
                 <button
@@ -114,7 +114,7 @@ export default function VolunteerPhotoStrip({ onExploreRoles }) {
                       <div className="overlay-top">
                         <span 
                           className="focus-pill"
-                          style={{ backgroundColor: story.focusColor || '#10B981' }}
+                          style={{ backgroundColor: story.focusColor || 'var(--primary-saffron, #F97316)' }}
                         >
                           {story.focusArea}
                         </span>
@@ -203,12 +203,12 @@ export default function VolunteerPhotoStrip({ onExploreRoles }) {
                 <div className="story-modal-meta-top">
                   <span 
                     className="story-modal-focus-pill"
-                    style={{ backgroundColor: selectedStory.focusColor || '#10B981' }}
+                    style={{ backgroundColor: selectedStory.focusColor || 'var(--primary-saffron, #F97316)' }}
                   >
                     {selectedStory.focusArea}
                   </span>
                   <span className="story-modal-location">
-                    <MapPin size={13} color="#10B981" />
+                    <MapPin size={13} color="var(--primary-saffron, #F97316)" />
                     <span>{selectedStory.location}</span>
                   </span>
                 </div>
@@ -237,7 +237,7 @@ export default function VolunteerPhotoStrip({ onExploreRoles }) {
                 {selectedStory.milestones && selectedStory.milestones.length > 0 && (
                   <div className="story-modal-milestones">
                     <h4 className="milestones-heading">
-                      <Award size={15} color="#10B981" />
+                      <Award size={15} color="var(--secondary-light-blue, #0EA5E9)" />
                       <span>Key Verified Milestones</span>
                     </h4>
                     <div className="milestones-list">
@@ -426,7 +426,7 @@ export default function VolunteerPhotoStrip({ onExploreRoles }) {
         }
 
         .photo-card-btn:focus-visible {
-          box-shadow: 0 0 0 3px #10B981, 0 0 0 6px rgba(16, 185, 129, 0.4);
+          box-shadow: 0 0 0 3px var(--primary-saffron, #F97316), 0 0 0 6px rgba(249, 115, 22, 0.4);
         }
 
         /* Card Inner Box */
@@ -535,7 +535,7 @@ export default function VolunteerPhotoStrip({ onExploreRoles }) {
         }
 
         .quote-preview-icon {
-          color: #10B981;
+          color: var(--primary-saffron, #F97316);
           flex-shrink: 0;
           margin-top: 2px;
         }
@@ -845,7 +845,7 @@ export default function VolunteerPhotoStrip({ onExploreRoles }) {
         }
 
         .milestone-check {
-          color: #10B981;
+          color: var(--secondary-light-blue, #0EA5E9);
           flex-shrink: 0;
         }
 

@@ -15,7 +15,7 @@ export default function TransformationStories({ stories = [] }) {
       quote_author: 'Meera Sundararajan, Resident Coordinator',
       challenge: 'For over eight years, the stormwater drain had become a stagnant blackwater channel choked with construction debris. Groundwater borewells had run dry down to 900 feet.',
       outcome: 'Today, open water has returned, 42 bird species nest on the created island, and neighboring borewells recharged by 45 feet.',
-      gradient: 'linear-gradient(135deg, #091712 0%, #0F4C3A 60%, #10B981 100%)',
+      gradient: 'linear-gradient(135deg, #0F172A 0%, #1E293B 60%, #B45309 100%)',
     },
     {
       id: 's2',
@@ -51,7 +51,7 @@ export default function TransformationStories({ stories = [] }) {
         {/* Editorial Section Header */}
         <div className="stories-header-center">
           <div className="stories-badge">
-            <Sparkles size={14} className="text-emerald" />
+            <Sparkles size={14} className="text-accent" />
             <span>Real Lives, Real Change</span>
           </div>
 
@@ -64,26 +64,14 @@ export default function TransformationStories({ stories = [] }) {
           </p>
         </div>
 
-        {/* Story Spotlight Carousel Layout (Inspired by Reference Video 00:10-00:12) */}
+        {/* Story Spotlight Card */}
         <div className="story-spotlight-wrapper">
-          {/* Side preview card (Left) */}
-          <button 
-            onClick={handlePrev} 
-            className="carousel-side-card left-preview" 
-            aria-label="Previous Story"
-          >
-            <div className="preview-indicator">
-              <ChevronLeft size={24} />
-            </div>
-            <span className="preview-label">PREVIOUS STORY</span>
-          </button>
-
           {/* Central Active Featured Story */}
           <div className="spotlight-active-card animate-fade-in" key={activeStory.slug || activeStory.id}>
             {/* Visual Header / Backdrop */}
             <div 
               className="spotlight-hero-art"
-              style={{ background: activeStory.gradient || 'linear-gradient(135deg, #091712 0%, #0F4C3A 100%)' }}
+              style={{ background: activeStory.gradient || 'linear-gradient(135deg, #0C1E38 0%, #1E3A8A 60%, #0EA5E9 100%)' }}
             >
               <div className="spotlight-art-meta">
                 <span className="spotlight-category-tag">
@@ -124,7 +112,7 @@ export default function TransformationStories({ stories = [] }) {
                   <p className="contrast-text">{activeStory.challenge}</p>
                 </div>
                 <div className="contrast-box outcome-box">
-                  <span className="contrast-label text-emerald">THE OUTCOME</span>
+                  <span className="contrast-label text-blue">THE OUTCOME</span>
                   <p className="contrast-text">{activeStory.outcome}</p>
                 </div>
               </div>
@@ -136,30 +124,47 @@ export default function TransformationStories({ stories = [] }) {
                   <ArrowRight size={16} />
                 </Link>
 
-                <div className="carousel-stepper-dots">
-                  {storyList.map((_, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setCurrentIndex(i)}
-                      className={`stepper-dot ${i === currentIndex ? 'active' : ''}`}
-                      aria-label={`Go to story ${i + 1}`}
-                    />
-                  ))}
+                <div className="spotlight-counter-indicator">
+                  <span>Story {currentIndex + 1} of {storyList.length}</span>
                 </div>
               </div>
             </div>
           </div>
+        </div>
 
-          {/* Side preview card (Right) */}
+        {/* Horizontal Story Navigation Controls (Strictly Same Horizontal Axis) */}
+        <div className="story-horizontal-navigation" role="navigation" aria-label="Story carousel navigation">
           <button 
+            type="button"
+            onClick={handlePrev} 
+            className="story-nav-btn prev-btn" 
+            aria-label="Previous Story"
+          >
+            <ChevronLeft size={18} />
+            <span>Previous</span>
+          </button>
+
+          <div className="story-nav-dots" role="tablist">
+            {storyList.map((_, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => setCurrentIndex(i)}
+                className={`story-dot ${i === currentIndex ? 'active' : ''}`}
+                aria-label={`Go to story ${i + 1}`}
+                aria-selected={i === currentIndex}
+              />
+            ))}
+          </div>
+
+          <button 
+            type="button"
             onClick={handleNext} 
-            className="carousel-side-card right-preview" 
+            className="story-nav-btn next-btn" 
             aria-label="Next Story"
           >
-            <div className="preview-indicator">
-              <ChevronRight size={24} />
-            </div>
-            <span className="preview-label">NEXT STORY</span>
+            <span>Next</span>
+            <ChevronRight size={18} />
           </button>
         </div>
       </div>
@@ -190,11 +195,14 @@ export default function TransformationStories({ stories = [] }) {
           text-transform: uppercase;
           margin-bottom: 1.25rem;
         }
+        .stories-badge .text-accent {
+          color: var(--primary-saffron, #F97316);
+        }
         .stories-main-title {
           font-family: var(--font-heading);
           font-size: 2.5rem;
           font-weight: 800;
-          color: var(--charcoal-900);
+          color: var(--text-primary, #0F172A);
           letter-spacing: -0.025em;
           line-height: 1.15;
           margin-bottom: 1rem;
@@ -213,60 +221,21 @@ export default function TransformationStories({ stories = [] }) {
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: 1.5rem;
+          width: 100%;
           position: relative;
         }
-        .carousel-side-card {
-          display: none;
-          background: #FFFFFF;
-          border: 1px solid var(--border-subtle);
-          border-radius: 24px;
-          width: 80px;
-          height: 380px;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          transition: all var(--transition-fast);
-          color: var(--charcoal-700);
-          padding: 1rem;
-        }
-        @media (min-width: 1024px) {
-          .carousel-side-card {
-            display: flex;
-          }
-        }
-        .carousel-side-card:hover {
-          background: var(--cream-200);
-          border-color: #10B981;
-          color: #10B981;
-        }
-        .preview-indicator {
-          width: 44px;
-          height: 44px;
-          border-radius: var(--radius-pill);
-          background: var(--cream-100);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          margin-bottom: 1rem;
-        }
-        .preview-label {
-          writing-mode: vertical-rl;
-          transform: rotate(180deg);
-          font-size: 0.72rem;
-          font-weight: 800;
-          letter-spacing: 0.1em;
-          color: var(--text-muted);
-        }
         .spotlight-active-card {
-          flex: 1;
-          max-width: 880px;
+          width: 100%;
+          max-width: 900px;
           background: #FFFFFF;
-          border: 1px solid var(--border-subtle);
-          border-radius: 36px;
+          border: 1px solid var(--border-subtle, #E2E8F0);
+          border-radius: 28px;
           overflow: hidden;
-          box-shadow: 0 25px 50px rgba(8, 41, 31, 0.1);
+          box-shadow: 0 16px 40px rgba(15, 23, 42, 0.08), 0 2px 6px rgba(15, 23, 42, 0.04);
+          transition: box-shadow 0.28s ease, transform 0.28s ease;
+        }
+        .spotlight-active-card:hover {
+          box-shadow: 0 24px 50px rgba(15, 23, 42, 0.12), 0 6px 16px rgba(15, 23, 42, 0.05);
         }
         .spotlight-hero-art {
           height: 240px;
@@ -283,35 +252,36 @@ export default function TransformationStories({ stories = [] }) {
           justify-content: space-between;
         }
         .spotlight-category-tag {
-          background: rgba(0, 0, 0, 0.4);
+          background: rgba(0, 0, 0, 0.45);
           backdrop-filter: blur(8px);
-          border: 1px solid rgba(255, 255, 255, 0.2);
+          border: 1px solid rgba(255, 255, 255, 0.25);
           color: #FFFFFF;
-          padding: 0.35rem 0.85rem;
+          padding: 0.35rem 0.95rem;
           border-radius: var(--radius-pill);
           font-size: 0.75rem;
           font-weight: 700;
+          letter-spacing: 0.04em;
         }
         .spotlight-location-tag {
           display: flex;
           align-items: center;
           gap: 0.35rem;
-          background: rgba(0, 0, 0, 0.4);
+          background: rgba(0, 0, 0, 0.45);
           backdrop-filter: blur(8px);
-          border: 1px solid rgba(255, 255, 255, 0.2);
+          border: 1px solid rgba(255, 255, 255, 0.25);
           color: #E2E8F0;
-          padding: 0.35rem 0.85rem;
+          padding: 0.35rem 0.95rem;
           border-radius: var(--radius-pill);
           font-size: 0.75rem;
           font-weight: 600;
         }
         .beneficiary-callout {
           display: inline-block;
-          background: rgba(255, 255, 255, 0.15);
+          background: rgba(255, 255, 255, 0.18);
           backdrop-filter: blur(10px);
-          border: 1px solid rgba(255, 255, 255, 0.25);
+          border: 1px solid rgba(255, 255, 255, 0.3);
           color: #FFFFFF;
-          padding: 0.45rem 1.25rem;
+          padding: 0.45rem 1.35rem;
           border-radius: var(--radius-pill);
           font-weight: 700;
           font-size: 0.85rem;
@@ -329,41 +299,41 @@ export default function TransformationStories({ stories = [] }) {
           font-size: 1.85rem;
           font-weight: 800;
           line-height: 1.25;
-          color: var(--charcoal-900);
+          color: var(--text-primary, #0F172A);
           margin-bottom: 1.5rem;
         }
         .spotlight-story-title a:hover {
-          color: #059669;
+          color: var(--primary-saffron, #F97316);
         }
         .spotlight-quote-bubble {
-          background: var(--cream-50);
-          border-left: 4px solid #10B981;
+          background: var(--cream-50, #FDFBF7);
+          border-left: 4px solid var(--primary-saffron, #F97316);
           padding: 1.5rem 1.75rem;
           border-radius: 0 20px 20px 0;
           margin-bottom: 2rem;
         }
         .quote-mark {
-          color: #10B981;
+          color: var(--primary-saffron, #F97316);
           margin-bottom: 0.5rem;
         }
         .quote-paragraph {
           font-style: italic;
           font-size: 1.05rem;
           line-height: 1.6;
-          color: var(--charcoal-800);
+          color: var(--text-primary, #0F172A);
           margin-bottom: 0.5rem;
         }
         .quote-byline {
           display: block;
           font-size: 0.825rem;
           font-weight: 700;
-          color: #059669;
+          color: var(--primary-saffron-hover, #EA580C);
         }
         .transformation-contrast-grid {
           display: grid;
           grid-template-columns: 1fr;
           gap: 1.5rem;
-          margin-bottom: 2.5rem;
+          margin-bottom: 2.25rem;
         }
         @media (min-width: 640px) {
           .transformation-contrast-grid {
@@ -371,72 +341,153 @@ export default function TransformationStories({ stories = [] }) {
           }
         }
         .contrast-box {
-          padding: 1.25rem;
+          padding: 1.35rem;
           border-radius: 16px;
-          border: 1px solid var(--border-subtle);
+          border: 1px solid var(--border-subtle, #E2E8F0);
         }
         .challenge-box {
           background: #FFFDF9;
         }
         .outcome-box {
-          background: #F0FDF4;
-          border-color: #BBF7D0;
+          background: var(--secondary-blue-light, #F0F9FF);
+          border-color: rgba(14, 165, 233, 0.25);
         }
         .contrast-label {
           display: block;
           font-size: 0.72rem;
           font-weight: 800;
           letter-spacing: 0.08em;
-          color: var(--text-muted);
+          color: var(--text-secondary, #475569);
           margin-bottom: 0.4rem;
+        }
+        .contrast-label.text-blue {
+          color: var(--secondary-light-blue-hover, #0284C7);
         }
         .contrast-text {
           font-size: 0.9rem;
           line-height: 1.55;
-          color: var(--charcoal-800);
+          color: var(--text-primary, #0F172A);
         }
         .spotlight-action-bar {
           display: flex;
           align-items: center;
           justify-content: space-between;
           padding-top: 1.5rem;
-          border-top: 1px solid var(--border-subtle);
+          border-top: 1px solid var(--border-subtle, #E2E8F0);
         }
         .btn-read-journey {
           display: inline-flex;
           align-items: center;
           gap: 0.6rem;
-          background: #10B981;
-          color: #042F1A;
+          background: var(--primary-saffron, #F97316);
+          color: #FFFFFF;
           font-weight: 700;
           font-size: 0.95rem;
           padding: 0.8rem 1.65rem;
           border-radius: var(--radius-pill);
-          box-shadow: 0 8px 20px rgba(16, 185, 129, 0.25);
+          box-shadow: 0 4px 14px rgba(249, 115, 22, 0.25);
           transition: all var(--transition-fast);
         }
         .btn-read-journey:hover {
-          background: #059669;
+          background: var(--primary-saffron-hover, #EA580C);
           color: #FFFFFF;
           transform: translateY(-2px);
+          box-shadow: 0 8px 20px rgba(234, 88, 12, 0.35);
         }
-        .carousel-stepper-dots {
+        .spotlight-counter-indicator {
+          font-size: 0.85rem;
+          font-weight: 700;
+          color: var(--text-secondary, #64748B);
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+        }
+
+        /* 3 & 4. HORIZONTAL STORY NAVIGATION CONTROLS */
+        .story-horizontal-navigation {
           display: flex;
           align-items: center;
-          gap: 0.5rem;
+          justify-content: space-between;
+          width: 100%;
+          max-width: 900px;
+          margin: 2rem auto 0 auto;
+          padding: 0.5rem 0.5rem;
+          gap: 1rem;
         }
-        .stepper-dot {
-          width: 12px;
-          height: 12px;
+        .story-nav-btn {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.5rem;
+          height: 44px;
+          min-width: 130px;
+          padding: 0 1.4rem;
+          background: #FFFFFF;
+          border: 1px solid var(--border-subtle, #E2E8F0);
           border-radius: var(--radius-pill);
-          background: var(--cream-300);
+          color: var(--text-primary, #0F172A);
+          font-weight: 700;
+          font-size: 0.925rem;
+          cursor: pointer;
+          box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+          transition: all 0.2s ease;
+          white-space: nowrap;
+          flex-shrink: 0;
+        }
+        .story-nav-btn:hover {
+          background: var(--primary-saffron, #F97316);
+          color: #FFFFFF;
+          border-color: var(--primary-saffron, #F97316);
+          transform: translateY(-2px);
+          box-shadow: 0 6px 18px rgba(249, 115, 22, 0.28);
+        }
+        .story-nav-btn:active {
+          transform: translateY(0);
+        }
+        .story-nav-dots {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.65rem;
+          flex: 1;
+        }
+        .story-dot {
+          width: 10px;
+          height: 10px;
+          border-radius: var(--radius-pill);
+          background: #CBD5E1;
           border: none;
           cursor: pointer;
-          transition: all var(--transition-fast);
+          transition: all 0.25s ease;
+          padding: 0;
         }
-        .stepper-dot.active {
+        .story-dot.active {
           width: 32px;
-          background: #10B981;
+          background: var(--primary-saffron, #F97316);
+        }
+        .story-dot:hover:not(.active) {
+          background: #94A3B8;
+        }
+        @media (max-width: 640px) {
+          .story-horizontal-navigation {
+            padding: 0.5rem 0.25rem;
+            gap: 0.5rem;
+          }
+          .story-nav-btn {
+            height: 40px;
+            min-width: 95px;
+            padding: 0 0.9rem;
+            font-size: 0.825rem;
+          }
+          .story-nav-dots {
+            gap: 0.4rem;
+          }
+          .story-dot {
+            width: 8px;
+            height: 8px;
+          }
+          .story-dot.active {
+            width: 22px;
+          }
         }
       `}</style>
     </section>

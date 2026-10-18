@@ -188,15 +188,15 @@ export default function CareersPage() {
 
       <style>{`
         .careers-hero {
-          background: linear-gradient(135deg, #091712 0%, #0F4C3A 100%);
+          background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
           color: white;
           padding: 5rem 0 4rem 0;
           text-align: center;
         }
         .careers-hero .section-badge {
-          background: rgba(16, 185, 129, 0.2);
-          color: #34D399;
-          border-color: rgba(52, 211, 153, 0.4);
+          background: rgba(125, 211, 252, 0.15);
+          color: #7DD3FC;
+          border-color: rgba(125, 211, 252, 0.35);
         }
         .careers-hero-title {
           color: white;

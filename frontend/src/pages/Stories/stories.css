@@ -8,7 +8,7 @@
    HERO SECTION (Preserved from existing design)
    -------------------------------------------------------------------------- */
 .stories-hero {
-  background: linear-gradient(135deg, #091712 0%, #0F4C3A 100%);
+  background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
   color: #FFFFFF;
   padding: 5.5rem 0 4.5rem 0;
   text-align: center;
@@ -24,14 +24,14 @@
   transform: translateX(-50%);
   width: 800px;
   height: 350px;
-  background: radial-gradient(circle, rgba(16, 185, 129, 0.12) 0%, rgba(15, 76, 58, 0) 70%);
+  background: radial-gradient(circle, rgba(125, 211, 252, 0.12) 0%, rgba(15, 23, 42, 0) 70%);
   pointer-events: none;
 }
 
 .stories-hero .section-badge {
-  background: rgba(16, 185, 129, 0.18);
-  color: #34D399;
-  border-color: rgba(52, 211, 153, 0.35);
+  background: rgba(125, 211, 252, 0.15);
+  color: #7DD3FC;
+  border-color: rgba(125, 211, 252, 0.35);
   margin-bottom: 1.25rem;
 }
 
@@ -376,7 +376,7 @@
    -------------------------------------------------------------------------- */
 .story-quote-section {
   padding: 5.5rem 0;
-  background: linear-gradient(135deg, #08291F 0%, #0F4C3A 60%, #162035 100%);
+  background: linear-gradient(135deg, #0F172A 0%, #1E293B 60%, #0F172A 100%);
   color: #FFFFFF;
   position: relative;
   overflow: hidden;
@@ -1446,10 +1446,10 @@
   left: 0;
   right: 0;
   height: 3.5px;
-  background: linear-gradient(90deg, #10B981 0%, #059669 50%, #34D399 100%);
+  background: linear-gradient(90deg, #F59E0B 0%, #D97706 50%, #FBBF24 100%);
   transform-origin: 0%;
   z-index: 9999;
-  box-shadow: 0 0 12px rgba(16, 185, 129, 0.65);
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.65);
   pointer-events: none;
 }
 
@@ -1464,7 +1464,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #091712;
+  background-color: #0F172A;
 }
 
 .stories-hero-video-container {
@@ -1489,21 +1489,21 @@
 .stories-hero-overlay-dark {
   position: absolute;
   inset: 0;
-  background: rgba(9, 23, 18, 0.74);
+  background: rgba(15, 23, 42, 0.74);
   z-index: 2;
 }
 
 .stories-hero-overlay-gradient {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(9, 23, 18, 0.4) 0%, rgba(9, 23, 18, 0.85) 75%, #091712 100%);
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.4) 0%, rgba(15, 23, 42, 0.85) 75%, #0F172A 100%);
   z-index: 3;
 }
 
 .stories-hero-mesh-glow {
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at 50% 25%, rgba(16, 185, 129, 0.18) 0%, transparent 65%);
+  background: radial-gradient(circle at 50% 25%, rgba(125, 211, 252, 0.18) 0%, transparent 65%);
   z-index: 4;
   pointer-events: none;
 }
@@ -1528,7 +1528,7 @@
   left: 15%;
   width: 360px;
   height: 360px;
-  background: rgba(16, 185, 129, 0.18);
+  background: rgba(125, 211, 252, 0.18);
 }
 
 .stories-light-orb.orb-2 {
@@ -1536,7 +1536,7 @@
   right: 15%;
   width: 400px;
   height: 400px;
-  background: rgba(13, 148, 136, 0.16);
+  background: rgba(245, 158, 11, 0.16);
 }
 
 .stories-hero-content-wrapper {
@@ -1559,9 +1559,9 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  background: rgba(16, 185, 129, 0.22);
-  border: 1px solid rgba(52, 211, 153, 0.45);
-  color: #6EE7B7;
+  background: rgba(125, 211, 252, 0.15);
+  border: 1px solid rgba(125, 211, 252, 0.4);
+  color: #7DD3FC;
   backdrop-filter: blur(8px);
   padding: 0.35rem 0.95rem;
   border-radius: 9999px;
@@ -1570,11 +1570,11 @@
   text-transform: uppercase;
   letter-spacing: 0.08em;
   margin-bottom: 1.5rem;
-  box-shadow: 0 0 18px rgba(16, 185, 129, 0.28);
+  box-shadow: 0 0 18px rgba(125, 211, 252, 0.25);
 }
 
 .badge-sparkle-icon {
-  color: #34D399;
+  color: #7DD3FC;
   animation: badgeSparkleGlow 2.5s ease-in-out infinite alternate;
 }
 

@@ -10,7 +10,7 @@ const pillars = [
     shortName: 'Environment & Water',
     tag: 'ECOLOGICAL RESTORATION',
     icon: TreePine,
-    color: '#10B981',
+    color: '#0EA5E9',
     description: 'Protecting lakes, desilting stormwater inflow feeder channels, and creating urban Miyawaki micro-forests for climate-resilient cities.',
     sdg: 'SDG 6: Clean Water • SDG 13: Climate Action',
     slug: 'environment',
@@ -359,7 +359,7 @@ export default function ResponsibilityWheel() {
         .center-logo-sub {
           font-size: 0.62rem;
           font-weight: 700;
-          color: #10B981;
+          color: var(--primary-saffron, #F97316);
           letter-spacing: 0.1em;
         }
         .wheel-active-detail-panel {

@@ -76,7 +76,7 @@ const defaultImpactAreas = [
     name: 'Environment & Water Restoration',
     description: 'Protecting lakes, restoring urban watersheds, and driving afforestation for resilient cities.',
     icon_name: 'TreePine',
-    color_accent: '#10B981',
+    color_accent: '#F59E0B',
     sdg_alignment: 'SDG 6: Clean Water, SDG 13: Climate Action, SDG 15: Life on Land',
     metrics: fallbackAreaMetrics.environment,
   },
@@ -86,7 +86,7 @@ const defaultImpactAreas = [
     name: 'Education & Digital Literacy',
     description: 'Equipping underserved government schools with modern digital STEM labs and teacher mentorship.',
     icon_name: 'GraduationCap',
-    color_accent: '#3B82F6',
+    color_accent: '#38BDF8',
     sdg_alignment: 'SDG 4: Quality Education, SDG 10: Reduced Inequalities',
     metrics: fallbackAreaMetrics.education,
   },
@@ -106,7 +106,7 @@ const defaultImpactAreas = [
     name: 'Healthcare & Preventive Wellness',
     description: 'Providing mobile diagnostics, maternal wellness checkups, and clean drinking water filtration.',
     icon_name: 'HeartPulse',
-    color_accent: '#EC4899',
+    color_accent: '#0284C7',
     sdg_alignment: 'SDG 3: Good Health and Well-being',
     metrics: fallbackAreaMetrics.health,
   },
@@ -116,7 +116,7 @@ const defaultImpactAreas = [
     name: 'Sustainable Livelihoods & Skills',
     description: 'Empowering women micro-entrepreneurs and youth through vocational training and market linkages.',
     icon_name: 'Briefcase',
-    color_accent: '#8B5CF6',
+    color_accent: '#D97706',
     sdg_alignment: 'SDG 8: Decent Work and Economic Growth',
     metrics: fallbackAreaMetrics.livelihood,
   },
@@ -126,7 +126,7 @@ const defaultImpactAreas = [
     name: 'Civic Responsibility & Youth Leadership',
     description: 'Engaging youth and citizen collectives to bridge the gap between citizens and local governance.',
     icon_name: 'ShieldCheck',
-    color_accent: '#0D9488',
+    color_accent: '#38BDF8',
     sdg_alignment: 'SDG 16: Peace, Justice and Strong Institutions, SDG 17: Partnerships',
     metrics: fallbackAreaMetrics.civic,
   },
@@ -142,7 +142,7 @@ const publicationDisclosures = [
     description: 'Comprehensive analysis of 6 lake revivals, 42 rural STEM smart classrooms, and audited financial statements.',
     meta: 'PDF • 14.2 MB • Section 12A / 80G Certified',
     coverImage: areaEnvImg,
-    themeColor: '#059669',
+    themeColor: '#F59E0B',
     stats: [
       { label: 'Revivals Certified', value: '6 Lakes' },
       { label: 'Smart Classrooms', value: '42 Schools' },
@@ -157,7 +157,7 @@ const publicationDisclosures = [
     description: 'Water quality parameters, dissolved oxygen shifts, and avian biodiversity census for Bengaluru East lake clusters.',
     meta: 'PDF • 8.6 MB • Hydrological Research',
     coverImage: areaEduImg,
-    themeColor: '#2563EB',
+    themeColor: '#0284C7',
     stats: [
       { label: 'Sites Monitored', value: '45 Clusters' },
       { label: 'Quality Standard', value: 'ISO 10500' },
@@ -317,7 +317,7 @@ export default function ImpactPage() {
               const isRevealed = Boolean(revealedAreas[areaKey]);
               const bgImage = getAreaImage(area, idx);
               const AreaIcon = getAreaIcon(area, idx);
-              const accentColor = area.color_accent || '#10B981';
+              const accentColor = area.color_accent || 'var(--primary-saffron, #F59E0B)';
               const isReversed = idx % 2 === 1;
 
               const areaMetrics = (area.metrics && area.metrics.length > 0) 
@@ -523,7 +523,7 @@ export default function ImpactPage() {
         .impact-hero-wrapper {
           position: relative;
           overflow: hidden;
-          background-color: #04140e;
+          background-color: #0F172A;
           color: white;
           padding: 5.5rem 0 1.5rem 0;
           text-align: center;
@@ -539,7 +539,7 @@ export default function ImpactPage() {
           object-position: center 30%;
           pointer-events: none;
           z-index: 0;
-          filter: brightness(0.62) saturate(1.25);
+          filter: brightness(0.62) saturate(1.1);
         }
 
         .impact-hero-video-overlay {
@@ -547,10 +547,12 @@ export default function ImpactPage() {
           inset: 0;
           background: radial-gradient(
             circle at 50% 28%,
-            rgba(6, 40, 28, 0.65) 0%,
-            rgba(4, 24, 17, 0.82) 55%,
-            rgba(2, 12, 8, 0.94) 100%
-          );
+            rgba(15, 23, 42, 0.65) 0%,
+            rgba(15, 23, 42, 0.82) 55%,
+            rgba(10, 15, 28, 0.94) 100%
+          ),
+          radial-gradient(circle at 15% 20%, rgba(245, 158, 11, 0.08) 0%, transparent 40%),
+          radial-gradient(circle at 85% 70%, rgba(125, 211, 252, 0.08) 0%, transparent 40%);
           pointer-events: none;
           z-index: 1;
         }
@@ -578,8 +580,8 @@ export default function ImpactPage() {
         }
 
         .video-toggle-pill:hover {
-          background: rgba(16, 185, 129, 0.25);
-          border-color: rgba(52, 211, 153, 0.45);
+          background: rgba(245, 158, 11, 0.2);
+          border-color: rgba(245, 158, 11, 0.45);
           color: #ffffff;
         }
 
@@ -590,10 +592,16 @@ export default function ImpactPage() {
         }
 
         .impact-hero-wrapper .section-badge {
-          background: rgba(16, 185, 129, 0.22);
-          color: #34D399;
-          border: 1px solid rgba(52, 211, 153, 0.45);
-          box-shadow: 0 0 15px rgba(16, 185, 129, 0.2);
+          background: rgba(255, 247, 237, 0.95);
+          color: #D97706;
+          border: 1px solid #F59E0B;
+          box-shadow: 0 0 15px rgba(245, 158, 11, 0.2);
+        }
+
+        .impact-focus-section .section-badge {
+          background: #FFF7ED;
+          color: #D97706;
+          border: 1px solid #F59E0B;
         }
 
         .impact-hero-title {
@@ -926,8 +934,8 @@ export default function ImpactPage() {
         .pillar-metric-card:hover {
           transform: translateY(-3px);
           background: #FFFFFF;
-          border-color: rgba(16, 185, 129, 0.4);
-          box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.06);
+          border-color: rgba(245, 158, 11, 0.4);
+          box-shadow: 0 10px 20px -5px rgba(15, 23, 42, 0.06);
         }
 
         .metric-card-top {
@@ -1037,8 +1045,8 @@ export default function ImpactPage() {
           border-radius: 24px;
           overflow: hidden;
           background: #FFFFFF;
-          border: 1.5px solid rgba(16, 185, 129, 0.22);
-          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+          border: 1.5px solid rgba(226, 232, 240, 0.9);
+          box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
           cursor: pointer;
           outline: none;
           display: flex;
@@ -1052,8 +1060,8 @@ export default function ImpactPage() {
         .morphing-report-card:hover,
         .morphing-report-card:focus-within {
           transform: translateY(-6px);
-          box-shadow: 0 20px 45px rgba(0, 0, 0, 0.1), 0 0 25px rgba(16, 185, 129, 0.15);
-          border-color: rgba(16, 185, 129, 0.55);
+          box-shadow: 0 20px 45px rgba(15, 23, 42, 0.1), 0 0 25px rgba(245, 158, 11, 0.12);
+          border-color: rgba(245, 158, 11, 0.5);
         }
 
         /* 1. Immersive Portrait Frame -> Morphs into Compact Square and Slides Up */
@@ -1077,7 +1085,7 @@ export default function ImpactPage() {
           width: 110px;
           height: 110px;
           border-radius: 20px;
-          box-shadow: 0 12px 28px rgba(0, 0, 0, 0.16), 0 0 0 3px rgba(16, 185, 129, 0.4);
+          box-shadow: 0 12px 28px rgba(15, 23, 42, 0.16), 0 0 0 3px rgba(245, 158, 11, 0.35);
           z-index: 5;
         }
 
@@ -1103,8 +1111,8 @@ export default function ImpactPage() {
           padding: 3.5rem 1.75rem 1.75rem;
           background: linear-gradient(
             to top,
-            rgba(4, 20, 14, 0.96) 0%,
-            rgba(4, 20, 14, 0.68) 55%,
+            rgba(15, 23, 42, 0.96) 0%,
+            rgba(15, 23, 42, 0.68) 55%,
             transparent 100%
           );
           color: #FFFFFF;
@@ -1126,9 +1134,9 @@ export default function ImpactPage() {
           align-self: flex-start;
           font-size: 0.7rem;
           font-weight: 700;
-          color: #34D399;
-          background: rgba(16, 185, 129, 0.25);
-          border: 1px solid rgba(52, 211, 153, 0.4);
+          color: #D97706;
+          background: #FFF7ED;
+          border: 1px solid rgba(245, 158, 11, 0.35);
           padding: 0.2rem 0.65rem;
           border-radius: var(--radius-pill);
           margin-bottom: 0.25rem;
@@ -1145,7 +1153,7 @@ export default function ImpactPage() {
 
         .report-morph-resting-meta {
           font-size: 0.8rem;
-          color: #A7F3D0;
+          color: #7DD3FC;
           font-weight: 600;
           margin: 0;
         }
@@ -1164,8 +1172,8 @@ export default function ImpactPage() {
           width: 6px;
           height: 6px;
           border-radius: 50%;
-          background: #10B981;
-          box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.4);
+          background: var(--primary-saffron, #F59E0B);
+          box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.4);
           animation: pulseHint 1.8s infinite;
         }
 
@@ -1248,9 +1256,9 @@ export default function ImpactPage() {
         .report-drawer-meta {
           font-size: 0.75rem;
           font-weight: 700;
-          color: #059669;
-          background: #ECFDF5;
-          border: 1px solid rgba(16, 185, 129, 0.25);
+          color: #D97706;
+          background: #FFF7ED;
+          border: 1px solid rgba(245, 158, 11, 0.25);
           padding: 0.25rem 0.6rem;
           border-radius: var(--radius-sm);
           display: inline-block;
@@ -1310,18 +1318,18 @@ export default function ImpactPage() {
           font-size: 0.8rem;
           font-weight: 700;
           color: #FFFFFF;
-          background: linear-gradient(135deg, #059669 0%, #047857 100%);
+          background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
           border: none;
           border-radius: var(--radius-pill);
           padding: 0.55rem 1rem;
           cursor: pointer;
-          box-shadow: 0 4px 14px rgba(5, 150, 105, 0.25);
+          box-shadow: 0 4px 14px rgba(245, 158, 11, 0.25);
           transition: all var(--transition-fast);
         }
 
         .report-primary-dl-btn:hover {
           transform: translateY(-1px);
-          box-shadow: 0 6px 18px rgba(5, 150, 105, 0.35);
+          box-shadow: 0 6px 18px rgba(217, 119, 6, 0.35);
         }
 
         .report-secondary-btn {

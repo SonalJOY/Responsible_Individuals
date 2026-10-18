@@ -192,11 +192,13 @@ export default function ImpactCounter({
             const cardKey = item.key || item.id || `stat-${idx}`;
             const isFlipped = Boolean(flippedCards[cardKey]);
             const details = secondaryDetailsMap[item.key] || fallbackSecondaryList[idx] || fallbackSecondaryList[0];
+            const isThemeBlue = idx % 2 === 1;
+            const themeClass = isThemeBlue ? 'is-theme-blue' : 'is-theme-saffron';
 
             return (
               <div
                 key={cardKey}
-                className={`flip-box ${flipAxis} ${isFlipped ? 'is-flipped' : ''}`}
+                className={`flip-box ${flipAxis} ${themeClass} ${isFlipped ? 'is-flipped' : ''}`}
                 onClick={() => toggleCard(cardKey)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
@@ -275,10 +277,10 @@ export default function ImpactCounter({
           position: relative;
           overflow: hidden;
           padding: 4.5rem 0 5rem 0;
-          color: white;
+          color: #0F172A;
           border-top: 1px solid rgba(255, 255, 255, 0.12);
           border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-          background-color: #061912;
+          background-color: #0F172A;
         }
 
         .impact-counter-wrapper.is-transparent {
@@ -298,7 +300,7 @@ export default function ImpactCounter({
           object-position: center;
           pointer-events: none;
           z-index: 0;
-          filter: brightness(0.62) saturate(1.2);
+          filter: brightness(0.62) saturate(1.1);
         }
 
         /* Slightly blurred fallback background image */
@@ -307,22 +309,24 @@ export default function ImpactCounter({
           inset: -25px;
           background-size: cover;
           background-position: center 30%;
-          filter: blur(6px) brightness(0.42) saturate(1.25);
+          filter: blur(6px) brightness(0.42) saturate(1.1);
           transform: scale(1.06);
           pointer-events: none;
           z-index: 0;
         }
 
-        /* Emerald overlay gradient for lush mood & high readability */
+        /* Subtle neutral overlay gradient with saffron & light-blue atmospheric touches */
         .impact-bg-overlay {
           position: absolute;
           inset: 0;
           background: radial-gradient(
             circle at 50% 35%,
-            rgba(16, 76, 58, 0.72) 0%,
-            rgba(8, 36, 26, 0.88) 55%,
-            rgba(4, 20, 14, 0.95) 100%
-          );
+            rgba(15, 23, 42, 0.72) 0%,
+            rgba(15, 23, 42, 0.88) 55%,
+            rgba(10, 15, 28, 0.95) 100%
+          ),
+          radial-gradient(circle at 15% 20%, rgba(245, 158, 11, 0.08) 0%, transparent 40%),
+          radial-gradient(circle at 85% 70%, rgba(125, 211, 252, 0.08) 0%, transparent 40%);
           pointer-events: none;
           z-index: 1;
         }
@@ -350,16 +354,16 @@ export default function ImpactCounter({
           gap: 0.5rem;
           font-size: 0.85rem;
           font-weight: 700;
-          color: #6EE7B7;
-          background: rgba(16, 185, 129, 0.15);
-          border: 1px solid rgba(52, 211, 153, 0.3);
+          color: #D97706;
+          background: rgba(255, 247, 237, 0.95);
+          border: 1px solid #F59E0B;
           padding: 0.4rem 0.85rem;
           border-radius: var(--radius-pill);
           letter-spacing: 0.02em;
         }
 
         .badge-sparkle {
-          color: #34D399;
+          color: #F59E0B;
           animation: pulseGlow 2.5s infinite ease-in-out;
         }
 
@@ -393,16 +397,16 @@ export default function ImpactCounter({
         }
 
         .flip-ctrl-btn:hover {
-          background: rgba(16, 185, 129, 0.22);
-          border-color: rgba(52, 211, 153, 0.45);
+          background: rgba(245, 158, 11, 0.18);
+          border-color: rgba(245, 158, 11, 0.45);
           color: #FFFFFF;
           transform: translateY(-1px);
         }
 
         .flip-toggle-all {
-          background: rgba(16, 185, 129, 0.18);
-          border-color: rgba(52, 211, 153, 0.35);
-          color: #A7F3D0;
+          background: rgba(255, 247, 237, 0.9);
+          border-color: #FED7AA;
+          color: #D97706;
         }
 
         /* 3D FLIP CARD GRID */
@@ -436,7 +440,7 @@ export default function ImpactCounter({
         }
 
         .flip-box:focus-visible {
-          box-shadow: 0 0 0 3px #34D399;
+          box-shadow: 0 0 0 3px #F59E0B;
         }
 
         /* 3D Inner Wrapper */
@@ -479,19 +483,27 @@ export default function ImpactCounter({
           overflow: hidden;
         }
 
-        /* FRONT SIDE STYLING */
+        /* FRONT SIDE STYLING: Bright White / Light Neutral Surfaces */
         .flip-box-front {
-          background: rgba(8, 30, 22, 0.62);
+          background: rgba(255, 255, 255, 0.95);
           backdrop-filter: blur(14px);
           -webkit-backdrop-filter: blur(14px);
-          border: 1px solid rgba(255, 255, 255, 0.16);
-          box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
-          transition: border-color var(--transition-normal), box-shadow var(--transition-normal);
+          border: 1px solid #E2E8F0;
+          box-shadow: 0 12px 35px rgba(15, 23, 42, 0.08);
+          transition: border-color var(--transition-normal), box-shadow var(--transition-normal), transform var(--transition-normal);
         }
 
         .flip-box:hover .flip-box-front {
-          border-color: rgba(52, 211, 153, 0.4);
-          box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45), 0 0 25px rgba(16, 185, 129, 0.15);
+          box-shadow: 0 16px 40px rgba(15, 23, 42, 0.12);
+          transform: translateY(-2px);
+        }
+
+        .flip-box.is-theme-saffron:hover .flip-box-front {
+          border-color: rgba(245, 158, 11, 0.45);
+        }
+
+        .flip-box.is-theme-blue:hover .flip-box-front {
+          border-color: rgba(125, 211, 252, 0.7);
         }
 
         .front-top-row {
@@ -500,30 +512,58 @@ export default function ImpactCounter({
           justify-content: space-between;
         }
 
-        .counter-icon-box {
+        /* Card 1 & 3: Saffron Icon Box */
+        .flip-box.is-theme-saffron .counter-icon-box {
           width: 52px;
           height: 52px;
           border-radius: var(--radius-lg);
-          background: linear-gradient(135deg, rgba(16, 185, 129, 0.28) 0%, rgba(5, 150, 105, 0.12) 100%);
-          border: 1px solid rgba(52, 211, 153, 0.35);
-          color: #34D399;
+          background: #FFF7ED;
+          border: 1px solid #FED7AA;
+          color: #D97706;
           display: flex;
           align-items: center;
           justify-content: center;
           flex-shrink: 0;
-          box-shadow: 0 4px 14px rgba(16, 185, 129, 0.25);
+          box-shadow: 0 4px 14px rgba(245, 158, 11, 0.12);
         }
 
-        .front-metric-badge {
+        /* Card 2 & 4: Light Blue Icon Box */
+        .flip-box.is-theme-blue .counter-icon-box {
+          width: 52px;
+          height: 52px;
+          border-radius: var(--radius-lg);
+          background: #F0F9FF;
+          border: 1px solid #BAE6FD;
+          color: #0284C7;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+          box-shadow: 0 4px 14px rgba(56, 189, 248, 0.12);
+        }
+
+        .flip-box.is-theme-saffron .front-metric-badge {
           font-size: 0.725rem;
           font-weight: 700;
           text-transform: uppercase;
           letter-spacing: 0.08em;
-          color: #A7F3D0;
-          background: rgba(16, 185, 129, 0.15);
+          color: #D97706;
+          background: #FFF7ED;
           padding: 0.25rem 0.65rem;
           border-radius: var(--radius-pill);
-          border: 1px solid rgba(52, 211, 153, 0.25);
+          border: 1px solid #FED7AA;
+        }
+
+        .flip-box.is-theme-blue .front-metric-badge {
+          font-size: 0.725rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
+          color: #0284C7;
+          background: #F0F9FF;
+          padding: 0.25rem 0.65rem;
+          border-radius: var(--radius-pill);
+          border: 1px solid #BAE6FD;
         }
 
         .counter-content {
@@ -535,36 +575,46 @@ export default function ImpactCounter({
           font-size: 2.5rem;
           font-weight: 800;
           line-height: 1.05;
-          color: #FFFFFF;
+          color: #0F172A;
           margin-bottom: 0.45rem;
           letter-spacing: -0.025em;
-          text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
         }
 
         .counter-label {
           font-size: 1.05rem;
-          color: #E2E8F0;
+          color: #475569;
           font-weight: 600;
           line-height: 1.35;
         }
 
+        /* Card Divider & Prompt */
         .flip-prompt-pill {
           display: inline-flex;
           align-items: center;
           gap: 0.45rem;
           font-size: 0.75rem;
           font-weight: 600;
-          color: #94A3B8;
+          color: #475569;
           padding-top: 0.65rem;
-          border-top: 1px solid rgba(255, 255, 255, 0.08);
+          border-top: 1px solid #E2E8F0;
           transition: color var(--transition-fast);
         }
 
-        .flip-box:hover .flip-prompt-pill {
-          color: #34D399;
+        .flip-box.is-theme-saffron:hover .flip-prompt-pill {
+          color: #D97706;
         }
 
-        .flip-icon-spin {
+        .flip-box.is-theme-blue:hover .flip-prompt-pill {
+          color: #0284C7;
+        }
+
+        .flip-box.is-theme-saffron .flip-icon-spin {
+          color: #F59E0B;
+          transition: transform 0.4s ease;
+        }
+
+        .flip-box.is-theme-blue .flip-icon-spin {
+          color: #38BDF8;
           transition: transform 0.4s ease;
         }
 
@@ -572,13 +622,13 @@ export default function ImpactCounter({
           transform: rotate(180deg);
         }
 
-        /* BACK SIDE STYLING */
+        /* BACK SIDE STYLING: Crisp White Back Surfaces */
         .flip-box-back {
-          background: rgba(5, 28, 20, 0.92);
+          background: rgba(255, 255, 255, 0.98);
           backdrop-filter: blur(18px);
           -webkit-backdrop-filter: blur(18px);
-          border: 1px solid rgba(52, 211, 153, 0.45);
-          box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5), inset 0 0 30px rgba(16, 185, 129, 0.08);
+          border: 1px solid #E2E8F0;
+          box-shadow: 0 16px 40px rgba(15, 23, 42, 0.1);
         }
 
         .flip-box.horizontal .flip-box-back {
@@ -589,24 +639,46 @@ export default function ImpactCounter({
           transform: rotateX(180deg);
         }
 
+        .flip-box.is-theme-saffron:hover .flip-box-back {
+          border-color: rgba(245, 158, 11, 0.45);
+        }
+
+        .flip-box.is-theme-blue:hover .flip-box-back {
+          border-color: rgba(125, 211, 252, 0.7);
+        }
+
         .back-header {
           display: flex;
           align-items: center;
           justify-content: space-between;
           padding-bottom: 0.65rem;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+          border-bottom: 1px solid #E2E8F0;
         }
 
-        .back-badge {
+        .flip-box.is-theme-saffron .back-badge {
           display: inline-flex;
           align-items: center;
           gap: 0.35rem;
           font-size: 0.75rem;
           font-weight: 700;
-          color: #34D399;
-          background: rgba(16, 185, 129, 0.18);
+          color: #D97706;
+          background: #FFF7ED;
           padding: 0.2rem 0.55rem;
           border-radius: var(--radius-pill);
+          border: 1px solid #FED7AA;
+        }
+
+        .flip-box.is-theme-blue .back-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.35rem;
+          font-size: 0.75rem;
+          font-weight: 700;
+          color: #0284C7;
+          background: #F0F9FF;
+          padding: 0.2rem 0.55rem;
+          border-radius: var(--radius-pill);
+          border: 1px solid #BAE6FD;
         }
 
         .back-return-cue {
@@ -614,7 +686,7 @@ export default function ImpactCounter({
           align-items: center;
           gap: 0.3rem;
           font-size: 0.725rem;
-          color: #94A3B8;
+          color: #64748B;
           font-weight: 500;
         }
 
@@ -629,14 +701,23 @@ export default function ImpactCounter({
         .back-title {
           font-size: 1.05rem;
           font-weight: 700;
-          color: #FFFFFF;
+          color: #0F172A;
           margin-bottom: 0.15rem;
           line-height: 1.25;
         }
 
-        .back-subtitle {
+        .flip-box.is-theme-saffron .back-subtitle {
           font-size: 0.75rem;
-          color: #6EE7B7;
+          color: #D97706;
+          font-weight: 600;
+          margin-bottom: 0.75rem;
+          text-transform: uppercase;
+          letter-spacing: 0.04em;
+        }
+
+        .flip-box.is-theme-blue .back-subtitle {
+          font-size: 0.75rem;
+          color: #0284C7;
           font-weight: 600;
           margin-bottom: 0.75rem;
           text-transform: uppercase;
@@ -658,24 +739,32 @@ export default function ImpactCounter({
           line-height: 1.3;
         }
 
-        .highlight-val {
+        .flip-box.is-theme-saffron .highlight-val {
           font-family: var(--font-heading);
           font-weight: 800;
           font-size: 0.95rem;
-          color: #34D399;
+          color: #D97706;
+          min-width: 34px;
+        }
+
+        .flip-box.is-theme-blue .highlight-val {
+          font-family: var(--font-heading);
+          font-weight: 800;
+          font-size: 0.95rem;
+          color: #0284C7;
           min-width: 34px;
         }
 
         .highlight-label {
-          color: #CBD5E1;
+          color: #475569;
         }
 
         .back-note {
           font-size: 0.725rem;
-          color: #94A3B8;
+          color: #64748B;
           line-height: 1.35;
           margin: 0;
-          border-top: 1px dashed rgba(255, 255, 255, 0.12);
+          border-top: 1px dashed #E2E8F0;
           padding-top: 0.45rem;
           font-style: italic;
         }
