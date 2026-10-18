@@ -91,19 +91,19 @@ export default function CursorNetworkField() {
       const isDark = mouse.isDarkSection;
 
       // Responsible Individuals brand colors:
-      // Light canvas: neutral/forest (15, 76, 58) -> vibrant emerald (16, 185, 129)
-      // Dark canvas: dark mint (52, 211, 153) -> seafoam (110, 231, 183)
-      const baseR = isDark ? 52 : 15;
-      const baseG = isDark ? 211 : 76;
-      const baseB = isDark ? 153 : 58;
+      // Dark canvas: light blue (125, 211, 252) -> saffron (245, 158, 11)
+      // Light canvas: slate neutral (100, 116, 139) -> saffron (245, 158, 11)
+      const baseR = isDark ? 125 : 100;
+      const baseG = isDark ? 211 : 116;
+      const baseB = isDark ? 252 : 139;
 
-      const targetR = isDark ? 110 : 16;
-      const targetG = isDark ? 231 : 185;
-      const targetB = isDark ? 183 : 129;
+      const targetR = 245;
+      const targetG = 158;
+      const targetB = 11;
 
-      const lineR = isDark ? 110 : 16;
-      const lineG = isDark ? 231 : 185;
-      const lineB = isDark ? 183 : 129;
+      const lineR = isDark ? 125 : 56;
+      const lineG = isDark ? 211 : 189;
+      const lineB = isDark ? 252 : 248;
 
       // 1. Update Dot Positions, Autonomous Orbit, & Cursor Repulsion
       const activeDots = [];

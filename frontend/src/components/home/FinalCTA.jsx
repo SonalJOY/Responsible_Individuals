@@ -38,7 +38,7 @@ export default function FinalCTA() {
         {/* Central Content */}
         <div className="final-cta-content">
           <div className="final-cta-badge">
-            <Sparkles size={14} className="text-emerald" />
+            <Sparkles size={14} className="text-saffron" />
             <span>RESPONSIBILITY INTO ACTION</span>
           </div>
 
@@ -51,7 +51,7 @@ export default function FinalCTA() {
           </p>
 
           <div className="final-cta-buttons">
-            <Link to="/donate" className="btn-cta-emerald">
+            <Link to="/donate" className="btn-cta-primary">
               <Heart size={18} fill="currentColor" />
               <span>Donate Now</span>
               <div className="cta-arrow-dot">
@@ -65,7 +65,7 @@ export default function FinalCTA() {
           </div>
 
           <div className="final-cta-tax-note">
-            <ShieldCheck size={16} className="text-emerald" />
+            <ShieldCheck size={16} className="text-light-blue" />
             <span>All donations eligible for 50% deduction under Section 80G of the Indian Income Tax Act.</span>
           </div>
         </div>
@@ -77,6 +77,12 @@ export default function FinalCTA() {
           padding: 8rem 0;
           position: relative;
           overflow: hidden;
+        }
+        .text-saffron {
+          color: var(--primary-saffron, #F97316);
+        }
+        .text-light-blue {
+          color: var(--secondary-light-blue, #0EA5E9);
         }
         .final-cta-container {
           position: relative;
@@ -146,24 +152,25 @@ export default function FinalCTA() {
           gap: 1.25rem;
           margin-bottom: 2.5rem;
         }
-        .btn-cta-emerald {
+        .btn-cta-primary {
           display: inline-flex;
           align-items: center;
           gap: 0.75rem;
-          background: #10B981;
-          color: #042F1A;
+          background: var(--primary-saffron, #F97316);
+          color: #FFFFFF;
           font-weight: 700;
           font-size: 1.1rem;
           padding: 0.95rem 1.75rem;
           border-radius: var(--radius-pill);
-          box-shadow: 0 10px 25px rgba(16, 185, 129, 0.35);
+          box-shadow: 0 10px 25px rgba(249, 115, 22, 0.35);
           transition: all var(--transition-fast);
+          text-decoration: none;
         }
-        .btn-cta-emerald:hover {
-          background: #059669;
+        .btn-cta-primary:hover {
+          background: #EA580C;
           color: #FFFFFF;
           transform: translateY(-2px);
-          box-shadow: 0 14px 30px rgba(16, 185, 129, 0.45);
+          box-shadow: 0 14px 30px rgba(249, 115, 22, 0.45);
         }
         .cta-arrow-dot {
           width: 28px;
@@ -243,16 +250,16 @@ export default function FinalCTA() {
           border: 3px solid #FFFFFF;
         }
         .wetland-photo {
-          background: linear-gradient(135deg, #091712 0%, #10B981 100%);
+          background: linear-gradient(135deg, #0F172A 0%, #0EA5E9 100%);
         }
         .stem-photo {
-          background: linear-gradient(135deg, #1E3A8A 0%, #3B82F6 100%);
+          background: linear-gradient(135deg, #1E293B 0%, #38BDF8 100%);
         }
         .volunteer-photo {
-          background: linear-gradient(135deg, #BE123C 0%, #F43F5E 100%);
+          background: linear-gradient(135deg, #7C2D12 0%, #F97316 100%);
         }
         .csr-photo {
-          background: linear-gradient(135deg, #047857 0%, #059669 100%);
+          background: linear-gradient(135deg, #0F172A 0%, #EA580C 100%);
         }
         .bubble-tag {
           background: #FFFFFF;

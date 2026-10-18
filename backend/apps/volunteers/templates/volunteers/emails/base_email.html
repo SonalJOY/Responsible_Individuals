@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ subject }}</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #F8FAFC;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      color: #0F172A;
+      -webkit-font-smoothing: antialiased;
+    }
+    .wrapper {
+      width: 100%;
+      background-color: #F8FAFC;
+      padding: 32px 0;
+    }
+    .container {
+      max-width: 580px;
+      margin: 0 auto;
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+    }
+    .header {
+      background: linear-gradient(135deg, #08291F 0%, #0F4C3A 100%);
+      padding: 28px 32px;
+      text-align: left;
+    }
+    .header-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #34D399;
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(52, 211, 153, 0.3);
+      padding: 4px 10px;
+      border-radius: 9999px;
+      margin-bottom: 8px;
+    }
+    .header-title {
+      color: #FFFFFF;
+      margin: 0;
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+    .content {
+      padding: 32px;
+      font-size: 15px;
+      line-height: 1.65;
+      color: #334155;
+    }
+    .content h2 {
+      font-size: 18px;
+      font-weight: 700;
+      color: #0F172A;
+      margin-top: 0;
+      margin-bottom: 16px;
+    }
+    .content p {
+      margin-top: 0;
+      margin-bottom: 16px;
+    }
+    .info-card {
+      background-color: #F8FAFC;
+      border: 1px solid #E2E8F0;
+      border-left: 4px solid #10B981;
+      border-radius: 8px;
+      padding: 18px 20px;
+      margin: 20px 0;
+    }
+    .info-card-item {
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+    .info-card-item:last-child {
+      margin-bottom: 0;
+    }
+    .info-label {
+      font-weight: 600;
+      color: #475569;
+      display: inline-block;
+      min-width: 130px;
+    }
+    .info-value {
+      color: #0F172A;
+      font-weight: 500;
+    }
+    .status-badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .status-approved {
+      background: #D1FAE5;
+      color: #065F46;
+    }
+    .status-pending {
+      background: #FEF3C7;
+      color: #92400E;
+    }
+    .status-rejected {
+      background: #FEE2E2;
+      color: #991B1B;
+    }
+    .status-waitlisted {
+      background: #E0E7FF;
+      color: #3730A3;
+    }
+    .footer {
+      padding: 24px 32px;
+      background-color: #F8FAFC;
+      border-top: 1px solid #E2E8F0;
+      font-size: 13px;
+      color: #64748B;
+      text-align: center;
+      line-height: 1.5;
+    }
+    .footer p {
+      margin: 4px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="container">
+      <div class="header">
+        <span class="header-badge">Volunteer Support</span>
+        <h1 class="header-title">Responsible Individuals</h1>
+      </div>
+      <div class="content">
+        {% block content %}{% endblock %}
+      </div>
+      <div class="footer">
+        <p><strong>Responsible Individuals Foundation</strong></p>
+        <p>Empowering citizen-led community environmental, educational, and civic impact.</p>
+        <p>Questions? Contact us at <a href="mailto:{{ contact_email }}" style="color: #059669; text-decoration: none;">{{ contact_email }}</a></p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

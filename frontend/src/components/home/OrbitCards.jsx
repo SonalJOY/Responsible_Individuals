@@ -129,7 +129,7 @@ export default function OrbitCards({
   rotation = 0,
   duration = 40,
   showPath = false,
-  pathColor = 'rgba(16, 185, 129, 0.18)',
+  pathColor = 'rgba(249, 115, 22, 0.15)',
   pathWidth = 2,
 }) {
   const containerRef = useRef(null);
@@ -319,21 +319,21 @@ export default function OrbitCards({
         }
         .orbit-pillar-card {
           background: #FFFFFF;
-          border: 1px solid rgba(232, 226, 214, 0.95);
+          border: 1px solid var(--border-subtle, #E2E8F0);
           border-radius: 22px;
           padding: 1.4rem 1.5rem;
-          box-shadow: 0 14px 36px rgba(8, 41, 31, 0.08);
+          box-shadow: 0 10px 30px rgba(15, 23, 42, 0.07);
           display: flex;
           flex-direction: column;
           gap: 0.65rem;
-          transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+          transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.28s ease;
           pointer-events: auto;
           cursor: pointer;
         }
         .orbit-pillar-card:hover {
-          transform: translateY(-4px);
-          box-shadow: 0 20px 48px rgba(8, 41, 31, 0.14);
-          border-color: #10B981;
+          transform: translateY(-5px) scale(1.02);
+          box-shadow: 0 20px 45px rgba(15, 23, 42, 0.12);
+          border-color: var(--primary-saffron, #F97316);
         }
         .orbit-card-top {
           display: flex;
@@ -362,13 +362,13 @@ export default function OrbitCards({
           font-family: var(--font-heading);
           font-size: 1.05rem;
           font-weight: 800;
-          color: var(--charcoal-900);
+          color: var(--text-primary, #0F172A);
           line-height: 1.25;
         }
         .orbit-card-desc {
           font-size: 0.82rem;
           line-height: 1.45;
-          color: var(--text-muted);
+          color: var(--text-secondary, #475569);
           display: -webkit-box;
           -webkit-line-clamp: 3;
           -webkit-box-orient: vertical;
@@ -380,12 +380,12 @@ export default function OrbitCards({
           justify-content: space-between;
           margin-top: 0.4rem;
           padding-top: 0.6rem;
-          border-top: 1px solid var(--border-subtle);
+          border-top: 1px solid var(--border-subtle, #E2E8F0);
         }
         .orbit-card-sdg {
           font-size: 0.68rem;
           font-weight: 600;
-          color: var(--text-muted);
+          color: var(--text-secondary, #64748B);
         }
         .orbit-card-link {
           display: inline-flex;
@@ -409,7 +409,7 @@ export default function OrbitCards({
         }
         .center-hub-card {
           background: #FFFFFF;
-          border: 2px solid var(--border-subtle);
+          border: 2px solid var(--border-subtle, #E2E8F0);
           border-radius: var(--radius-pill);
           width: 150px;
           height: 150px;
@@ -417,7 +417,7 @@ export default function OrbitCards({
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          box-shadow: 0 16px 36px rgba(8, 41, 31, 0.12);
+          box-shadow: 0 16px 36px rgba(15, 23, 42, 0.1);
         }
         .center-logo-img-wrapper {
           width: 48px;
@@ -436,19 +436,19 @@ export default function OrbitCards({
           font-family: var(--font-heading);
           font-size: 0.78rem;
           font-weight: 800;
-          color: var(--charcoal-900);
+          color: var(--text-primary, #0F172A);
           letter-spacing: 0.04em;
         }
         .center-logo-sub {
           font-size: 0.6rem;
           font-weight: 700;
-          color: #10B981;
+          color: var(--primary-saffron, #F97316);
           letter-spacing: 0.1em;
         }
         .center-logo-caption {
           font-size: 0.52rem;
           font-weight: 700;
-          color: var(--text-muted);
+          color: var(--text-secondary, #64748B);
           letter-spacing: 0.06em;
           margin-top: 0.15rem;
         }

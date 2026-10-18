@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="100%" height="100%">
+  <defs>
+    <linearGradient id="lakeSky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0F4C3A" />
+      <stop offset="50%" stop-color="#115E59" />
+      <stop offset="100%" stop-color="#0D9488" />
+    </linearGradient>
+    <linearGradient id="waterGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0F766E" />
+      <stop offset="50%" stop-color="#14B8A6" />
+      <stop offset="100%" stop-color="#042F2C" />
+    </linearGradient>
+    <linearGradient id="landGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#15803D" />
+      <stop offset="100%" stop-color="#166534" />
+    </linearGradient>
+  </defs>
+
+  <!-- Sky & Background -->
+  <rect width="800" height="500" fill="url(#lakeSky)" />
+
+  <!-- Sun Glow -->
+  <circle cx="650" cy="120" r="100" fill="#FEF08A" opacity="0.25" />
+  <circle cx="650" cy="120" r="60" fill="#FEF08A" opacity="0.4" />
+
+  <!-- Distant Trees / Hills -->
+  <path d="M0 260 Q 150 210, 300 240 T 600 230 T 800 250 L 800 500 L 0 500 Z" fill="#064E3B" opacity="0.7" />
+  <path d="M0 290 Q 200 250, 450 280 T 800 270 L 800 500 L 0 500 Z" fill="url(#landGrad)" />
+
+  <!-- Lake Water Body -->
+  <path d="M 0 340 Q 250 310, 500 350 T 800 330 L 800 500 L 0 500 Z" fill="url(#waterGrad)" />
+
+  <!-- Water Reflections -->
+  <ellipse cx="400" cy="400" rx="300" ry="15" fill="#5EEAD4" opacity="0.2" />
+  <ellipse cx="350" cy="430" rx="200" ry="10" fill="#99F6E4" opacity="0.25" />
+
+  <!-- Wetland Reeds & Vegetation -->
+  <g fill="#22C55E">
+    <path d="M 50 500 L 60 380 L 70 500 Z" />
+    <path d="M 75 500 L 90 360 L 105 500 Z" fill="#15803D" />
+    <path d="M 110 500 L 120 390 L 130 500 Z" />
+    <path d="M 680 500 L 700 370 L 720 500 Z" />
+    <path d="M 730 500 L 750 350 L 770 500 Z" fill="#166534" />
+  </g>
+
+  <!-- People silhouettes planting saplings -->
+  <g fill="#F8FAFC" opacity="0.9">
+    <!-- Person 1 kneeling planting -->
+    <circle cx="280" cy="365" r="10" />
+    <path d="M 270 375 Q 280 370, 290 385 L 295 410 L 265 410 Z" />
+
+    <!-- Person 2 standing holding sapling -->
+    <circle cx="340" cy="340" r="11" />
+    <path d="M 330 355 L 350 355 L 348 395 L 332 395 Z" />
+
+    <!-- Sapling in hands -->
+    <path d="M 348 360 Q 365 350, 375 355" stroke="#4ADE80" stroke-width="4" fill="none" />
+    <circle cx="375" cy="353" r="6" fill="#4ADE80" />
+  </g>
+
+  <!-- Text Overlay Badge -->
+  <rect x="30" y="30" width="260" height="42" rx="21" fill="rgba(15, 23, 42, 0.65)" />
+  <text x="50" y="56" fill="#5EEAD4" font-family="sans-serif" font-size="14" font-weight="bold">LAKE RESTORATION DRIVE</text>
+</svg>

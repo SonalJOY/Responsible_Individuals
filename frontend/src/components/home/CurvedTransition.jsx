@@ -3,7 +3,7 @@ import React from 'react';
 /**
  * CurvedTransition: Organic SVG arc separating sections, inspired by the HopeRise reference video.
  * @param {string} type - 'convex' (dome curving upward) or 'concave' (dome scooping downward)
- * @param {string} fill - fill color (e.g. #FDFBF7, #FFFFFF, #08291F)
+ * @param {string} fill - fill color (e.g. #FDFBF7, #FFFFFF, #0F172A)
  * @param {boolean} flip - whether to flip vertically (for section bottom)
  * @param {string} className - optional extra class names
  */

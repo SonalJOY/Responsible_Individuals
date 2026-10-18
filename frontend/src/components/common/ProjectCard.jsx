@@ -33,12 +33,12 @@ export default function ProjectCard({ project }) {
         ) : (
           <div 
             className="project-card-placeholder"
-            style={{ background: `linear-gradient(135deg, ${focus_area_color || '#0F4C3A'} 0%, #0F172A 100%)` }}
+            style={{ background: `linear-gradient(135deg, ${focus_area_color || '#1E293B'} 0%, #0F172A 100%)` }}
           >
             <span className="project-placeholder-text">{focus_area_name || 'Social Impact'}</span>
           </div>
         )}
-        <div className="project-card-badge" style={{ backgroundColor: focus_area_color || '#10B981' }}>
+        <div className="project-card-badge" style={{ backgroundColor: focus_area_color || 'var(--primary-saffron, #F59E0B)' }}>
           {focus_area_name || 'Community Initiative'}
         </div>
       </div>
@@ -64,14 +64,14 @@ export default function ProjectCard({ project }) {
           <div className="progress-bar-track">
             <div 
               className="progress-bar-fill" 
-              style={{ width: `${Math.min(progress_percentage, 100)}%`, backgroundColor: focus_area_color || '#10B981' }}
+              style={{ width: `${Math.min(progress_percentage, 100)}%`, backgroundColor: focus_area_color || 'var(--primary-saffron, #F97316)' }}
             />
           </div>
         </div>
 
         <div className="project-card-footer">
           <div className="beneficiaries-stat">
-            <Users size={16} color="#059669" />
+            <Users size={16} color="var(--secondary-light-blue, #0EA5E9)" />
             <span><strong>{(beneficiaries_count || 0).toLocaleString()}</strong> impacted</span>
           </div>
           <Link to={`/projects/${slug}`} className="project-action-link">

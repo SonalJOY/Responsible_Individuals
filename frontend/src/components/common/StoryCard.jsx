@@ -23,7 +23,7 @@ export default function StoryCard({ story }) {
         <div className="story-meta-bar">
           <span 
             className="story-area-badge" 
-            style={{ backgroundColor: focus_area_color || '#10B981' }}
+            style={{ backgroundColor: focus_area_color || 'var(--primary-saffron, #F97316)' }}
           >
             {focus_area_name || 'Story of Change'}
           </span>

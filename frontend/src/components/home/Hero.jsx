@@ -49,7 +49,7 @@ export default function Hero() {
             fontWeight={800}
             color="#FFFFFF"
             highlightWords={['Citizens.']}
-            highlightColor="#34D399"
+            highlightColor="#F59E0B"
             className="hero-fold-headline"
           />
         </div>
@@ -99,7 +99,7 @@ export default function Hero() {
           justify-content: center;
           overflow: hidden;
           padding: 5.5rem 1.5rem 5rem 1.5rem;
-          background-color: #08291F;
+          background-color: #0F172A;
         }
 
         /* 1. Full Hero Background Video: z-index: 0 */
@@ -114,13 +114,14 @@ export default function Hero() {
           pointer-events: none;
         }
 
-        /* 2. Subtle Brand-Tinted Video Overlay: z-index: 1 */
+        /* 2. Atmospheric Neutral Video Overlay with Saffron and Light Blue Hues: z-index: 1 */
         .hero-video-bg-overlay {
           position: absolute;
           inset: 0;
           background: 
-            radial-gradient(circle at 50% 45%, rgba(8, 41, 31, 0.62) 0%, rgba(8, 41, 31, 0.82) 70%, rgba(4, 25, 18, 0.94) 100%),
-            linear-gradient(180deg, rgba(8, 41, 31, 0.65) 0%, rgba(8, 41, 31, 0.45) 50%, rgba(8, 41, 31, 0.9) 100%);
+            radial-gradient(ellipse at 80% 20%, rgba(245, 158, 11, 0.15) 0%, transparent 50%),
+            radial-gradient(ellipse at 20% 80%, rgba(125, 211, 252, 0.14) 0%, transparent 55%),
+            linear-gradient(180deg, rgba(15, 23, 42, 0.74) 0%, rgba(15, 23, 42, 0.52) 50%, rgba(15, 23, 42, 0.90) 100%);
           z-index: 1;
           pointer-events: none;
         }
@@ -146,16 +147,16 @@ export default function Hero() {
           display: inline-flex;
           align-items: center;
           gap: 0.65rem;
-          background: rgba(255, 255, 255, 0.1);
+          background: rgba(15, 23, 42, 0.45);
           backdrop-filter: blur(14px);
           -webkit-backdrop-filter: blur(14px);
-          border: 1px solid rgba(255, 255, 255, 0.22);
+          border: 1px solid rgba(125, 211, 252, 0.3);
           padding: 0.5rem 1.35rem;
           border-radius: var(--radius-pill, 9999px);
           font-size: 0.85rem;
           font-weight: 700;
           color: #FFFFFF;
-          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25), 0 0 15px rgba(125, 211, 252, 0.08);
           letter-spacing: 0.03em;
         }
 
@@ -167,7 +168,7 @@ export default function Hero() {
         }
 
         .text-emerald {
-          color: #34D399;
+          color: var(--secondary-light-blue, #7DD3FC);
         }
 
         /* Hero FoldText Headline */
@@ -209,22 +210,22 @@ export default function Hero() {
           display: inline-flex;
           align-items: center;
           gap: 0.85rem;
-          background: #10B981;
-          color: #042F1A;
+          background: var(--primary-saffron, #F59E0B);
+          color: #FFFFFF;
           font-weight: 700;
           font-size: 1.05rem;
           padding: 0.9rem 1.35rem 0.9rem 1.95rem;
           border-radius: var(--radius-pill, 9999px);
-          box-shadow: 0 8px 28px rgba(16, 185, 129, 0.45);
+          box-shadow: 0 8px 28px rgba(245, 158, 11, 0.38);
           transition: all var(--transition-normal, 0.3s cubic-bezier(0.16, 1, 0.3, 1));
           text-decoration: none;
         }
 
         .btn-editorial-primary:hover {
-          background: #34D399;
-          color: #042F1A;
+          background: var(--primary-saffron-hover, #D97706);
+          color: #FFFFFF;
           transform: translateY(-2px);
-          box-shadow: 0 12px 36px rgba(16, 185, 129, 0.6);
+          box-shadow: 0 12px 36px rgba(217, 119, 6, 0.5);
         }
 
         .btn-arrow-circle {
@@ -254,17 +255,17 @@ export default function Hero() {
           background: rgba(255, 255, 255, 0.08);
           backdrop-filter: blur(10px);
           -webkit-backdrop-filter: blur(10px);
-          border: 1px solid rgba(255, 255, 255, 0.28);
+          border: 1px solid rgba(125, 211, 252, 0.35);
           box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
           transition: all var(--transition-fast, 0.15s ease);
           text-decoration: none;
         }
 
         .btn-editorial-secondary:hover {
-          background: rgba(255, 255, 255, 0.18);
-          border-color: rgba(255, 255, 255, 0.5);
+          background: rgba(125, 211, 252, 0.14);
+          border-color: var(--secondary-light-blue, #7DD3FC);
           transform: translateY(-2px);
-          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+          box-shadow: 0 8px 24px rgba(125, 211, 252, 0.2);
         }
 
         .hero-proof-bar {
@@ -289,7 +290,7 @@ export default function Hero() {
         }
 
         .proof-icon {
-          color: #34D399;
+          color: var(--secondary-light-blue, #7DD3FC);
         }
 
         /* Staggered Entrance Animations */

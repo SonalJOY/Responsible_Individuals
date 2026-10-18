@@ -81,6 +81,7 @@ class VolunteerApplication(TimeStampedModel):
         PENDING = 'PENDING', 'Pending Review'
         APPROVED = 'APPROVED', 'Accepted'
         REJECTED = 'REJECTED', 'Declined'
+        WAITLISTED = 'WAITLISTED', 'Waitlisted'
 
     opportunity = models.ForeignKey(VolunteerOpportunity, on_delete=models.CASCADE, related_name='applications')
     volunteer_profile = models.ForeignKey(VolunteerProfile, on_delete=models.CASCADE, related_name='applications')
@@ -107,3 +108,36 @@ class VolunteerParticipation(TimeStampedModel):
 
     def __str__(self):
         return f"{self.volunteer_profile.full_name} - {self.hours} hrs on {self.date}"
+
+
+class Certificate(TimeStampedModel):
+    class Status(models.TextChoices):
+        ACTIVE = 'ACTIVE', 'Active & Valid'
+        REVOKED = 'REVOKED', 'Revoked'
+
+    volunteer_profile = models.ForeignKey(
+        VolunteerProfile,
+        on_delete=models.CASCADE,
+        related_name='certificates'
+    )
+    certificate_code = models.CharField(
+        max_length=100,
+        unique=True,
+        db_index=True,
+        help_text="Unique verifiable certificate identification number, e.g. RI-CERT-2026-XXXX"
+    )
+    title = models.CharField(max_length=255, default="Certificate of Volunteer Service")
+    description = models.TextField(blank=True, help_text="Summary of contribution or recognition")
+    issue_date = models.DateField()
+    hours_recognized = models.DecimalField(max_digits=6, decimal_places=1, default=0.0)
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.ACTIVE, db_index=True)
+    issued_by = models.CharField(max_length=150, default="Responsible Individuals Foundation")
+
+    class Meta:
+        ordering = ['-issue_date', '-created_at']
+        verbose_name = 'Volunteer Certificate'
+        verbose_name_plural = 'Volunteer Certificates'
+
+    def __str__(self):
+        return f"{self.certificate_code} - {self.volunteer_profile.full_name} ({self.hours_recognized} hrs)"
+

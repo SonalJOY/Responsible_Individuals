@@ -1,0 +1,35 @@
+{% extends "volunteers/emails/base_email.html" %}
+
+{% block content %}
+<h2>Update on Your Volunteer Application</h2>
+
+<p>Dear {{ full_name }},</p>
+
+<p>Thank you for taking the time to apply for the <strong>{{ opportunity_title }}</strong> volunteer initiative. We truly appreciate your enthusiasm and desire to contribute to our mission.</p>
+
+<p>After careful review of all submissions for this specific cohort, we regret to inform you that we are unable to offer you a placement for this role at this time due to limited capacity or specialized role requirements.</p>
+
+<div class="info-card">
+  <div class="info-card-item">
+    <span class="info-label">Opportunity:</span>
+    <span class="info-value">{{ opportunity_title }}</span>
+  </div>
+  <div class="info-card-item">
+    <span class="info-label">Application Status:</span>
+    <span class="status-badge status-rejected">Declined</span>
+  </div>
+  {% if review_notes %}
+  <div class="info-card-item">
+    <span class="info-label">Review Notes:</span>
+    <span class="info-value">{{ review_notes }}</span>
+  </div>
+  {% endif %}
+</div>
+
+<p><strong>Stay Connected:</strong></p>
+<p>New seasonal programs and community drives launch regularly. We warmly encourage you to keep an eye on upcoming volunteer opportunities that match your interests and availability.</p>
+
+<p>Thank you once again for your commitment to social and environmental responsibility.</p>
+
+<p style="margin-top: 24px;">Warm regards,<br><strong>Responsible Individuals Volunteer Team</strong></p>
+{% endblock %}

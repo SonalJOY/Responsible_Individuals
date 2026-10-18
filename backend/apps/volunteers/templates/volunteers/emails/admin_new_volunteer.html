@@ -1,0 +1,62 @@
+{% extends "volunteers/emails/base_email.html" %}
+
+{% block content %}
+<h2>New Volunteer Registered</h2>
+
+<p>A new volunteer has successfully created a profile on the <strong>Responsible Individuals</strong> platform.</p>
+
+<div class="info-card">
+  <div class="info-card-item">
+    <span class="info-label">Full Name:</span>
+    <span class="info-value">{{ full_name }}</span>
+  </div>
+  <div class="info-card-item">
+    <span class="info-label">Email:</span>
+    <span class="info-value">{{ email }}</span>
+  </div>
+  {% if phone %}
+  <div class="info-card-item">
+    <span class="info-label">Phone:</span>
+    <span class="info-value">{{ phone }}</span>
+  </div>
+  {% endif %}
+  {% if city %}
+  <div class="info-card-item">
+    <span class="info-label">Location:</span>
+    <span class="info-value">{{ city }}{% if state %}, {{ state }}{% endif %}</span>
+  </div>
+  {% endif %}
+  {% if occupation %}
+  <div class="info-card-item">
+    <span class="info-label">Occupation:</span>
+    <span class="info-value">{{ occupation }}</span>
+  </div>
+  {% endif %}
+  {% if skills %}
+  <div class="info-card-item">
+    <span class="info-label">Skills:</span>
+    <span class="info-value">{{ skills }}</span>
+  </div>
+  {% endif %}
+  {% if availability %}
+  <div class="info-card-item">
+    <span class="info-label">Availability:</span>
+    <span class="info-value">{{ availability }}</span>
+  </div>
+  {% endif %}
+  {% if interests_list %}
+  <div class="info-card-item">
+    <span class="info-label">Selected Interests:</span>
+    <span class="info-value">{{ interests_list }}</span>
+  </div>
+  {% endif %}
+  <div class="info-card-item">
+    <span class="info-label">Registered At:</span>
+    <span class="info-value">{{ registered_at }}</span>
+  </div>
+</div>
+
+<p>You can view and manage volunteer profiles in the Admin Portal.</p>
+
+<p style="margin-top: 24px;">Regards,<br><strong>System Notification Engine</strong></p>
+{% endblock %}

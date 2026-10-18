@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="100%" height="100%">
+  <defs>
+    <linearGradient id="stemBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E3A8A" />
+      <stop offset="50%" stop-color="#1E40AF" />
+      <stop offset="100%" stop-color="#2563EB" />
+    </linearGradient>
+    <linearGradient id="labDesk" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#334155" />
+      <stop offset="100%" stop-color="#1E293B" />
+    </linearGradient>
+  </defs>
+
+  <!-- Classroom Sky/Wall -->
+  <rect width="800" height="500" fill="url(#stemBg)" />
+
+  <!-- Digital Science Grid overlay -->
+  <path d="M 0 100 L 800 100 M 0 200 L 800 200 M 0 300 L 800 300" stroke="rgba(255,255,255,0.08)" stroke-width="1" />
+  <path d="M 200 0 L 200 500 M 400 0 L 400 500 M 600 0 L 600 500" stroke="rgba(255,255,255,0.08)" stroke-width="1" />
+
+  <!-- Glowing Sun / Light -->
+  <circle cx="150" cy="100" r="120" fill="#60A5FA" opacity="0.2" />
+
+  <!-- Smart Lab Desk -->
+  <rect x="0" y="320" width="800" height="180" fill="url(#labDesk)" />
+  <rect x="0" y="320" width="800" height="6" fill="#3B82F6" />
+
+  <!-- Microscope & Robotic Kit Icons -->
+  <g fill="#93C5FD" stroke="#93C5FD">
+    <!-- Microscope -->
+    <rect x="220" y="240" width="16" height="80" rx="4" />
+    <circle cx="228" cy="230" r="18" fill="none" stroke-width="4" />
+    <rect x="200" y="300" width="60" height="10" rx="3" />
+    <path d="M 240 270 L 270 285" stroke-width="6" stroke-linecap="round" />
+
+    <!-- Robotic Kit / Circuit -->
+    <rect x="520" y="270" width="90" height="50" rx="8" fill="#1E293B" stroke="#60A5FA" stroke-width="3" />
+    <circle cx="545" cy="295" r="8" fill="#EF4444" />
+    <circle cx="575" cy="295" r="8" fill="#10B981" />
+  </g>
+
+  <!-- Students Silhouettes -->
+  <g fill="#F8FAFC" opacity="0.95">
+    <!-- Student 1 looking into equipment -->
+    <circle cx="330" cy="240" r="16" />
+    <path d="M 310 265 C 310 265, 330 260, 350 265 L 355 325 L 305 325 Z" />
+
+    <!-- Student 2 smiling/raising hand -->
+    <circle cx="440" cy="230" r="17" />
+    <path d="M 420 255 L 460 255 L 465 325 L 415 325 Z" />
+    <path d="M 460 255 Q 480 220, 485 200" stroke="#F8FAFC" stroke-width="6" fill="none" stroke-linecap="round" />
+  </g>
+
+  <!-- Badge -->
+  <rect x="30" y="30" width="240" height="42" rx="21" fill="rgba(15, 23, 42, 0.65)" />
+  <text x="50" y="56" fill="#93C5FD" font-family="sans-serif" font-size="14" font-weight="bold">RURAL STEM SMART LAB</text>
+</svg>

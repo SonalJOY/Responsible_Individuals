@@ -1,3 +1,4 @@
+
 import axios from 'axios';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || '/api/v1';
@@ -10,214 +11,701 @@ const api = axios.create({
 });
 
 // Attach JWT access token if present
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('ri_access_token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-}, (error) => Promise.reject(error));
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('ri_access_token');
 
-// Service modules
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// Response interceptor to handle expired/invalid JWT tokens gracefully
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+
+    // Check if error is 401 and we haven't retried yet
+    if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
+      originalRequest._retry = true;
+      const refreshToken = localStorage.getItem('ri_refresh_token');
+
+      if (refreshToken) {
+        try {
+          // Attempt to refresh the access token
+          const refreshRes = await axios.post(`${API_BASE_URL}/auth/refresh/`, {
+            refresh: refreshToken,
+          });
+
+          if (refreshRes.data?.access) {
+            localStorage.setItem('ri_access_token', refreshRes.data.access);
+            originalRequest.headers.Authorization = `Bearer ${refreshRes.data.access}`;
+            return api(originalRequest);
+          }
+        } catch (refreshErr) {
+          console.warn('Token refresh failed, clearing invalid session:', refreshErr);
+        }
+      }
+
+      // If refresh failed or no refresh token, remove invalid tokens from storage
+      localStorage.removeItem('ri_access_token');
+      localStorage.removeItem('ri_refresh_token');
+      localStorage.removeItem('ri_user');
+
+      // Retry request anonymously without Authorization header
+      if (originalRequest.headers) {
+        delete originalRequest.headers.Authorization;
+      }
+      try {
+        return await api(originalRequest);
+      } catch (guestErr) {
+        return Promise.reject(guestErr);
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);
+// ============================================================
+// AUTH SERVICE
+// ============================================================
+
 export const authService = {
-  login: async (email, password) => {
-    const res = await api.post('/auth/login/', { email, password });
-    if (res.data.access) {
-      localStorage.setItem('ri_access_token', res.data.access);
-      localStorage.setItem('ri_refresh_token', res.data.refresh);
-      localStorage.setItem('ri_user', JSON.stringify(res.data.user));
-    }
+
+  // Login - Step 1
+  // Password is checked and OTP is sent to email.
+  login: async (identifier, password) => {
+    const res = await api.post('/auth/login/', {
+      identifier,
+      password,
+    });
+
+    // DO NOT save JWT here.
+    // JWT is returned only after login OTP verification.
     return res.data;
   },
+
+  // Login OTP - Step 2
+  // Verify the OTP received by email.
+  verifyLoginOTP: async (identifier, code) => {
+    const res = await api.post(
+      '/auth/login/verify-otp/',
+      {
+        identifier,
+        code,
+      }
+    );
+
+    // JWT tokens are returned after successful login OTP verification
+    if (res.data.access) {
+      localStorage.setItem(
+        'ri_access_token',
+        res.data.access
+      );
+
+      localStorage.setItem(
+        'ri_refresh_token',
+        res.data.refresh
+      );
+
+      localStorage.setItem(
+        'ri_user',
+        JSON.stringify(res.data.user)
+      );
+    }
+
+    return res.data;
+  },
+
+  // Register
   register: async (userData) => {
-    const res = await api.post('/auth/register/', userData);
-    if (res.data.access) {
-      localStorage.setItem('ri_access_token', res.data.access);
-      localStorage.setItem('ri_refresh_token', res.data.refresh);
-      localStorage.setItem('ri_user', JSON.stringify(res.data.user));
-    }
+    const res = await api.post(
+      '/auth/register/',
+      userData
+    );
+
+    // Registration only sends the OTP.
+    // JWT tokens are received after OTP verification.
     return res.data;
   },
-  logout: () => {
-    localStorage.removeItem('ri_access_token');
-    localStorage.removeItem('ri_refresh_token');
-    localStorage.removeItem('ri_user');
+
+  // Verify Registration OTP
+  verifyOTP: async (identifier, code) => {
+    const res = await api.post(
+      '/auth/verify-otp/',
+      {
+        identifier,
+        code,
+      }
+    );
+
+    // OTP verification returns JWT tokens
+    if (res.data.access) {
+      localStorage.setItem(
+        'ri_access_token',
+        res.data.access
+      );
+
+      localStorage.setItem(
+        'ri_refresh_token',
+        res.data.refresh
+      );
+
+      localStorage.setItem(
+        'ri_user',
+        JSON.stringify(res.data.user)
+      );
+    }
+
+    return res.data;
   },
+
+  // Resend Registration OTP
+  resendOTP: async (identifier) => {
+    const res = await api.post(
+      '/auth/resend-otp/',
+      {
+        identifier,
+      }
+    );
+
+    return res.data;
+  },
+
+  // Request Password Reset OTP
+  requestPasswordReset: async (email) => {
+    const res = await api.post(
+      '/auth/password-reset/',
+      { email }
+    );
+
+    return res.data;
+  },
+
+  // Confirm Password Reset using OTP
+  confirmPasswordReset: async (
+    email,
+    code,
+    newPassword
+  ) => {
+    const res = await api.post(
+      '/auth/password-reset/confirm/',
+      {
+        email,
+        code,
+        new_password: newPassword,
+      }
+    );
+
+    return res.data;
+  },
+
+  // Get interests
+  getInterests: async () => {
+    const res = await api.get(
+      '/auth/interests/'
+    );
+
+    return res.data.results || res.data;
+  },
+
+  // Get current user from backend
+  getMe: async () => {
+    const res = await api.get(
+      '/auth/me/'
+    );
+
+    localStorage.setItem(
+      'ri_user',
+      JSON.stringify(res.data)
+    );
+
+    return res.data;
+  },
+
+  // Logout
+  logout: () => {
+    localStorage.removeItem(
+      'ri_access_token'
+    );
+
+    localStorage.removeItem(
+      'ri_refresh_token'
+    );
+
+    localStorage.removeItem(
+      'ri_user'
+    );
+  },
+
+  // Get currently stored user
   getCurrentUser: () => {
-    const userStr = localStorage.getItem('ri_user');
-    return userStr ? JSON.parse(userStr) : null;
+    const userStr = localStorage.getItem(
+      'ri_user'
+    );
+
+    return userStr
+      ? JSON.parse(userStr)
+      : null;
+  },
+
+  // Check whether user is logged in
+  isLoggedIn: () => {
+    return !!localStorage.getItem(
+      'ri_access_token'
+    );
   },
 };
+
+// ============================================================
+// IMPACT SERVICE
+// ============================================================
 
 export const impactService = {
+
   getStatistics: async () => {
-    const res = await api.get('/impact/statistics/');
+    const res = await api.get(
+      '/impact/statistics/'
+    );
+
     return res.data.results || res.data;
   },
+
   getAreas: async () => {
-    const res = await api.get('/impact/areas/');
+    const res = await api.get(
+      '/impact/areas/'
+    );
+
     return res.data.results || res.data;
   },
+
   getAreaDetail: async (slug) => {
-    const res = await api.get(`/impact/areas/${slug}/`);
+    const res = await api.get(
+      `/impact/areas/${slug}/`
+    );
+
     return res.data;
   },
+
   getReports: async () => {
-    const res = await api.get('/impact/reports/');
+    const res = await api.get(
+      '/impact/reports/'
+    );
+
     return res.data.results || res.data;
   },
 };
+
+// ============================================================
+// PROJECT SERVICE
+// ============================================================
 
 export const projectService = {
+
   getProjects: async (params = {}) => {
-    const res = await api.get('/projects/', { params });
+    const res = await api.get(
+      '/projects/',
+      { params }
+    );
+
     return res.data.results || res.data;
   },
+
   getProjectDetail: async (slug) => {
-    const res = await api.get(`/projects/${slug}/`);
+    const res = await api.get(
+      `/projects/${slug}/`
+    );
+
     return res.data;
   },
+
   getCategories: async () => {
-    const res = await api.get('/projects/categories/');
+    const res = await api.get(
+      '/projects/categories/'
+    );
+
     return res.data.results || res.data;
   },
 };
+
+// ============================================================
+// EVENT SERVICE
+// ============================================================
 
 export const eventService = {
+
   getEvents: async (params = {}) => {
-    const res = await api.get('/events/', { params });
+    const res = await api.get(
+      '/events/',
+      { params }
+    );
+
     return res.data.results || res.data;
   },
+
   getEventDetail: async (slug) => {
-    const res = await api.get(`/events/${slug}/`);
+    const res = await api.get(
+      `/events/${slug}/`
+    );
+
     return res.data;
   },
+
   registerEvent: async (slug, data) => {
-    const res = await api.post(`/events/${slug}/register/`, data);
+    const res = await api.post(
+      `/events/${slug}/register/`,
+      data
+    );
+
     return res.data;
   },
 };
+
+// ============================================================
+// STORY SERVICE
+// ============================================================
 
 export const storyService = {
+
   getStories: async (params = {}) => {
-    const res = await api.get('/stories/', { params });
+    const res = await api.get(
+      '/stories/',
+      { params }
+    );
+
     return res.data.results || res.data;
   },
+
   getStoryDetail: async (slug) => {
-    const res = await api.get(`/stories/${slug}/`);
+    const res = await api.get(
+      `/stories/${slug}/`
+    );
+
     return res.data;
   },
 };
+
+// ============================================================
+// GALLERY SERVICE
+// ============================================================
 
 export const galleryService = {
+
   getAlbums: async () => {
-    const res = await api.get('/gallery/albums/');
+    const res = await api.get(
+      '/gallery/albums/'
+    );
+
     return res.data.results || res.data;
   },
+
   getItems: async (params = {}) => {
-    const res = await api.get('/gallery/items/', { params });
+    const res = await api.get(
+      '/gallery/items/',
+      { params }
+    );
+
     return res.data.results || res.data;
   },
 };
+
+// ============================================================
+// VOLUNTEER SERVICE
+// ============================================================
 
 export const volunteerService = {
+
   getOpportunities: async (params = {}) => {
-    const res = await api.get('/volunteers/opportunities/', { params });
+    const res = await api.get(
+      '/volunteers/opportunities/',
+      { params }
+    );
+
     return res.data.results || res.data;
   },
+
   getInterests: async () => {
-    const res = await api.get('/volunteers/interests/');
+    const res = await api.get(
+      '/volunteers/interests/'
+    );
+
     return res.data.results || res.data;
   },
-  createProfile: async (profileData) => {
-    const res = await api.post('/volunteers/profiles/', profileData);
+
+  register: async (registrationData) => {
+    const res = await api.post(
+      '/volunteers/register/',
+      registrationData
+    );
+
+    if (res.data.access) {
+      localStorage.setItem(
+        'ri_access_token',
+        res.data.access
+      );
+
+      localStorage.setItem(
+        'ri_refresh_token',
+        res.data.refresh
+      );
+
+      localStorage.setItem(
+        'ri_user',
+        JSON.stringify(res.data.user)
+      );
+    }
+
     return res.data;
   },
+
   apply: async (applicationData) => {
-    const res = await api.post('/volunteers/applications/', applicationData);
+    const res = await api.post(
+      '/volunteers/apply/',
+      applicationData
+    );
+
     return res.data;
+  },
+
+  createProfile: async (profileData) => {
+    const res = await api.post(
+      '/volunteers/profiles/',
+      profileData
+    );
+
+    return res.data;
+  },
+
+  getMyProfile: async () => {
+    const res = await api.get(
+      '/volunteers/my-profile/'
+    );
+
+    return res.data;
+  },
+
+  updateMyProfile: async (profileData) => {
+    const res = await api.patch(
+      '/volunteers/my-profile/',
+      profileData
+    );
+
+    return res.data;
+  },
+
+  getMyApplications: async () => {
+    const res = await api.get(
+      '/volunteers/my-applications/'
+    );
+
+    return res.data.results || res.data;
+  },
+
+  getMyParticipations: async () => {
+    const res = await api.get(
+      '/volunteers/my-participations/'
+    );
+
+    return res.data.results || res.data;
+  },
+
+  getCertificates: async () => {
+    const res = await api.get(
+      '/volunteers/certificates/'
+    );
+
+    return res.data.results || res.data;
   },
 };
+
+// ============================================================
+// DONATION SERVICE
+// ============================================================
 
 export const donationService = {
+
   getCampaigns: async () => {
-    const res = await api.get('/donations/campaigns/');
+    const res = await api.get(
+      '/donations/campaigns/'
+    );
+
     return res.data.results || res.data;
   },
+
   processDonation: async (donationData) => {
-    const res = await api.post('/donations/process/', donationData);
+    const res = await api.post(
+      '/donations/process/',
+      donationData
+    );
+
     return res.data;
   },
+
   lookupReceipt: async (receiptNumber) => {
-    const res = await api.get(`/donations/receipt/${receiptNumber}/`);
+    const res = await api.get(
+      `/donations/receipt/${receiptNumber}/`
+    );
+
     return res.data;
   },
 };
+
+// ============================================================
+// PARTNER SERVICE
+// ============================================================
 
 export const partnerService = {
+
   getPartners: async () => {
-    const res = await api.get('/partners/');
+    const res = await api.get(
+      '/partners/'
+    );
+
     return res.data.results || res.data;
   },
+
   submitEnquiry: async (enquiryData) => {
-    const res = await api.post('/partners/enquiries/', enquiryData);
+    const res = await api.post(
+      '/partners/enquiries/',
+      enquiryData
+    );
+
     return res.data;
   },
 };
+
+// ============================================================
+// CAREER SERVICE
+// ============================================================
 
 export const careerService = {
+
   getJobs: async () => {
-    const res = await api.get('/careers/');
+    const res = await api.get(
+      '/careers/'
+    );
+
     return res.data.results || res.data;
   },
+
   applyJob: async (formData) => {
-    const res = await api.post('/careers/applications/', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
+    const res = await api.post(
+      '/careers/applications/',
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
+
     return res.data;
   },
 };
+
+// ============================================================
+// CONTACT SERVICE
+// ============================================================
 
 export const contactService = {
+
   submitEnquiry: async (enquiryData) => {
-    const res = await api.post('/contact/enquiries/', enquiryData);
+    const res = await api.post(
+      '/contact/enquiries/',
+      enquiryData
+    );
+
     return res.data;
   },
+
   subscribeNewsletter: async (email) => {
-    const res = await api.post('/contact/newsletter/subscribe/', { email });
+    const res = await api.post(
+      '/contact/newsletter/subscribe/',
+      { email }
+    );
+
     return res.data;
   },
 };
 
+// ============================================================
+// ADMIN SERVICE
+// ============================================================
+
 export const adminService = {
+
   getDashboardStats: async () => {
-    const res = await api.get('/admin/dashboard/stats/');
+    const res = await api.get(
+      '/admin/dashboard/stats/'
+    );
+
     return res.data;
   },
+
   getUsers: async () => {
-    const res = await api.get('/auth/admin/users/');
+    const res = await api.get(
+      '/auth/admin/users/'
+    );
+
     return res.data.results || res.data;
   },
+
   getVolunteers: async () => {
-    const res = await api.get('/volunteers/profiles/');
+    const res = await api.get(
+      '/volunteers/profiles/'
+    );
+
     return res.data.results || res.data;
   },
+
   getApplications: async () => {
-    const res = await api.get('/volunteers/applications/');
+    const res = await api.get(
+      '/volunteers/applications/'
+    );
+
     return res.data.results || res.data;
   },
-  updateApplicationStatus: async (id, status, notes = '') => {
-    const res = await api.post(`/volunteers/applications/${id}/update_status/`, { status, review_notes: notes });
+
+  updateApplicationStatus: async (
+    id,
+    status,
+    notes = ''
+  ) => {
+    const res = await api.post(
+      `/volunteers/applications/${id}/update_status/`,
+      {
+        status,
+        review_notes: notes,
+      }
+    );
+
     return res.data;
   },
+
   getDonations: async () => {
-    const res = await api.get('/donations/history/');
+    const res = await api.get(
+      '/donations/history/'
+    );
+
     return res.data.results || res.data;
   },
+
   getEnquiries: async () => {
-    const res = await api.get('/contact/enquiries/');
+    const res = await api.get(
+      '/contact/enquiries/'
+    );
+
     return res.data.results || res.data;
   },
 };
+
+// ============================================================
+// DEFAULT EXPORT
+// ============================================================
 
 export default api;

@@ -331,7 +331,7 @@ export default function DonatePage() {
 
       <style>{`
         .donate-hero {
-          background: linear-gradient(135deg, #091712 0%, #0F4C3A 100%);
+          background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
           color: white;
           padding: 5rem 0 3.5rem 0;
           text-align: center;
@@ -508,7 +508,7 @@ export default function DonatePage() {
         }
         .receipt-org-header h3 {
           font-size: 1.1rem;
-          color: #0F4C3A;
+          color: var(--charcoal-900);
         }
         .receipt-org-header p {
           font-size: 0.75rem;

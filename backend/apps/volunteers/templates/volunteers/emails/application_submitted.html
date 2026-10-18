@@ -1,0 +1,43 @@
+{% extends "volunteers/emails/base_email.html" %}
+
+{% block content %}
+<h2>Application Received: {{ opportunity_title }}</h2>
+
+<p>Dear {{ full_name }},</p>
+
+<p>We have successfully received your volunteer application for <strong>{{ opportunity_title }}</strong>.</p>
+
+<div class="info-card">
+  <div class="info-card-item">
+    <span class="info-label">Opportunity:</span>
+    <span class="info-value">{{ opportunity_title }}</span>
+  </div>
+  {% if location %}
+  <div class="info-card-item">
+    <span class="info-label">Location:</span>
+    <span class="info-value">{{ location }}</span>
+  </div>
+  {% endif %}
+  {% if commitment %}
+  <div class="info-card-item">
+    <span class="info-label">Commitment:</span>
+    <span class="info-value">{{ commitment }}</span>
+  </div>
+  {% endif %}
+  <div class="info-card-item">
+    <span class="info-label">Application Status:</span>
+    <span class="status-badge status-pending">Pending Review</span>
+  </div>
+  <div class="info-card-item">
+    <span class="info-label">Submitted On:</span>
+    <span class="info-value">{{ application_date }}</span>
+  </div>
+</div>
+
+<p><strong>What Happens Next?</strong></p>
+<p>Our initiative coordinator is reviewing your statement and schedule. You will receive an email update once your application status is updated.</p>
+
+<p>Thank you for offering your time and skills to support grassroots impact.</p>
+
+<p style="margin-top: 24px;">Warm regards,<br><strong>Responsible Individuals Volunteer Team</strong></p>
+{% endblock %}
