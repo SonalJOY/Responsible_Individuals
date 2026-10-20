@@ -55,7 +55,7 @@ function generateEllipsePath(cx, cy, rx, ry) {
   return `M ${cx - rx} ${cy} A ${rx} ${ry} 0 1 0 ${cx + rx} ${cy} A ${rx} ${ry} 0 1 0 ${cx - rx} ${cy}`;
 }
 
-function OrbitCardItem({ pillar, index, totalItems, path, rotation, progress, isPaused, setPaused }) {
+function OrbitCardItem({ pillar, index, totalItems, path, rotation, progress, setPaused }) {
   const itemOffset = (index / totalItems) * 100;
 
   const offsetDistance = useTransform(progress, (p) => {
@@ -184,6 +184,50 @@ export default function OrbitCards({
           <p className="wheel-subtitle">
             Hover over any strategic pillar to explore how citizen ownership and structured scientific methodology drive sustainable transformation.
           </p>
+        </div>
+
+        {/* ── Mobile Static Grid (shown only below 768px via CSS) ── */}
+        <div className="orbit-mobile-grid-wrap">
+          <div className="orbit-mobile-brand-pill">
+            <img src={riLogo} alt="Responsible Individuals Emblem" className="orbit-mobile-brand-logo" />
+            <span>RESPONSIBLE INDIVIDUALS • CITIZEN STEWARDSHIP</span>
+          </div>
+          <div className="orbit-mobile-grid" aria-label="Our Core Framework Pillars">
+            {pillars.map((pillar) => {
+              const IconComp = pillar.icon;
+              return (
+                <div key={pillar.id} className="orbit-mobile-card">
+                  <div className="orbit-mobile-card-top">
+                    <div
+                      className="orbit-mobile-card-icon"
+                      style={{ backgroundColor: `${pillar.color}15`, color: pillar.color, borderColor: `${pillar.color}35` }}
+                    >
+                      <IconComp size={16} />
+                    </div>
+                    <span
+                      className="orbit-mobile-card-tag"
+                      style={{ backgroundColor: `${pillar.color}18`, color: pillar.color }}
+                    >
+                      {pillar.tag}
+                    </span>
+                  </div>
+                  <h3 className="orbit-mobile-card-title">{pillar.name}</h3>
+                  <p className="orbit-mobile-card-desc">{pillar.description}</p>
+                  <div className="orbit-mobile-card-footer">
+                    <span className="orbit-mobile-card-sdg">{pillar.sdg}</span>
+                    <Link
+                      to={`/projects?focus_area=${pillar.slug}`}
+                      className="orbit-mobile-card-link"
+                      style={{ color: pillar.color }}
+                    >
+                      <span>Explore</span>
+                      <ArrowRight size={13} />
+                    </Link>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
 
         {/* Elliptical Orbit Container */}

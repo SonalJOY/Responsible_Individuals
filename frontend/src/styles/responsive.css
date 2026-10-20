@@ -1,0 +1,809 @@
+/**
+ * Responsive Design System — Responsible Individuals NGO Website
+ * Global responsive layout rules, breakpoint overrides, and mobile adaptations.
+ * This file is imported after all other styles and acts as a coherent responsive layer.
+ *
+ * Breakpoints:
+ *  xs:  < 480px  (small phones)
+ *  sm:  480–639px (large phones)
+ *  md:  640–767px (large phones / small tablets)
+ *  lg:  768–1023px (tablets)
+ *  xl:  1024–1279px (small laptops)
+ *  2xl: 1280px+ (desktop)
+ */
+
+/* ═══════════════════════════════════════════════════════════
+   1. GLOBAL VIEWPORT & OVERFLOW PROTECTION
+═══════════════════════════════════════════════════════════ */
+
+html, body {
+  /* Prevent horizontal scroll from any single component without hiding all overflow */
+  overflow-x: clip;
+  max-width: 100vw;
+}
+
+/* Make sure containers never exceed viewport */
+.container,
+.container-narrow {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Fluid images / videos are set in index.css but guard against SVG edge case */
+img, video, svg, canvas {
+  max-width: 100%;
+  height: auto;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   2. FLOATING SOCIAL ICONS — MOBILE ADAPTATION
+   Keep all 6 social channels (WhatsApp, Instagram, Facebook,
+   LinkedIn, Twitter/X, YouTube) accessible without obscuring content.
+═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 1024px) {
+  .floating-social-rail {
+    top: auto;
+    bottom: 24px;
+    transform: none;
+    z-index: 990;
+  }
+  .rail-left  { left: 8px; }
+  .rail-right { right: 8px; }
+}
+
+@media (max-width: 768px) {
+  .floating-social-rail {
+    top: auto;
+    bottom: 16px;
+    transform: none;
+    z-index: 990;
+  }
+  .rail-left  { left: 6px; }
+  .rail-right { right: 6px; }
+  .social-pill-stack {
+    padding: 0.35rem 0.25rem;
+    gap: 0.4rem;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.15);
+  }
+  .social-dock-btn {
+    width: 34px;
+    height: 34px;
+  }
+  /* Hide hover tooltip pills on touch screens to prevent blocking taps */
+  .social-tooltip-pill {
+    display: none !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .floating-social-rail {
+    bottom: 12px;
+  }
+  .rail-left  { left: 4px; }
+  .rail-right { right: 4px; }
+  .social-pill-stack {
+    padding: 0.25rem 0.2rem;
+    gap: 0.35rem;
+  }
+  .social-dock-btn {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   3. NAVBAR — MOBILE IMPROVEMENTS
+═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 480px) {
+  .nav-inner { height: 64px !important; }
+  .logo-title { font-size: 0.95rem !important; }
+  .logo-subtitle { font-size: 0.62rem !important; }
+  .logo-image-wrapper { width: 36px !important; height: 36px !important; }
+  /* Compress the donate button on very small screens */
+  .btn-nav-donate span { display: none; }
+  .btn-nav-donate {
+    padding: 0.5rem 0.65rem !important;
+    border-radius: 50% !important;
+    width: 38px;
+    height: 38px;
+    justify-content: center;
+  }
+  .mobile-drawer {
+    max-height: calc(100vh - 64px);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   4. HERO SECTION — RESPONSIVE TEXT & LAYOUT
+═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .hero-editorial-root {
+    padding: 4rem 1.25rem 3.5rem;
+    min-height: 80vh;
+    align-items: flex-start;
+    padding-top: 5rem;
+  }
+  .hero-badge-pill {
+    font-size: 0.78rem;
+    padding: 0.4rem 1rem;
+  }
+  .hero-mission-lead {
+    font-size: 1rem;
+    margin-bottom: 1.75rem;
+  }
+  .hero-cta-cluster { gap: 0.85rem; }
+  .hero-proof-bar {
+    gap: 1rem;
+    font-size: 0.82rem;
+    padding-top: 1.25rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-editorial-root { padding: 4.5rem 1rem 3rem; min-height: 75vh; }
+  .hero-badge-pill { font-size: 0.72rem; gap: 0.4rem; padding: 0.35rem 0.85rem; }
+  .hero-badge-mini-logo { width: 16px; height: 16px; }
+  .btn-editorial-primary,
+  .btn-editorial-secondary {
+    width: 100%;
+    justify-content: center;
+    font-size: 0.95rem;
+    padding: 0.85rem 1.25rem;
+  }
+  .hero-proof-bar { flex-direction: column; gap: 0.65rem; align-items: flex-start; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   5. VISION & MISSION SECTIONS — PRESERVED REVEAL
+   The IntersectionObserver threshold of 0.2 can miss elements
+   that are taller than the viewport. Reduce the threshold
+   via CSS that ensures the initial state is accessible.
+═══════════════════════════════════════════════════════════ */
+
+/* Reduce transform distance on mobile to prevent off-screen starts */
+@media (max-width: 768px) {
+  .vision-visual-col,
+  .mission-content-col {
+    transform: translateX(-20px) !important;
+  }
+  .vision-content-col,
+  .mission-visual-col {
+    transform: translateX(20px) !important;
+  }
+  /* When revealed, both clear */
+  .is-revealed .vision-visual-col,
+  .is-revealed .vision-content-col,
+  .is-revealed .mission-content-col,
+  .is-revealed .mission-visual-col {
+    transform: translateX(0) !important;
+  }
+
+  .vision-statement,
+  .mission-statement {
+    font-size: 1.85rem;
+  }
+  .vision-description,
+  .mission-description {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  /* On very small screens use fade only (no horizontal shift) to avoid overflow flash */
+  .vision-visual-col,
+  .mission-content-col,
+  .vision-content-col,
+  .mission-visual-col {
+    transform: translateY(16px) !important;
+  }
+  .is-revealed .vision-visual-col,
+  .is-revealed .vision-content-col,
+  .is-revealed .mission-content-col,
+  .is-revealed .mission-visual-col {
+    transform: translateY(0) !important;
+  }
+  .vision-editorial-section,
+  .mission-editorial-section {
+    padding: 4rem 0;
+  }
+  .vision-statement,
+  .mission-statement {
+    font-size: 1.65rem;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   6. IMPACT STATS — VOLUNTEER RIBBON RESPONSIVE
+═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 640px) {
+  .impact-editorial-section { padding: 4rem 0; }
+  .impact-header-center { margin-bottom: 3rem; }
+  .impact-main-heading { font-size: 2rem; }
+
+  .volunteer-prominent-ribbon {
+    padding: 1.5rem 1.25rem;
+    border-radius: 16px;
+  }
+  .volunteer-count-number { font-size: 2.75rem; }
+  .volunteer-count-heading { font-size: 1.05rem; }
+  .volunteer-count-subtext { font-size: 0.875rem; }
+  .volunteer-join-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 0.85rem 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .editorial-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+  .editorial-stat-card {
+    padding: 1.5rem 1rem;
+    border-radius: 16px;
+  }
+  .stat-huge-number { font-size: 2.25rem; min-height: 2.75rem; }
+  .stat-icon-halo { width: 44px; height: 44px; margin-bottom: 1rem; }
+  .stat-label-text { font-size: 0.8rem; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   7. ORBIT CARDS SECTION — MOBILE FALLBACK
+   The CSS offset-path animation for OrbitCards requires a
+   large canvas that scales poorly below ~600px. On mobile,
+   switch to a static responsive grid of pillar cards.
+═══════════════════════════════════════════════════════════ */
+
+/* Hide the orbit animation stage on small screens */
+@media (max-width: 767px) {
+  .orbit-stage-container { display: none !important; }
+  /* Show mobile grid instead */
+  .orbit-mobile-grid-wrap { display: flex !important; }
+}
+
+.orbit-mobile-grid-wrap {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  width: 100%;
+}
+
+.orbit-mobile-brand-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #FFFFFF;
+  border: 1px solid var(--border-subtle, #E2E8F0);
+  padding: 0.45rem 1rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--charcoal-900, #0F172A);
+  letter-spacing: 0.06em;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+}
+
+.orbit-mobile-brand-logo {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+/* The mobile grid — hidden on desktop by default */
+.orbit-mobile-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  width: 100%;
+}
+
+@media (max-width: 480px) {
+  .orbit-mobile-grid { grid-template-columns: 1fr; gap: 0.85rem; }
+}
+
+/* Cards inside the static grid inherit orbit-pillar-card styling */
+.orbit-mobile-card {
+  background: #FFFFFF;
+  border: 1px solid var(--border-subtle, #E2E8F0);
+  border-radius: 18px;
+  padding: 1.25rem 1.35rem;
+  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.orbit-mobile-card-top {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.orbit-mobile-card-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid;
+  flex-shrink: 0;
+}
+
+.orbit-mobile-card-tag {
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  padding: 0.18rem 0.55rem;
+  border-radius: var(--radius-pill);
+  text-transform: uppercase;
+}
+
+.orbit-mobile-card-title {
+  font-family: var(--font-heading);
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--text-primary, #0F172A);
+  line-height: 1.25;
+}
+
+.orbit-mobile-card-desc {
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: var(--text-secondary, #475569);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.orbit-mobile-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border-subtle, #E2E8F0);
+  margin-top: 0.25rem;
+}
+
+.orbit-mobile-card-sdg {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--text-secondary, #64748B);
+  line-height: 1.3;
+  max-width: 70%;
+}
+
+.orbit-mobile-card-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   8. CIRCULAR CAROUSEL / PROJECT SHOWCASE — MOBILE
+═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .project-editorial-root { padding: 4rem 0 3rem; }
+  .project-header-row { gap: 1rem; }
+  .project-title { font-size: 1.85rem; }
+  .project-subtitle { font-size: 1rem; }
+  .circular-carousel-section-wrap {
+    padding: 1.25rem 0.75rem 1.5rem;
+    border-radius: 20px;
+  }
+  .carousel-interactive-cue { font-size: 0.68rem; }
+}
+
+@media (max-width: 480px) {
+  .project-title { font-size: 1.6rem; }
+  .circular-carousel-stage-container { height: 430px !important; }
+  .circular-carousel-section-wrap { border-radius: 16px; padding: 1.25rem 0.65rem 1.5rem; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   9. EVENTS CALENDAR SECTION
+═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  /* Most event section internals are scoped in the component —
+     these are fallback overrides for common patterns */
+  .events-layout-grid,
+  .events-two-col {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   10. FOOTER — RESPONSIVE
+═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 640px) {
+  .footer-grid {
+    grid-template-columns: 1fr !important;
+    gap: 2rem !important;
+  }
+  .footer-bottom {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+  .footer-bottom-links { justify-content: center; }
+  .back-to-top-btn { align-self: center; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   11. ABOUT PAGE — RESPONSIVE
+═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  /* About hero section */
+  .about-hero-section,
+  .about-hero-root { min-height: 70vh !important; }
+  /* About section headings */
+  .about-editorial-heading,
+  .warp-text-root { font-size: clamp(1.75rem, 6vw, 2.5rem) !important; }
+  /* Impact flow layout: stack vertically */
+  .impact-flow-track { flex-direction: column !important; gap: 1rem !important; }
+  .impact-flow-connector { display: none !important; }
+  /* 8-step orbit: stack steps as vertical list */
+  .orbit-3d-stage { display: none !important; }
+  .approach-steps-mobile { display: flex !important; }
+  /* Leadership cards */
+  .leadership-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 1.25rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .leadership-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   12. PROJECTS PAGE — RESPONSIVE
+═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .projects-filter-row {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .projects-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (min-width: 480px) and (max-width: 768px) {
+  .projects-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   13. IMPACT PAGE — RESPONSIVE
+═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .impact-hero-root { min-height: 60vh !important; }
+  .impact-sdg-grid { grid-template-columns: repeat(2, 1fr) !important; }
+}
+
+@media (max-width: 480px) {
+  .impact-sdg-grid { grid-template-columns: 1fr !important; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   14. VOLUNTEER PAGE — FORM RESPONSIVE
+═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .volunteer-hero-section { min-height: auto !important; padding: 4rem 1rem !important; }
+  .volunteer-layout-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .volunteer-form-wrapper {
+    position: static !important;
+    top: auto !important;
+  }
+  .opp-card {
+    padding: 1.5rem 1.25rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .opp-card {
+    padding: 1.25rem 1rem !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   15. STORIES PAGE — RESPONSIVE
+═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .stories-hero-section { min-height: 55vh !important; }
+  .stories-grid,
+  .from-community-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (min-width: 480px) and (max-width: 768px) {
+  .from-community-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   16. GALLERY PAGE — RESPONSIVE
+═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .gallery-masonry-grid {
+    columns: 2 !important;
+    column-gap: 0.75rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .gallery-masonry-grid {
+    columns: 1 !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   17. DONATE PAGE — RESPONSIVE
+═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .donate-layout {
+    grid-template-columns: 1fr !important;
+  }
+  .donate-card {
+    padding: 1.75rem 1.25rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .donate-card {
+    padding: 1.25rem 0.85rem !important;
+  }
+  .preset-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  .frequency-toggle-wrap {
+    gap: 0.4rem !important;
+  }
+  .freq-btn {
+    padding: 0.6rem 0.4rem !important;
+    font-size: 0.825rem !important;
+  }
+}
+
+/* Universal Form 2-Column Grid (Responsive Fallback) */
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 600px) {
+  .form-grid-2 {
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   18. CONTACT PAGE — RESPONSIVE
+═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .contact-layout-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .contact-card, .reg-info-card, .form-container-card {
+    padding: 1.5rem 1.15rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .contact-card, .reg-info-card, .form-container-card {
+    padding: 1.25rem 0.95rem !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   19. EVENTS PAGE — RESPONSIVE
+═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .events-calendar-grid { grid-template-columns: 1fr !important; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   20. AUTH PAGES (LOGIN / REGISTER / OTP) — RESPONSIVE
+═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 640px) {
+  .auth-card,
+  .auth-container {
+    padding: 1.75rem 1.25rem !important;
+    border-radius: 20px !important;
+    margin: 1rem;
+    width: calc(100vw - 2rem) !important;
+    max-width: none !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   21. PRELOADER — MOBILE SIZING
+═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 480px) {
+  .preloader-logo { width: 80px !important; height: 80px !important; }
+  .preloader-quote { font-size: 1rem !important; padding: 0 1.25rem !important; }
+  .preloader-organization { font-size: 0.7rem !important; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   22. GLOBAL SECTION PADDING REDUCTION ON MOBILE
+═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .section { padding: 3.5rem 0; }
+  .section-sm { padding: 2rem 0; }
+  .section-header { margin-bottom: 2.5rem; }
+  .section-title { font-size: 1.85rem; }
+}
+
+@media (max-width: 480px) {
+  .section { padding: 2.75rem 0; }
+  .container { padding: 0 1rem; }
+  .section-title { font-size: 1.65rem; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   23. CURVED TRANSITIONS — MOBILE SIZING
+═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 480px) {
+  .curved-divider svg { height: 40px !important; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   24. ANIMATION SAFETY — REDUCED MOTION
+   The global prefers-reduced-motion in index.css handles core
+   animation disabling. Here we ensure reveals aren't stuck invisible.
+═══════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  /* Ensure IntersectionObserver-driven reveals don't stay hidden */
+  .reveal-base {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .vision-visual-col,
+  .vision-content-col,
+  .mission-content-col,
+  .mission-visual-col {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .orbit-mobile-card,
+  .orbit-pillar-card {
+    transition: none !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   25. PARTNERS PAGE — RESPONSIVE
+═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .partners-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  .partnership-form-card { padding: 1.75rem 1.25rem !important; }
+  .perk-card { padding: 1.75rem 1.25rem !important; }
+}
+@media (max-width: 480px) {
+  .partners-grid { grid-template-columns: 1fr !important; }
+  .partnership-form-card { padding: 1.25rem 0.85rem !important; }
+  .perk-card { padding: 1.25rem 1rem !important; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   26. CAREERS PAGE — RESPONSIVE
+═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .careers-listings-grid { grid-template-columns: 1fr !important; }
+}
+
+@media (max-width: 540px) {
+  .job-card-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.75rem !important;
+  }
+  .job-card-header .btn {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+  .job-card {
+    padding: 1.25rem !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   27. TOUCH INTERACTION ENHANCEMENTS
+   Ensure minimum tap target sizes per WCAG 2.5.5 (44×44px)
+═══════════════════════════════════════════════════════════ */
+
+@media (hover: none) and (pointer: coarse) {
+  .btn, button, a[role="button"],
+  .mobile-nav-link, .dropdown-item,
+  .social-dock-btn, .orbit-card-link {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  /* Increase select / input areas */
+  .form-control, select {
+    min-height: 48px;
+    font-size: 16px; /* prevents iOS zoom-on-focus */
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   28. FOCUS VISIBILITY — KEYBOARD NAVIGATION
+═══════════════════════════════════════════════════════════ */
+
+:focus-visible {
+  outline: 2px solid var(--primary-saffron, #F59E0B);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   29. PROJECT CARD — RESPONSIVE
+═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 640px) {
+  .project-card-image { height: 180px !important; }
+  .project-card-body { padding: 1rem !important; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   30. HOMEPAGE — FINAL CTA — RESPONSIVE
+═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .final-cta-section {
+    padding: 4rem 1.25rem !important;
+  }
+  .final-cta-btn-group {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .final-cta-btn-group a,
+  .final-cta-btn-group button {
+    width: 100%;
+    justify-content: center;
+  }
+}

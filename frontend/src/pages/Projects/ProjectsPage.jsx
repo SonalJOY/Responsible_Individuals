@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import ProjectCard from '../../components/common/ProjectCard';
 import { projectService, impactService } from '../../services/api';
-import { Search, Filter, Layers } from 'lucide-react';
+import { Search, Layers } from 'lucide-react';
 
 export default function ProjectsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -219,6 +219,21 @@ export default function ProjectsPage() {
           flex-direction: column;
           align-items: center;
           gap: 1rem;
+        }
+        .projects-grid {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 2rem;
+        }
+        @media (min-width: 640px) {
+          .projects-grid {
+            grid-template-columns: repeat(2, 1fr);
+          }
+        }
+        @media (min-width: 1024px) {
+          .projects-grid {
+            grid-template-columns: repeat(3, 1fr);
+          }
         }
       `}</style>
     </div>

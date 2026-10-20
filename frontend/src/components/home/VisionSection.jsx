@@ -14,7 +14,8 @@ export default function VisionSection() {
           observer.disconnect();
         }
       },
-      { threshold: 0.2 }
+      // Reduce threshold on mobile so tall sections still trigger
+      { threshold: typeof window !== 'undefined' && window.innerWidth < 768 ? 0.05 : 0.2 }
     );
 
     if (sectionRef.current) {
