@@ -161,11 +161,11 @@ export default function LoginPage() {
         )}
 
         {/* Login Form */}
-        <form onSubmit={handleLogin}>
+        <form onSubmit={handleLogin} autoComplete="off">
 
           {/* Email or Phone */}
           <div className="form-group">
-            <label className="form-label">
+            <label className="form-label" htmlFor="login_identifier">
               Email Address or Phone Number
             </label>
 
@@ -177,7 +177,9 @@ export default function LoginPage() {
 
               <input
                 type="text"
-                name="identifier"
+                id="login_identifier"
+                name="login_identifier"
+                autoComplete="off"
                 required
                 className="form-control"
                 placeholder="name@example.com or phone number"
@@ -192,7 +194,7 @@ export default function LoginPage() {
 
           {/* Password */}
           <div className="form-group">
-            <label className="form-label">
+            <label className="form-label" htmlFor="login_password">
               Password
             </label>
 
@@ -204,6 +206,9 @@ export default function LoginPage() {
 
               <input
                 type="password"
+                id="login_password"
+                name="login_password"
+                autoComplete="new-password"
                 required
                 className="form-control"
                 placeholder="Enter your password"
@@ -372,6 +377,15 @@ export default function LoginPage() {
         .register-link:hover {
           color: #EA580C;
           text-decoration: underline;
+        }
+
+        .login-card-box input:-webkit-autofill,
+        .login-card-box input:-webkit-autofill:hover, 
+        .login-card-box input:-webkit-autofill:focus, 
+        .login-card-box input:-webkit-autofill:active {
+          -webkit-box-shadow: 0 0 0 30px #ffffff inset !important;
+          -webkit-text-fill-color: var(--slate-900) !important;
+          transition: background-color 5000s ease-in-out 0s;
         }
       `}</style>
     </div>
