@@ -304,7 +304,7 @@ export default function CircularCarousel({
         .circular-stage {
           width: 100%;
           height: 100%;
-          perspective: 1250px;
+          perspective: 1900px;
           perspective-origin: 50% 50%;
           display: flex;
           align-items: center;
@@ -399,7 +399,7 @@ export default function CircularCarousel({
           bottom: 0;
           left: 0;
           right: 0;
-          padding: 1.35rem 1.4rem;
+          padding: 1.6rem 1.75rem;
           display: flex;
           flex-direction: column;
           gap: 0.35rem;
@@ -408,7 +408,7 @@ export default function CircularCarousel({
         }
 
         .circular-card-subtitle {
-          font-size: 0.775rem;
+          font-size: 0.82rem;
           font-weight: 800;
           letter-spacing: 0.1em;
           color: var(--primary-saffron, #F59E0B);
@@ -419,7 +419,7 @@ export default function CircularCarousel({
 
         .circular-card-title {
           font-family: var(--font-heading);
-          font-size: 1.18rem;
+          font-size: clamp(1.15rem, 1.4vw, 1.45rem);
           font-weight: 800;
           color: #FFFFFF;
           line-height: 1.35;

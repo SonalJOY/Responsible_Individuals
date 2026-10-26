@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, CheckCircle, Sparkles } from 'lucide-react';
 import riLogo from '../../assets/ri-logo.png';
@@ -6,22 +6,58 @@ import stockVideo from '../../assets/stock.mp4';
 import FoldText from './FoldText';
 
 export default function Hero() {
+  const videoRef = useRef(null);
+  const [hasVideoError, setHasVideoError] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(() => (
+    typeof window !== 'undefined' && window.matchMedia
+      ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      : false
+  ));
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.matchMedia) {
+      const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+      const listener = (e) => setReducedMotion(e.matches);
+      mq.addEventListener('change', listener);
+      return () => mq.removeEventListener('change', listener);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (videoRef.current && !reducedMotion) {
+      videoRef.current.playbackRate = 0.75;
+    }
+  }, [reducedMotion]);
+
   return (
     <section className="hero-editorial-root">
-      {/* 1. Full Hero Background Video (z-index: 0) */}
-      <video 
-        src={stockVideo}
-        autoPlay
-        muted
-        loop
-        playsInline
-        className="hero-full-bg-video"
-      />
+      {/* 1. Full Hero Background Video with Reduced-Motion Fallback (z-index: 0) */}
+      {!reducedMotion && !hasVideoError ? (
+        <video 
+          ref={videoRef}
+          src={stockVideo}
+          poster="/images/about-hero.jpg"
+          onLoadedMetadata={() => { if (videoRef.current) videoRef.current.playbackRate = 0.75; }}
+          autoPlay
+          muted
+          loop
+          playsInline
+          className="hero-full-bg-video"
+          onError={() => setHasVideoError(true)}
+          aria-hidden="true"
+        />
+      ) : (
+        <img
+          src="/images/about-hero.jpg"
+          alt="Responsible Individuals community initiatives"
+          className="hero-full-bg-video"
+        />
+      )}
 
-      {/* 2. Brand-tinted Readability Overlay (z-index: 1) */}
-      <div className="hero-video-bg-overlay" />
+      {/* 2. Atmospheric Brand Palette Overlay with Saffron, Navy & Light Blue Hues (z-index: 1) */}
+      <div className="hero-video-bg-overlay" aria-hidden="true" />
 
-      {/* 3. Foreground Hero Content (z-index: 10 - strictly above Dot Grid z-index: 2) */}
+      {/* 3. Foreground Hero Content (z-index: 10 - strictly above Dot Grid & Video) */}
       <div className="container hero-layout-container">
         {/* Top Eyebrow Badge */}
         <div className="hero-eyebrow-wrap hero-fade-item" style={{ animationDelay: '0.05s' }}>
@@ -32,9 +68,8 @@ export default function Hero() {
           </div>
         </div>
 
-        {/* FoldText Entrance Heading */}
-        <div className="hero-heading-wrapper">
-          <h1 className="sr-only">Empowering Citizens. Creating Sustainable Impact.</h1>
+        {/* FoldText Entrance Heading — Exactly Single Instance H1 */}
+        <h1 className="hero-heading-wrapper">
           <FoldText
             text={"Empowering Citizens.\nCreating Sustainable Impact."}
             splitBy="word"
@@ -45,14 +80,14 @@ export default function Hero() {
             perspective={800}
             creaseShading={0.32}
             trigger="mount"
-            fontSize="clamp(50px, 5.8vw, 86px)"
+            fontSize="clamp(44px, 5.8vw, 88px)"
             fontWeight={800}
             color="#FFFFFF"
             highlightWords={['Citizens.']}
             highlightColor="#F59E0B"
             className="hero-fold-headline"
           />
-        </div>
+        </h1>
 
         {/* Supporting Mission Lead Text */}
         <p className="hero-mission-lead hero-fade-item" style={{ animationDelay: '0.35s' }}>
@@ -93,13 +128,14 @@ export default function Hero() {
         .hero-editorial-root {
           position: relative;
           min-height: 90vh;
-          min-height: calc(100vh - 76px);
+          min-height: calc(100vh - 82px);
           display: flex;
           align-items: center;
           justify-content: center;
           overflow: hidden;
           padding: 5.5rem 1.5rem 5rem 1.5rem;
           background-color: #0F172A;
+          width: 100%;
         }
 
         /* 1. Full Hero Background Video: z-index: 0 */
@@ -112,16 +148,17 @@ export default function Hero() {
           object-position: center;
           z-index: 0;
           pointer-events: none;
+          filter: brightness(0.82) contrast(1.06);
         }
 
-        /* 2. Atmospheric Neutral Video Overlay with Saffron and Light Blue Hues: z-index: 1 */
+        /* 2. Atmospheric Brand Palette Overlay: Saffron, Light Blue & Navy: z-index: 1 */
         .hero-video-bg-overlay {
           position: absolute;
           inset: 0;
           background: 
-            radial-gradient(ellipse at 80% 20%, rgba(245, 158, 11, 0.15) 0%, transparent 50%),
-            radial-gradient(ellipse at 20% 80%, rgba(125, 211, 252, 0.14) 0%, transparent 55%),
-            linear-gradient(180deg, rgba(15, 23, 42, 0.74) 0%, rgba(15, 23, 42, 0.52) 50%, rgba(15, 23, 42, 0.90) 100%);
+            radial-gradient(ellipse at 85% 15%, rgba(245, 158, 11, 0.22) 0%, transparent 50%),
+            radial-gradient(ellipse at 15% 85%, rgba(125, 211, 252, 0.18) 0%, transparent 55%),
+            linear-gradient(180deg, rgba(15, 23, 42, 0.82) 0%, rgba(15, 23, 42, 0.65) 45%, rgba(15, 23, 42, 0.94) 100%);
           z-index: 1;
           pointer-events: none;
         }
@@ -147,16 +184,16 @@ export default function Hero() {
           display: inline-flex;
           align-items: center;
           gap: 0.65rem;
-          background: rgba(15, 23, 42, 0.45);
+          background: rgba(15, 23, 42, 0.55);
           backdrop-filter: blur(14px);
           -webkit-backdrop-filter: blur(14px);
-          border: 1px solid rgba(125, 211, 252, 0.3);
+          border: 1px solid rgba(125, 211, 252, 0.35);
           padding: 0.5rem 1.35rem;
           border-radius: var(--radius-pill, 9999px);
           font-size: 0.85rem;
           font-weight: 700;
           color: #FFFFFF;
-          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25), 0 0 15px rgba(125, 211, 252, 0.08);
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25), 0 0 15px rgba(125, 211, 252, 0.1);
           letter-spacing: 0.03em;
         }
 
@@ -175,8 +212,12 @@ export default function Hero() {
         .hero-heading-wrapper {
           position: relative;
           width: 100%;
-          margin-bottom: 1.75rem;
+          margin: 0 0 1.75rem 0;
+          padding: 0;
+          font-size: inherit;
+          font-weight: inherit;
           text-align: center;
+          display: block;
         }
 
         .hero-fold-headline {
@@ -189,21 +230,24 @@ export default function Hero() {
         }
 
         .hero-mission-lead {
-          font-size: clamp(1.1rem, 1.35vw, 1.25rem);
-          color: rgba(243, 244, 246, 0.92);
-          line-height: 1.65;
-          max-width: 680px;
-          margin: 0 auto 2.25rem auto;
-          text-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+          font-family: var(--font-body);
+          font-size: clamp(1.05rem, 1.45vw, 1.3rem);
+          line-height: 1.75;
+          color: rgba(255, 255, 255, 0.94);
+          max-width: 820px;
+          margin: 0 auto 2.75rem auto;
+          text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+          font-weight: 400;
         }
 
+        /* CTA Buttons Cluster */
         .hero-cta-cluster {
           display: flex;
-          flex-wrap: wrap;
           align-items: center;
           justify-content: center;
+          flex-wrap: wrap;
           gap: 1.25rem;
-          margin-bottom: 2.75rem;
+          margin-bottom: 3.5rem;
         }
 
         .btn-editorial-primary {
@@ -211,115 +255,108 @@ export default function Hero() {
           align-items: center;
           gap: 0.85rem;
           background: var(--primary-saffron, #F59E0B);
-          color: #FFFFFF;
-          font-weight: 700;
+          color: #0F172A;
+          font-weight: 800;
           font-size: 1.05rem;
-          padding: 0.9rem 1.35rem 0.9rem 1.95rem;
+          padding: 0.9rem 1.85rem;
           border-radius: var(--radius-pill, 9999px);
-          box-shadow: 0 8px 28px rgba(245, 158, 11, 0.38);
-          transition: all var(--transition-normal, 0.3s cubic-bezier(0.16, 1, 0.3, 1));
-          text-decoration: none;
+          box-shadow: 0 6px 20px rgba(245, 158, 11, 0.35);
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .btn-editorial-primary:hover {
           background: var(--primary-saffron-hover, #D97706);
           color: #FFFFFF;
           transform: translateY(-2px);
-          box-shadow: 0 12px 36px rgba(217, 119, 6, 0.5);
+          box-shadow: 0 10px 28px rgba(217, 119, 6, 0.45);
         }
 
         .btn-arrow-circle {
-          width: 34px;
-          height: 34px;
-          border-radius: var(--radius-pill, 9999px);
-          background: rgba(0, 0, 0, 0.12);
+          width: 28px;
+          height: 28px;
+          border-radius: 50%;
+          background: rgba(15, 23, 42, 0.15);
           display: flex;
           align-items: center;
           justify-content: center;
-          transition: transform var(--transition-fast, 0.15s ease);
+          transition: transform 0.25s ease;
         }
 
         .btn-editorial-primary:hover .btn-arrow-circle {
-          transform: translateX(3px);
-          background: rgba(0, 0, 0, 0.2);
+          transform: translateX(4px);
         }
 
         .btn-editorial-secondary {
           display: inline-flex;
           align-items: center;
-          padding: 0.95rem 2rem;
-          border-radius: var(--radius-pill, 9999px);
+          background: rgba(255, 255, 255, 0.12);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          color: #FFFFFF;
           font-weight: 700;
           font-size: 1.05rem;
-          color: #FFFFFF;
-          background: rgba(255, 255, 255, 0.08);
-          backdrop-filter: blur(10px);
-          -webkit-backdrop-filter: blur(10px);
-          border: 1px solid rgba(125, 211, 252, 0.35);
-          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-          transition: all var(--transition-fast, 0.15s ease);
-          text-decoration: none;
+          padding: 0.9rem 1.85rem;
+          border-radius: var(--radius-pill, 9999px);
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          transition: all 0.3s ease;
         }
 
         .btn-editorial-secondary:hover {
-          background: rgba(125, 211, 252, 0.14);
-          border-color: var(--secondary-light-blue, #7DD3FC);
+          background: rgba(255, 255, 255, 0.22);
+          border-color: rgba(255, 255, 255, 0.6);
           transform: translateY(-2px);
-          box-shadow: 0 8px 24px rgba(125, 211, 252, 0.2);
         }
 
+        /* Proof Bar */
         .hero-proof-bar {
           display: flex;
-          flex-wrap: wrap;
           align-items: center;
           justify-content: center;
+          flex-wrap: wrap;
           gap: 2rem;
-          padding-top: 1.75rem;
-          border-top: 1px solid rgba(255, 255, 255, 0.18);
-          font-size: 0.9rem;
-          font-weight: 600;
-          color: rgba(255, 255, 255, 0.9);
-          max-width: 650px;
-          width: 100%;
+          padding-top: 1.5rem;
+          border-top: 1px solid rgba(255, 255, 255, 0.15);
         }
 
         .proof-item {
           display: flex;
           align-items: center;
           gap: 0.5rem;
+          color: rgba(255, 255, 255, 0.88);
+          font-size: 0.92rem;
+          font-weight: 600;
         }
 
         .proof-icon {
           color: var(--secondary-light-blue, #7DD3FC);
         }
 
-        /* Staggered Entrance Animations */
+        /* Subtle Fade In Animation */
         .hero-fade-item {
+          animation: heroFadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
           opacity: 0;
           transform: translateY(18px);
-          animation: smoothFadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
-        @keyframes smoothFadeUp {
-          0% {
-            opacity: 0;
-            transform: translateY(18px);
-          }
-          100% {
+        @keyframes heroFadeIn {
+          to {
             opacity: 1;
             transform: translateY(0);
           }
         }
 
-        /* Responsiveness */
-        @media (max-width: 640px) {
+        @media (max-width: 768px) {
           .hero-editorial-root {
-            padding: 4.5rem 1rem 3.5rem 1rem;
-            min-height: 85vh;
+            padding: 4.5rem clamp(2.5rem, 8vw, 3.75rem) 4rem clamp(2.5rem, 8vw, 3.75rem);
+            min-height: auto;
+          }
+          .hero-mission-lead {
+            margin-bottom: 2rem;
           }
           .hero-cta-cluster {
             flex-direction: column;
             width: 100%;
+            gap: 1rem;
           }
           .btn-editorial-primary,
           .btn-editorial-secondary {
@@ -327,8 +364,8 @@ export default function Hero() {
             justify-content: center;
           }
           .hero-proof-bar {
+            gap: 1rem;
             flex-direction: column;
-            gap: 0.85rem;
           }
         }
       `}</style>

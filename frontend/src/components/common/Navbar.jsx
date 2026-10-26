@@ -46,7 +46,7 @@ export default function Navbar() {
 
   return (
     <header className={`navbar-container navbar-entrance ${isScrolled ? 'scrolled' : ''}`}>
-      <div className="container nav-inner">
+      <div className="nav-inner-fluid">
         {/* Brand Logo with Transparent Background Official Emblem */}
         <Link to="/" className="brand-logo" onClick={closeMenus}>
           <div className="logo-image-wrapper">
@@ -245,6 +245,12 @@ export default function Navbar() {
         .navbar-container {
           position: sticky;
           top: 0;
+          left: 0;
+          right: 0;
+          width: 100%;
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
           z-index: 100;
           background: rgba(253, 251, 247, 0.94);
           backdrop-filter: blur(14px);
@@ -273,25 +279,30 @@ export default function Navbar() {
           box-shadow: 0 8px 24px rgba(8, 41, 31, 0.06);
           border-bottom-color: rgba(232, 226, 214, 0.9);
         }
-        .nav-inner {
+        .nav-inner-fluid {
+          width: 100%;
+          max-width: 100%;
+          padding: 0 clamp(1.5rem, 3.5vw, 4rem);
           display: flex;
           align-items: center;
           justify-content: space-between;
-          height: 78px;
+          height: 82px;
+          box-sizing: border-box;
           transition: height 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
-        .navbar-container.scrolled .nav-inner {
-          height: 66px;
+        .navbar-container.scrolled .nav-inner-fluid {
+          height: 70px;
         }
         .brand-logo {
           display: flex;
           align-items: center;
           gap: 0.85rem;
           text-decoration: none;
+          flex-shrink: 0;
         }
         .logo-image-wrapper {
-          width: 44px;
-          height: 44px;
+          width: 54px;
+          height: 54px;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -313,13 +324,13 @@ export default function Navbar() {
         .logo-title {
           font-family: var(--font-heading);
           font-weight: 800;
-          font-size: 1.1rem;
+          font-size: 1.25rem;
           color: var(--charcoal-900);
           letter-spacing: 0.04em;
           line-height: 1.1;
         }
         .logo-subtitle {
-          font-size: 0.7rem;
+          font-size: 0.78rem;
           font-weight: 700;
           color: var(--primary-saffron, #F59E0B);
           letter-spacing: 0.12em;
@@ -327,11 +338,44 @@ export default function Navbar() {
         .desktop-nav {
           display: none;
           align-items: center;
-          gap: 1.65rem;
+          justify-content: center;
+          flex: 1;
+          gap: clamp(0.75rem, 1.8vw, 2.25rem);
+          margin: 0 clamp(1rem, 2vw, 3rem);
         }
         @media (min-width: 1024px) {
           .desktop-nav {
             display: flex;
+          }
+        }
+        @media (min-width: 1024px) and (max-width: 1279px) {
+          .nav-inner-fluid {
+            padding: 0 1.25rem;
+          }
+          .desktop-nav {
+            gap: 0.65rem;
+            margin: 0 0.65rem;
+          }
+          .nav-link {
+            font-size: 0.82rem;
+            padding: 0.4rem 0.15rem;
+          }
+          .logo-title {
+            font-size: 1.1rem;
+          }
+          .logo-subtitle {
+            font-size: 0.7rem;
+          }
+          .logo-image-wrapper {
+            width: 44px;
+            height: 44px;
+          }
+          .btn-nav-donate {
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+          }
+          .login-link {
+            font-size: 0.85rem;
           }
         }
         .nav-link {
@@ -439,7 +483,8 @@ export default function Navbar() {
         .nav-actions {
           display: flex;
           align-items: center;
-          gap: 1.1rem;
+          gap: 1.15rem;
+          flex-shrink: 0;
         }
         .admin-pill-link {
           display: inline-flex;
@@ -542,6 +587,44 @@ export default function Navbar() {
           display: flex;
           justify-content: center;
           padding: 0.85rem;
+        }
+
+        @media (max-width: 640px) {
+          .nav-inner {
+            height: 72px;
+            padding: 0 1rem;
+          }
+          .brand-logo {
+            gap: 0.65rem;
+          }
+          .logo-image-wrapper {
+            width: 42px;
+            height: 42px;
+          }
+          .logo-title {
+            font-size: 1.05rem;
+          }
+          .logo-subtitle {
+            font-size: 0.68rem;
+          }
+          .nav-actions {
+            gap: 0.55rem;
+          }
+          .login-link {
+            display: none;
+          }
+          .btn-nav-donate {
+            display: none;
+          }
+          .mobile-btn-donate {
+            display: flex !important;
+          }
+          .mobile-toggle-btn {
+            display: flex;
+            padding: 0.4rem;
+            color: var(--charcoal-900);
+          }
+        }
         }
       `}</style>
     </header>
