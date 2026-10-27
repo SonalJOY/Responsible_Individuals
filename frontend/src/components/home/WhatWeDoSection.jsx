@@ -168,12 +168,11 @@ export default function WhatWeDoSection() {
 
       <style>{`
         .what-we-do-section {
-          background-color: var(--cream-50, #FDFBF7);
+          background-color: transparent;
           padding: 6.5rem 0;
           position: relative;
           overflow: hidden;
           width: 100%;
-          border-bottom: 1px solid var(--border-subtle, #F1F5F9);
         }
 
         .what-we-do-content-container {
@@ -276,22 +275,26 @@ export default function WhatWeDoSection() {
 
         /* Individual Photographic Card */
         .photo-theme-card {
-          background: #FFFFFF;
+          background: rgba(255, 255, 255, 0.85);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
           border-radius: 20px;
           overflow: hidden;
-          border: 1px solid rgba(226, 232, 240, 0.9);
-          box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
+          border: 1px solid rgba(226, 232, 240, 0.8);
+          box-shadow: 0 10px 28px rgba(15, 23, 42, 0.05);
           display: flex;
           flex-direction: column;
           transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), 
                       box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1), 
-                      border-color 0.4s ease;
+                      border-color 0.4s ease,
+                      background-color 0.3s ease;
           position: relative;
         }
 
         .photo-theme-card:hover {
           transform: translateY(-8px);
-          box-shadow: 0 20px 42px rgba(15, 23, 42, 0.12);
+          background: rgba(255, 255, 255, 0.96);
+          box-shadow: 0 20px 42px rgba(15, 23, 42, 0.1);
           border-color: var(--card-accent);
         }
 

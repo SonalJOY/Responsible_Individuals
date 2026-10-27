@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Link } from 'react-router-dom';
+import { ArrowRight } from 'lucide-react';
 
 /**
  * CircularCarousel:
@@ -252,6 +253,13 @@ export default function CircularCarousel({
                     {item.title && (
                       <h4 className="circular-card-title">{item.title}</h4>
                     )}
+                    {item.description && (
+                      <p className="circular-card-desc">{item.description}</p>
+                    )}
+                    <span className="circular-card-explore-btn">
+                      <span>Explore Project</span>
+                      <ArrowRight size={13} />
+                    </span>
                   </div>
                 )}
               </div>
@@ -431,6 +439,35 @@ export default function CircularCarousel({
           overflow: hidden;
         }
 
+
+        .circular-card-desc {
+          font-size: 0.85rem;
+          line-height: 1.45;
+          color: rgba(253, 251, 247, 0.92);
+          margin: 0.15rem 0 0.35rem 0;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+          text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+        }
+
+        .circular-card-explore-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.4rem;
+          font-size: 0.8rem;
+          font-weight: 700;
+          color: var(--primary-saffron, #F59E0B);
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
+          transition: transform 0.2s ease, color 0.2s ease;
+        }
+
+        .circular-card-inner:hover .circular-card-explore-btn {
+          color: #FDBA74;
+          transform: translateX(4px);
+        }
         @media (max-width: 768px) {
           .circular-card-title {
             font-size: 1.05rem;
