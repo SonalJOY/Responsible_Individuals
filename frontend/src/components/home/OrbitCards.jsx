@@ -69,8 +69,8 @@ function OrbitCardItem({ pillar, index, totalItems, path, rotation, progress, se
     <motion.div
       className="orbit-card-motion-wrapper"
       style={{
-        width: 310,
-        minHeight: 220,
+        width: 330,
+        minHeight: 235,
         position: 'absolute',
         willChange: 'transform',
         userSelect: 'none',
@@ -347,14 +347,14 @@ export default function OrbitCards({
         }
         .wheel-title {
           font-family: var(--font-heading);
-          font-size: 2.4rem;
+          font-size: clamp(2.3rem, 3.8vw, 3.2rem);
           font-weight: 800;
           color: var(--charcoal-900);
           letter-spacing: -0.02em;
           margin-bottom: 1rem;
         }
         .wheel-subtitle {
-          font-size: 1.05rem;
+          font-size: 1.15rem;
           line-height: 1.6;
           color: var(--text-muted);
         }
@@ -404,13 +404,13 @@ export default function OrbitCards({
         }
         .orbit-card-title {
           font-family: var(--font-heading);
-          font-size: 1.05rem;
+          font-size: 1.15rem;
           font-weight: 800;
           color: var(--text-primary, #0F172A);
           line-height: 1.25;
         }
         .orbit-card-desc {
-          font-size: 0.82rem;
+          font-size: 0.88rem;
           line-height: 1.45;
           color: var(--text-secondary, #475569);
           display: -webkit-box;

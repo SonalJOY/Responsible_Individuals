@@ -13,20 +13,20 @@ import desiltingImg from '../../assets/varthur-volunteers-desilting.jpg';
 
 export default function ProjectShowcase() {
   // Responsive cardWidth for different screen sizes (enlarged: 340px desktop)
-  const [cardWidth, setCardWidth] = useState(340);
+  const [cardWidth, setCardWidth] = useState(440);
 
   useEffect(() => {
     const handleResize = () => {
       if (typeof window !== 'undefined') {
         const w = window.innerWidth;
         if (w < 480) {
-          setCardWidth(190);
-        } else if (w < 768) {
           setCardWidth(230);
+        } else if (w < 768) {
+          setCardWidth(285);
         } else if (w < 1024) {
-          setCardWidth(280);
-        } else {
           setCardWidth(340);
+        } else {
+          setCardWidth(440);
         }
       }
     };
@@ -243,14 +243,14 @@ export default function ProjectShowcase() {
         /* Spacious Stage Container */
         .circular-carousel-stage-container {
           width: 100%;
-          height: 680px;
+          height: 780px;
           position: relative;
           overflow: hidden;
         }
 
         @media (max-width: 1024px) {
           .circular-carousel-stage-container {
-            height: 580px;
+            height: 660px;
           }
         }
 
@@ -263,13 +263,13 @@ export default function ProjectShowcase() {
             border-radius: 24px;
           }
           .circular-carousel-stage-container {
-            height: 510px;
+            height: 580px;
           }
         }
 
         @media (max-width: 480px) {
           .circular-carousel-stage-container {
-            height: 450px;
+            height: 500px;
           }
         }
       `}</style>

@@ -623,16 +623,16 @@ export default function AboutPage() {
                     </div>
 
                     <h3 className="sticky-statement">
-                      &ldquo;Every child deserves the opportunity to learn, grow, and thrive.&rdquo;
+                      &ldquo;To create a world where every life we touch is empowered, nurtured, and inspired to thrive.&rdquo;
                     </h3>
 
                     <p className="sticky-desc">
-                      Building stronger rural schools and creating supportive learning environments where every student can reach their full potential.
+                      We believe that true change begins with compassion and responsibility. Our vision is to be a catalyst for positive impact, thereby igniting waves of change.
                     </p>
 
                     <div className="sticky-footer">
                       <span className="sticky-pillar-tag pillar-emerald">
-                        Equal Opportunity &amp; Quality Learning
+                        Compassion &amp; Responsibility
                       </span>
                     </div>
                   </div>
@@ -688,16 +688,16 @@ export default function AboutPage() {
                     </div>
 
                     <h3 className="sticky-statement">
-                      &ldquo;Strengthening rural government schools through resources, people, and opportunity.&rdquo;
+                      &ldquo;Build a platform that brings together passionate volunteers who believe in giving back to the community.&rdquo;
                     </h3>
 
                     <p className="sticky-desc">
-                      Working with teachers, communities, volunteers, and partners to create measurable, generational improvements in education.
+                      Through collaboration and shared purpose, we aim to inspire one another and nurture a culture of responsibility—transforming every individual into a Responsible Individual.
                     </p>
 
                     <div className="sticky-footer">
                       <span className="sticky-pillar-tag pillar-blue">
-                        Community Action &amp; School Support
+                        Volunteer Platform &amp; Culture of Responsibility
                       </span>
                     </div>
                   </div>

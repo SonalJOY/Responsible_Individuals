@@ -40,6 +40,13 @@ export const SOCIAL_LINKS = {
     color: '#0F172A',
     hoverBg: '#000000',
   },
+  threads: {
+    name: 'Threads',
+    url: 'https://www.threads.net/@responsibleindividuals',
+    ariaLabel: 'Follow Responsible Individuals on Threads',
+    color: '#0F172A',
+    hoverBg: '#000000',
+  },
   youtube: {
     name: 'YouTube',
     url: 'https://youtube.com/@responsibleindividuals',
