@@ -24,36 +24,6 @@ export const GALLERY_ITEMS = [
     description: 'A Responsible Individuals (RI) inauguration programme at a government higher primary school in Dasarahalli, Hebbal, bringing together RI members and the school community. The programme focused on community participation and improving the school environment through activities such as school-premises cleaning and writing-sketch activities.'
   },
   {
-    id: 4,
-    title: 'Women Artisan Weaving Workshop',
-    category: 'Livelihoods',
-    location: 'Tumakuru, Karnataka',
-    date: 'June 2024',
-    impact: '45 Artisans Upskilled',
-    themeColor: '#8B5CF6',
-    accentBg: 'rgba(139, 92, 246, 0.12)',
-    accentBorder: 'rgba(139, 92, 246, 0.3)',
-    image: 'https://images.unsplash.com/photo-1606744888344-493238951221?auto=format&fit=crop&w=1200&q=85',
-    localFallback: '/images/gallery/women_artisans.svg',
-    fallbackGradient: 'linear-gradient(135deg, #4C1D95 0%, #8B5CF6 50%, #0F172A 100%)',
-    description: 'Empowering rural women artisans through specialized masterclasses on natural dye preparation, sustainable handloom techniques, and direct market linkage for fair-trade handmade textiles.'
-  },
-  {
-    id: 5,
-    title: 'Citizen Water Quality Monitoring Walk',
-    category: 'Ecology',
-    location: 'Varthur Inflow, Bengaluru',
-    date: 'May 2024',
-    impact: '12 Water Inflows Tested',
-    themeColor: '#0D9488',
-    accentBg: 'rgba(13, 148, 136, 0.12)',
-    accentBorder: 'rgba(13, 148, 136, 0.3)',
-    image: 'https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?auto=format&fit=crop&w=1200&q=85',
-    localFallback: '/images/gallery/water_monitoring.svg',
-    fallbackGradient: 'linear-gradient(135deg, #115E59 0%, #0D9488 50%, #0F172A 100%)',
-    description: 'Equipping citizen scientists and students with water sampling field kits to measure pH, dissolved oxygen, and nitrate levels at key Varthur Lake inlets. The collected data empowers local monitoring and community advocacy.'
-  },
-  {
     id: 6,
     title: 'Tech Mahindra Artwork Initiative',
     category: 'Community',
@@ -97,5 +67,20 @@ export const GALLERY_ITEMS = [
     imagePosition: 'center 45%',
     fallbackGradient: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 50%, #0F172A 100%)',
     description: "A teaching and mentoring session at Hosa Byrohalli School focused on helping children understand good touch and bad touch, recognize unsafe situations, and learn how to respond appropriately. The session also highlighted the importance of using 'golden words' to encourage respectful communication, kindness, and positive interactions."
+  },
+  {
+    id: 9,
+    title: 'WASH Awareness Programme',
+    category: 'Education',
+    location: 'Hosa Byrohalli School, Karnataka',
+    impact: 'Hygiene & Sanitation Awareness',
+    themeColor: '#2563EB',
+    accentBg: 'rgba(37, 99, 235, 0.12)',
+    accentBorder: 'rgba(37, 99, 235, 0.3)',
+    image: '/images/gallery/20251216_135124.jpg',
+    localFallback: '/images/gallery/20251216_135124.jpg',
+    imagePosition: 'center 45%',
+    fallbackGradient: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 50%, #0F172A 100%)',
+    description: 'An interactive awareness session educating students on hygiene, sanitation, and healthy daily practices.'
   }
 ];

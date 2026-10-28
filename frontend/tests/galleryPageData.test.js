@@ -3,21 +3,27 @@ import assert from 'node:assert/strict';
 import { GALLERY_CATEGORIES, GALLERY_ITEMS } from '../src/pages/Gallery/GalleryData.js';
 
 describe('Gallery Page Data Contract Tests', () => {
-  test('1. Gallery items list contains exactly 6 items with unique IDs', () => {
-    assert.strictEqual(GALLERY_ITEMS.length, 6);
+  test('1. Gallery items list contains exactly 5 items with unique IDs', () => {
+    assert.strictEqual(GALLERY_ITEMS.length, 5);
     const ids = new Set(GALLERY_ITEMS.map((item) => item.id));
-    assert.strictEqual(ids.size, 6);
+    assert.strictEqual(ids.size, 5);
   });
 
-  test('2. Removed stories (ID 1 and ID 3) are completely absent from data source', () => {
+  test('2. Removed stories (ID 1, ID 3, ID 4, and ID 5) are completely absent from data source', () => {
     const item1 = GALLERY_ITEMS.find((item) => item.id === 1);
     const item3 = GALLERY_ITEMS.find((item) => item.id === 3);
+    const item4 = GALLERY_ITEMS.find((item) => item.id === 4);
+    const item5 = GALLERY_ITEMS.find((item) => item.id === 5);
     assert.strictEqual(item1, undefined, 'Community Wetland Planting Drive should be completely removed');
     assert.strictEqual(item3, undefined, 'Urban Miyawaki Sapling Installation should be completely removed');
+    assert.strictEqual(item4, undefined, 'Women Artisan Weaving Workshop should be completely removed');
+    assert.strictEqual(item5, undefined, 'Citizen Water Quality Monitoring Walk should be completely removed');
 
     const titles = GALLERY_ITEMS.map((item) => item.title);
     assert.ok(!titles.includes('Community Wetland Planting Drive'));
     assert.ok(!titles.includes('Urban Miyawaki Sapling Installation'));
+    assert.ok(!titles.includes('Women Artisan Weaving Workshop'));
+    assert.ok(!titles.includes('Citizen Water Quality Monitoring Walk'));
   });
 
   test('3. RI Inauguration Event item (ID 2) is preserved', () => {
@@ -60,27 +66,27 @@ describe('Gallery Page Data Contract Tests', () => {
     assert.strictEqual(safetyItem.image, '/images/gallery/20251219_112126.jpg');
   });
 
-  test('7. Remaining foundational stories (ID 4 and ID 5) are preserved', () => {
-    const item4 = GALLERY_ITEMS.find((i) => i.id === 4);
-    assert.ok(item4, 'Women Artisan Weaving Workshop must exist');
-    assert.strictEqual(item4.category, 'Livelihoods');
-
-    const item5 = GALLERY_ITEMS.find((i) => i.id === 5);
-    assert.ok(item5, 'Citizen Water Quality Monitoring Walk must exist');
-    assert.strictEqual(item5.category, 'Ecology');
+  test('7. WASH Awareness Programme item (ID 9) is added with correct details', () => {
+    const washItem = GALLERY_ITEMS.find((item) => item.id === 9);
+    assert.ok(washItem, 'Item 9 must exist');
+    assert.strictEqual(washItem.title, 'WASH Awareness Programme');
+    assert.strictEqual(washItem.category, 'Education');
+    assert.strictEqual(washItem.location, 'Hosa Byrohalli School, Karnataka');
+    assert.strictEqual(washItem.image, '/images/gallery/20251216_135124.jpg');
+    assert.strictEqual(washItem.description, 'An interactive awareness session educating students on hygiene, sanitation, and healthy daily practices.');
   });
 
   test('8. Category counts dynamically update based on remaining stories', () => {
     const totalCount = GALLERY_ITEMS.length;
-    assert.strictEqual(totalCount, 6);
+    assert.strictEqual(totalCount, 5);
 
     const getCount = (cat) => cat === 'All' ? GALLERY_ITEMS.length : GALLERY_ITEMS.filter((i) => i.category === cat).length;
 
-    assert.strictEqual(getCount('All'), 6);
-    assert.strictEqual(getCount('Education'), 3);
-    assert.strictEqual(getCount('Livelihoods'), 1);
-    assert.strictEqual(getCount('Ecology'), 1);
+    assert.strictEqual(getCount('All'), 5);
+    assert.strictEqual(getCount('Education'), 4);
     assert.strictEqual(getCount('Community'), 1);
+    assert.strictEqual(getCount('Livelihoods'), 0);
+    assert.strictEqual(getCount('Ecology'), 0);
     assert.strictEqual(getCount('Lake Restoration'), 0);
     assert.strictEqual(getCount('Afforestation'), 0);
   });
