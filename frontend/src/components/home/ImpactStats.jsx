@@ -220,7 +220,7 @@ export default function ImpactStats() {
 
       <style>{`
         .impact-editorial-section {
-          background-color: transparent;
+          background-color: var(--surface, #FFFFFF);
           padding: 6rem 0;
           position: relative;
         }
@@ -291,12 +291,10 @@ export default function ImpactStats() {
           text-align: center;
           padding: 2.5rem 1.75rem;
           border-radius: 24px;
-          background: rgba(255, 255, 255, 0.84);
-          backdrop-filter: blur(12px);
-          -webkit-backdrop-filter: blur(12px);
-          border: 1px solid rgba(226, 232, 240, 0.85);
-          box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04), 0 1px 3px rgba(15, 23, 42, 0.02);
-          transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.28s ease, background-color 0.25s ease;
+          background: #FFFFFF;
+          border: 1px solid var(--border-subtle, #E2E8F0);
+          box-shadow: 0 4px 20px rgba(15, 23, 42, 0.05), 0 1px 3px rgba(15, 23, 42, 0.03);
+          transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.28s ease;
           position: relative;
           overflow: hidden;
         }
@@ -314,7 +312,7 @@ export default function ImpactStats() {
           transform: translateY(-6px) scale(1.015);
           box-shadow: 0 20px 40px rgba(249, 115, 22, 0.12), 0 4px 12px rgba(15, 23, 42, 0.05);
           border-color: rgba(249, 115, 22, 0.4);
-          background: rgba(255, 255, 255, 0.96);
+          background: #FFFFFF;
         }
         .editorial-stat-card:hover::before {
           background: linear-gradient(90deg, var(--primary-saffron, #F97316), var(--secondary-light-blue, #0EA5E9));
@@ -375,14 +373,12 @@ export default function ImpactStats() {
 
         /* Prominent Total Volunteer Count Display Ribbon */
         .volunteer-prominent-ribbon {
-          background: linear-gradient(135deg, rgba(253, 251, 247, 0.92) 0%, rgba(248, 244, 236, 0.86) 100%);
-          backdrop-filter: blur(12px);
-          -webkit-backdrop-filter: blur(12px);
-          border: 1px solid rgba(245, 158, 11, 0.25);
+          background: linear-gradient(135deg, var(--cream-50, #FDFBF7) 0%, #FFFFFF 100%);
+          border: 1px solid var(--border-subtle, #E2E8F0);
           border-left: 5px solid var(--primary-saffron, #F97316);
           border-radius: 20px;
           padding: 2rem 2.5rem;
-          box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
+          box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
           display: flex;
           flex-direction: column;
           gap: 1.75rem;

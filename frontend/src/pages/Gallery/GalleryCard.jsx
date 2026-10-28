@@ -1,10 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MapPin, ArrowRight, Leaf } from 'lucide-react';
 
 export default function GalleryCard({ item, index, onClick, isVisible }) {
   const [imgSrc, setImgSrc] = useState(item.image);
   const [fallbackAttempted, setFallbackAttempted] = useState(false);
   const [imgFailed, setImgFailed] = useState(false);
+
+  useEffect(() => {
+    setImgSrc(item.image);
+    setFallbackAttempted(false);
+    setImgFailed(false);
+  }, [item.image]);
 
   const handleImgError = () => {
     if (!fallbackAttempted && item.localFallback) {
@@ -36,6 +42,7 @@ export default function GalleryCard({ item, index, onClick, isVisible }) {
             src={imgSrc}
             alt={item.title}
             className="gallery-card-img"
+            style={{ objectPosition: item?.imagePosition || 'center' }}
             loading="lazy"
             onError={handleImgError}
           />
@@ -80,9 +87,11 @@ export default function GalleryCard({ item, index, onClick, isVisible }) {
       </div>
 
       <div className="gallery-card-body">
-        <div className="gallery-card-header">
-          <span className="gallery-card-date">{item.date || 'Field Action'}</span>
-        </div>
+        {item.date && (
+          <div className="gallery-card-header">
+            <span className="gallery-card-date">{item.date}</span>
+          </div>
+        )}
 
         <h3 className="gallery-card-title">{item.title}</h3>
 

@@ -137,16 +137,11 @@ export default function Footer() {
 
       <style>{`
         .footer-editorial-root {
-          position: relative;
-          z-index: 20;
-          width: 100%;
           background: #0F172A;
           color: #94A3B8;
           padding: 5.5rem 0 2.5rem 0;
-          border-top: 1px solid rgba(255, 255, 255, 0.12);
-          box-shadow: 0 -10px 30px rgba(15, 23, 42, 0.25);
+          border-top: 1px solid #1E293B;
         }
-
         .footer-grid {
           display: grid;
           grid-template-columns: 1fr;

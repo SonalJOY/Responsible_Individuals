@@ -416,7 +416,7 @@ export default function EventsCalendarSection() {
 
       <style>{`
         .events-calendar-root {
-          background-color: transparent;
+          background-color: var(--surface, #FFFFFF);
           padding: 6.5rem 0;
           position: relative;
         }
@@ -467,10 +467,8 @@ export default function EventsCalendarSection() {
 
         /* 1. CAROUSEL STYLING */
         .events-carousel-block {
-          background: rgba(253, 251, 247, 0.76);
-          backdrop-filter: blur(12px);
-          -webkit-backdrop-filter: blur(12px);
-          border: 1px solid rgba(226, 232, 240, 0.85);
+          background: var(--cream-50, #FDFBF7);
+          border: 1px solid var(--border-subtle, #E2E8F0);
           border-radius: 28px;
           padding: 2.5rem;
           margin-bottom: 4.5rem;
@@ -527,14 +525,12 @@ export default function EventsCalendarSection() {
           width: 42px;
           height: 42px;
           border-radius: 50%;
-          background: rgba(255, 255, 255, 0.9);
-          backdrop-filter: blur(8px);
-          -webkit-backdrop-filter: blur(8px);
+          background: #FFFFFF;
           border: 1px solid var(--border-subtle, #E2E8F0);
           color: var(--charcoal-900, #0F172A);
           cursor: pointer;
           transition: all 0.2s ease;
-          box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+          box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
         }
 
         .carousel-nav-btn:hover:not(:disabled) {
@@ -578,10 +574,8 @@ export default function EventsCalendarSection() {
         .carousel-event-card {
           display: grid;
           grid-template-columns: 1fr;
-          background: rgba(255, 255, 255, 0.88);
-          backdrop-filter: blur(12px);
-          -webkit-backdrop-filter: blur(12px);
-          border: 1px solid rgba(226, 232, 240, 0.85);
+          background: #FFFFFF;
+          border: 1px solid var(--border-subtle, #E2E8F0);
           border-radius: 20px;
           overflow: hidden;
           box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04);
@@ -777,13 +771,11 @@ export default function EventsCalendarSection() {
         }
 
         .calendar-glass-panel {
-          background: rgba(253, 251, 247, 0.84);
-          backdrop-filter: blur(14px);
-          -webkit-backdrop-filter: blur(14px);
-          border: 1px solid rgba(226, 232, 240, 0.85);
+          background: #FFFFFF;
+          border: 1px solid var(--border-subtle, #E2E8F0);
           border-radius: 28px;
           padding: 2.25rem;
-          box-shadow: 0 15px 40px rgba(15, 23, 42, 0.05);
+          box-shadow: 0 15px 40px rgba(15, 23, 42, 0.06);
         }
 
         @media (min-width: 768px) {
@@ -835,9 +827,7 @@ export default function EventsCalendarSection() {
           display: inline-flex;
           align-items: center;
           gap: 0.35rem;
-          background: rgba(255, 255, 255, 0.85);
-          backdrop-filter: blur(8px);
-          -webkit-backdrop-filter: blur(8px);
+          background: var(--cream-50, #FDFBF7);
           border: 1px solid var(--border-subtle, #E2E8F0);
           color: var(--charcoal-900, #0F172A);
           padding: 0.5rem 0.9rem;
@@ -897,8 +887,8 @@ export default function EventsCalendarSection() {
 
         .calendar-date-cell {
           min-height: 70px;
-          background: rgba(255, 255, 255, 0.82);
-          border: 1px solid rgba(226, 232, 240, 0.8);
+          background: var(--cream-50, #FDFBF7);
+          border: 1px solid rgba(226, 232, 240, 0.7);
           border-radius: 12px;
           padding: 0.5rem;
           display: flex;
@@ -1074,9 +1064,7 @@ export default function EventsCalendarSection() {
         /* Selected Event Spotlight Card */
         .calendar-selected-event-card {
           margin-top: 2.5rem;
-          background: linear-gradient(135deg, rgba(253, 251, 247, 0.94) 0%, rgba(255, 247, 237, 0.9) 100%);
-          backdrop-filter: blur(12px);
-          -webkit-backdrop-filter: blur(12px);
+          background: linear-gradient(135deg, var(--cream-50, #FDFBF7) 0%, #FFFFFF 100%);
           border: 2px solid var(--primary-saffron, #F97316);
           border-radius: 20px;
           padding: 1.75rem 2rem;

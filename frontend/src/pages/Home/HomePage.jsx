@@ -7,6 +7,9 @@ import CursorNetworkField from '../../components/home/CursorNetworkField';
 import FloatingSocialIcons from '../../components/home/FloatingSocialIcons';
 import WhatWeDoSection from '../../components/home/WhatWeDoSection';
 import OurStorySection from '../../components/home/OurStorySection';
+import VisionSection from '../../components/home/VisionSection';
+import MissionSection from '../../components/home/MissionSection';
+
 import FocusAreasSection from '../../components/home/FocusAreasSection';
 import ImpactStats from '../../components/home/ImpactStats';
 import OrbitCards from '../../components/home/OrbitCards';
@@ -14,6 +17,7 @@ import ProjectShowcase from '../../components/home/ProjectShowcase';
 import EventsCalendarSection from '../../components/home/EventsCalendarSection';
 import TrustedPartnersSection from '../../components/home/TrustedPartnersSection';
 import FinalCTA from '../../components/home/FinalCTA';
+import CurvedTransition from '../../components/home/CurvedTransition';
 
 export default function HomePage() {
   const [featuredProjects, setFeaturedProjects] = useState([]);
@@ -32,109 +36,83 @@ export default function HomePage() {
 
   return (
     <div className="home-editorial-page">
-      {/* Shared Continuous Homepage Background Layer (Positioned beneath all homepage sections below header) */}
-      <div className="homepage-shared-backdrop" aria-hidden="true">
-        <div className="homepage-backdrop-img" />
-        <div className="homepage-backdrop-overlay" />
-      </div>
-
-      {/* Interactive Cursor Constellation Field (pointer-events: none, behind foreground content) */}
+      {/* Interactive Cursor Constellation Field (pointer-events: none, behind content) */}
       <CursorNetworkField />
 
-      {/* Floating Social-Media Badges on Right Viewport Edge */}
+      {/* Floating Social-Media Badges on Left and Right Edges */}
       <FloatingSocialIcons />
 
-      {/* Foreground Content Stack (Renders clearly above the shared continuous focusarea background) */}
-      <div className="homepage-content-stack">
-        {/* 1. HERO SECTION */}
-        <Hero />
+      {/* 1. HERO SECTION */}
+      <Hero />
 
-        {/* 2. WHAT WE DO */}
-        <WhatWeDoSection />
+      {/* Curved Transition: Hero to What We Do */}
+      <CurvedTransition type="convex" fill="#FDFBF7" />
 
-        {/* 3. OUR STORY */}
-        <OurStorySection />
+      {/* 2. WHAT WE DO */}
+      <WhatWeDoSection />
 
-        {/* 4. FOCUS AREAS OF OUR NGO (Integrated Mission & Vision Videos + 3 Focus Pillars) */}
-        <FocusAreasSection />
+      {/* Curved Transition: What We Do to Our Story */}
+      <CurvedTransition type="concave" fill="#FFFFFF" />
 
-        {/* 5. REAL-TIME IMPACT NUMBERS & VOLUNTEER COUNT */}
-        <ImpactStats />
+      {/* 3. OUR STORY */}
+      <OurStorySection />
 
-        {/* 6. TURNING RESPONSIBILITY INTO ACTION (Horizontal Orbiting Cards) */}
-        <OrbitCards />
+      {/* Curved Transition: Our Story to Our Vision */}
+      <CurvedTransition type="convex" fill="#FDFBF7" />
 
-        {/* 7. PROJECTS ON THE GROUND (3D Cylindrical Carousel) */}
-        <ProjectShowcase projects={featuredProjects} />
+      {/* 4. OUR VISION (Integrated Vision Video Asset) */}
+      <VisionSection />
 
-        {/* 8. UPCOMING EVENTS: MONTHLY CALENDAR & IMAGE CAROUSEL */}
-        <EventsCalendarSection />
+      {/* Curved Transition: Vision to Mission */}
+      <CurvedTransition type="concave" fill="#FFFFFF" />
 
-        {/* 9. TRUSTED BY CSR PARTNERS & CITIZEN COLLECTIVES */}
-        <TrustedPartnersSection />
+      {/* 5. OUR MISSION (Integrated Mission Video Asset) */}
+      <MissionSection />
 
-        {/* 10. FINAL CALL TO ACTION */}
-        <FinalCTA />
-      </div>
+      {/* Curved Transition: Mission to Focus Areas */}
+      <CurvedTransition type="convex" fill="#FDFBF7" />
+
+      {/* 6. FOCUS AREAS OF OUR NGO (Education, Environment, Health) */}
+      <FocusAreasSection />
+
+      {/* Curved Transition: Focus Areas to Impact Numbers */}
+      <CurvedTransition type="concave" fill="#FFFFFF" />
+
+      {/* 8. REAL-TIME IMPACT NUMBERS & VOLUNTEER COUNT */}
+      <ImpactStats />
+
+      {/* Curved Transition: White to Warm Cream */}
+      <CurvedTransition type="concave" fill="#F7F3EB" />
+
+      {/* 9. TURNING RESPONSIBILITY INTO ACTION (Horizontal Orbiting Cards) */}
+      <OrbitCards />
+
+      {/* Curved Transition: Cream to Warm Ivory */}
+      <CurvedTransition type="convex" fill="#FDFBF7" />
+
+      {/* 10. PROJECTS ON THE GROUND (3D Cylindrical Carousel) */}
+      <ProjectShowcase projects={featuredProjects} />
+
+      {/* Curved Transition: Ivory to White */}
+      <CurvedTransition type="concave" fill="#FFFFFF" />
+
+      {/* 11. UPCOMING EVENTS: MONTHLY CALENDAR & IMAGE CAROUSEL */}
+      <EventsCalendarSection />
+
+      {/* 12. TRUSTED BY CSR PARTNERS & CITIZEN COLLECTIVES (Smooth Horizontal Sliding Marquee) */}
+      <TrustedPartnersSection />
+
+      {/* 13. FINAL CALL TO ACTION */}
+      <FinalCTA />
+
+      {/* Curved Transition: Neutral to Dark Footer */}
+      <CurvedTransition type="concave" fill="#0F172A" />
 
       <style>{`
         .home-editorial-page {
-          position: relative;
+          background-color: var(--cream-50, #FDFBF7);
           overflow-x: hidden;
-          width: 100%;
-          min-height: 100vh;
-        }
-
-        /* Shared continuous background covering the full homepage content area below header */
-        .homepage-shared-backdrop {
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          width: 100%;
-          height: 100vh;
-          z-index: 0;
-          pointer-events: none;
-          overflow: hidden;
-        }
-
-        .homepage-backdrop-img {
-          position: absolute;
-          inset: 0;
-          width: 100%;
-          height: 100%;
-          background-image: url('/images/focusarea.webp'), url('/images/focusarea.jpg');
-          background-size: cover;
-          background-position: center 25%;
-          background-repeat: no-repeat;
-          transform: translateZ(0);
-        }
-
-        /* Subtle warm palette overlay preserving rich Warli mural detail while maximizing readability */
-        .homepage-backdrop-overlay {
-          position: absolute;
-          inset: 0;
-          background: linear-gradient(
-            180deg,
-            rgba(253, 251, 247, 0.75) 0%,
-            rgba(253, 251, 247, 0.68) 30%,
-            rgba(253, 251, 247, 0.66) 70%,
-            rgba(253, 251, 247, 0.78) 100%
-          );
-          pointer-events: none;
-        }
-
-        .homepage-content-stack {
           position: relative;
-          z-index: 1;
-          width: 100%;
-        }
-
-        @media (max-width: 768px) {
-          .homepage-backdrop-img {
-            background-position: center top;
-          }
         }
       `}</style>
     </div>

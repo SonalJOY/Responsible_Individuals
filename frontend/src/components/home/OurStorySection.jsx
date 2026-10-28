@@ -206,7 +206,7 @@ export default function OurStorySection() {
 
       <style>{`
         .our-story-section {
-          background-color: transparent;
+          background-color: #FFFFFF;
           padding: 6.5rem 0;
           position: relative;
           overflow: hidden;
@@ -412,21 +412,18 @@ export default function OurStorySection() {
         }
 
         .narrative-chapter-card {
-          background: rgba(255, 255, 255, 0.85);
-          backdrop-filter: blur(12px);
-          -webkit-backdrop-filter: blur(12px);
-          border: 1px solid rgba(226, 232, 240, 0.85);
+          background: var(--cream-50, #FDFBF7);
+          border: 1px solid var(--border-subtle, #E2E8F0);
           border-left: 4px solid var(--primary-saffron, #F59E0B);
           border-radius: 16px;
           padding: 1.65rem 1.85rem;
-          box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
-          transition: transform 0.25s ease, box-shadow 0.25s ease, border-left-color 0.25s ease, background-color 0.25s ease;
+          box-shadow: 0 4px 16px rgba(15, 23, 42, 0.03);
+          transition: transform 0.25s ease, box-shadow 0.25s ease, border-left-color 0.25s ease;
         }
 
         .narrative-chapter-card:hover {
           transform: translateX(4px);
-          background: rgba(255, 255, 255, 0.95);
-          box-shadow: 0 10px 24px rgba(15, 23, 42, 0.07);
+          box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
           border-left-color: var(--primary-saffron-dark, #B45309);
         }
 

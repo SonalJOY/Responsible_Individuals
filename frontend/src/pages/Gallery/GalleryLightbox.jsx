@@ -74,6 +74,7 @@ export default function GalleryLightbox({ isOpen, items, currentIndex, onClose, 
               src={imgSrc} 
               alt={currentItem.title} 
               className="gallery-lightbox-img"
+              style={{ objectPosition: currentItem?.imagePosition || 'center' }}
               onError={handleImgError}
             />
           ) : (
