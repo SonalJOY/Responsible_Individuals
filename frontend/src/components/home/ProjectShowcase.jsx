@@ -10,6 +10,7 @@ import forestImg from '../../assets/area-environment.jpg';
 import wasteImg from '../../assets/area-community.jpg';
 import waterMonitoringImg from '../../assets/citizen-water-monitoring.jpg';
 import desiltingImg from '../../assets/varthur-volunteers-desilting.jpg';
+import washImg1 from '../../assets/hosa-byrohalli-wash-1.jpg';
 
 export default function ProjectShowcase() {
   // Responsive cardWidth for different screen sizes (enlarged: 340px desktop)
@@ -78,6 +79,13 @@ export default function ProjectShowcase() {
       title: 'Community Wetland Desilting Drive',
       subtitle: 'Citizen Volunteer Drives',
       link: '/projects/lake-rejuvenation-bengaluru-east',
+    },
+    {
+      src: washImg1,
+      alt: 'Students at Hosa Byrohalli Government School attending the WASH health, hygiene and sanitation programme',
+      title: 'School WASH & Hygiene Initiative',
+      subtitle: 'Health & Water Sanitation',
+      link: '/projects/hosa-byrohalli-wash-programme',
     },
   ];
 

@@ -19,6 +19,9 @@ import healthcareImg from '../../assets/area-healthcare.jpg';
 import livelihoodImg from '../../assets/area-livelihood.jpg';
 import civicImg from '../../assets/area-civic.jpg';
 import educationImg from '../../assets/area-education.jpg';
+import washImg1 from '../../assets/hosa-byrohalli-wash-1.jpg';
+import washImg2 from '../../assets/hosa-byrohalli-wash-2.jpg';
+import washImg3 from '../../assets/hosa-byrohalli-wash-3.jpg';
 
 // Comprehensive portfolio of verified ground projects for rich imagery and exploration
 const EXTENDED_PROJECTS_CATALOG = [
@@ -211,6 +214,25 @@ const EXTENDED_PROJECTS_CATALOG = [
     cover_image: educationImg,
     photo_count: 19,
     tags: ['Mobile Labs', 'STEM On Wheels', 'Coding for Kids']
+  },
+  {
+    id: 'proj-ext-11',
+    title: 'WASH Awareness & School Sanitation Programme',
+    slug: 'hosa-byrohalli-wash-programme',
+    category_name: 'Community & Civic Action',
+    focus_area_name: 'Environment & Water Restoration',
+    focus_area_color: '#10B981',
+    status: 'COMPLETED',
+    location: 'Hosa Byrohalli Government School, Bengaluru',
+    summary: 'Promoting hygiene, clean sanitation facilities, and water awareness while distributing educational stationery and cleaning materials at Hosa Byrohalli Government School.',
+    budget: 250000,
+    raised_amount: 250000,
+    beneficiaries_count: 340,
+    progress_percentage: 100.0,
+    featured: true,
+    cover_image: washImg1,
+    photo_count: 14,
+    tags: ['WASH', 'School Sanitation', 'Hygiene Awareness', 'Child Health']
   }
 ];
 
@@ -297,6 +319,14 @@ const FIELD_DISPATCHES = [
     location: 'East Bengaluru Basin',
     date: 'Aug 2026',
     caption: '300 neighborhood residents working side-by-side to clear blocked culverts ahead of the seasonal monsoon.'
+  },
+  {
+    id: 'fd-07',
+    img: washImg1,
+    title: 'School WASH & Hygiene Drive',
+    location: 'Hosa Byrohalli Govt School',
+    date: 'Dec 2025',
+    caption: 'Field team and volunteers conducting interactive handwashing workshops and distributing educational supplies to students.'
   }
 ];
 

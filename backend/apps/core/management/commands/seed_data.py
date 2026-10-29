@@ -273,6 +273,44 @@ class Command(BaseCommand):
             }
         )
 
+        p5, _ = Project.objects.get_or_create(
+            slug='hosa-byrohalli-wash-programme',
+            defaults={
+                'title': 'WASH Awareness & School Sanitation Programme',
+                'category': cat_comm,
+                'focus_area': created_areas['environment'],
+                'status': Project.Status.COMPLETED,
+                'location': 'Hosa Byrohalli Government School, Bengaluru, Karnataka',
+                'coordinates': '12.8942, 77.4764',
+                'summary': 'Promoting hygiene, clean sanitation facilities, and water awareness while distributing educational stationery and cleaning materials at Hosa Byrohalli Government School.',
+                'description': 'As part of our commitment to promoting health, hygiene, and sanitation awareness among students, we conducted a comprehensive WASH (Water, Sanitation, and Hygiene) Awareness Programme at Hosa Byrohalli Government School on 16 December 2025. The programme focused on instilling lifelong healthy habits, demonstrating correct handwashing techniques, educating children on personal hygiene, and keeping school classrooms and surrounding grounds clean. To support the students academic journey and encourage clean sanitation practices, educational stationery kits and sanitation supplies were distributed. In addition, our field team conducted a thorough assessment of the schools washroom and sanitation infrastructure to identify key upgrade opportunities for long-term health and dignity.',
+                'problem_statement': 'Government school students in peri-urban communities often lack structured guidance on daily sanitation practices, safe hand hygiene, and access to regular sanitation consumables, increasing vulnerability to water-borne illnesses and school absenteeism.',
+                'solution_approach': 'A holistic school-level WASH intervention: interactive student hygiene workshops, distribution of hygiene & stationery materials, on-site washroom safety and accessibility auditing, and long-term sanitation maintenance planning with school faculty.',
+                'start_date': date(2025, 12, 16),
+                'end_date': date(2025, 12, 16),
+                'budget': Decimal('250000.00'),
+                'raised_amount': Decimal('250000.00'),
+                'beneficiaries_count': 340,
+                'cover_image': 'projects/covers/hosa-byrohalli-wash-1.jpg',
+                'featured': True,
+            }
+        )
+        ProjectKPI.objects.get_or_create(project=p5, metric_name='Students Trained in Hygiene Practices', defaults={'baseline': Decimal('0'), 'target': Decimal('300'), 'achieved': Decimal('340'), 'unit': 'Students'})
+        ProjectKPI.objects.get_or_create(project=p5, metric_name='Stationery & Cleaning Kits Distributed', defaults={'baseline': Decimal('0'), 'target': Decimal('300'), 'achieved': Decimal('340'), 'unit': 'Kits'})
+        ProjectKPI.objects.get_or_create(project=p5, metric_name='Sanitation Facility Audit Completed', defaults={'baseline': Decimal('0'), 'target': Decimal('100'), 'achieved': Decimal('100'), 'unit': '%'})
+        ProjectObjective.objects.get_or_create(project=p5, title='Student WASH & personal hygiene awareness sessions', defaults={'target': '100% student participation', 'order': 1})
+        ProjectObjective.objects.get_or_create(project=p5, title='Distribute study stationery kits and school cleaning supplies', defaults={'target': '300+ students & facility maintenance', 'order': 2})
+        ProjectObjective.objects.get_or_create(project=p5, title='Comprehensive inspection of school sanitation & washroom facilities', defaults={'target': 'Complete baseline infrastructure audit', 'order': 3})
+        ProjectActivity.objects.get_or_create(project=p5, title='Interactive Handwashing & Sanitation Workshop', defaults={'status': 'COMPLETED', 'date': date(2025, 12, 16), 'outcome': 'Demonstrated 6-step handwashing techniques and hygiene best practices to all classes'})
+        ProjectActivity.objects.get_or_create(project=p5, title='Educational Stationery & Cleaning Materials Distribution', defaults={'status': 'COMPLETED', 'date': date(2025, 12, 16), 'outcome': 'Provided essential study stationery and hygiene supplies to students and staff'})
+        ProjectActivity.objects.get_or_create(project=p5, title='School Washroom & Sanitation Facility Condition Audit', defaults={'status': 'COMPLETED', 'date': date(2025, 12, 16), 'outcome': 'Documented existing sanitation conditions to plan accessibility and repair improvements'})
+        ProjectPartner.objects.get_or_create(project=p5, partner_name='Hosa Byrohalli Government School', defaults={'role': 'School & Community Partner'})
+        ProjectPartner.objects.get_or_create(project=p5, partner_name='Responsible Individuals Volunteer Corps', defaults={'role': 'Program Execution Partner'})
+        ProjectMedia.objects.get_or_create(project=p5, caption='Interactive WASH awareness session with students at Hosa Byrohalli Government School', defaults={'media_file': 'projects/covers/hosa-byrohalli-wash-1.jpg', 'is_cover': True})
+        ProjectMedia.objects.get_or_create(project=p5, caption='Distribution of learning stationery and sanitation supplies to students', defaults={'media_file': 'projects/covers/hosa-byrohalli-wash-2.jpg', 'is_cover': False})
+        ProjectMedia.objects.get_or_create(project=p5, caption='School sanitation facility inspection and infrastructure condition assessment', defaults={'media_file': 'projects/covers/hosa-byrohalli-wash-3.jpg', 'is_cover': False})
+
+
         # 7. Stories of Change (Before & After)
         StoryCategory.objects.get_or_create(slug='water-environment', defaults={'name': 'Water & Environment'})
         cat_edu_story, _ = StoryCategory.objects.get_or_create(slug='education-youth', defaults={'name': 'Education & Youth'})

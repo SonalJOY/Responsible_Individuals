@@ -13,6 +13,7 @@ import healthcareImg from '../../assets/area-healthcare.jpg';
 import livelihoodImg from '../../assets/area-livelihood.jpg';
 import civicImg from '../../assets/area-civic.jpg';
 import educationImg from '../../assets/area-education.jpg';
+import washCoverImg from '../../assets/hosa-byrohalli-wash-1.jpg';
 
 // Helper to resolve an authentic photo for any project
 export function getProjectCoverImage(project) {
@@ -23,6 +24,9 @@ export function getProjectCoverImage(project) {
   const t = (project?.title || '').toLowerCase();
   const f = (project?.focus_area_name || '').toLowerCase();
 
+  if (s.includes('wash') || s.includes('byrohalli') || t.includes('wash') || t.includes('byrohalli')) {
+    return washCoverImg;
+  }
   if (s.includes('miyawaki') || s.includes('forest') || t.includes('forest') || t.includes('miyawaki')) {
     return forestImg;
   }
