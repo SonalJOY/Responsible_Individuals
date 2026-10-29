@@ -9,6 +9,24 @@ import {
 import washImg1 from '../../assets/hosa-byrohalli-wash-1.jpg';
 import washImg2 from '../../assets/hosa-byrohalli-wash-2.jpg';
 import washImg3 from '../../assets/hosa-byrohalli-wash-3.jpg';
+import inaugurationImg1 from '../../assets/ri-inauguration-beautification-1.jpg';
+import inaugurationImg2 from '../../assets/ri-inauguration-beautification-2.jpg';
+import inaugurationImg3 from '../../assets/ri-inauguration-beautification-3.jpg';
+import inaugurationImg4 from '../../assets/ri-inauguration-beautification-4.jpg';
+
+function resolveMediaSrc(mediaItem) {
+  const mf = typeof mediaItem === 'string' ? mediaItem : (mediaItem?.media_file || mediaItem?.url || mediaItem?.src || '');
+  if (typeof mf === 'string') {
+    if (mf.includes('ri-inauguration-beautification-1')) return inaugurationImg1;
+    if (mf.includes('ri-inauguration-beautification-2')) return inaugurationImg2;
+    if (mf.includes('ri-inauguration-beautification-3')) return inaugurationImg3;
+    if (mf.includes('ri-inauguration-beautification-4')) return inaugurationImg4;
+    if (mf.includes('hosa-byrohalli-wash-1')) return washImg1;
+    if (mf.includes('hosa-byrohalli-wash-2')) return washImg2;
+    if (mf.includes('hosa-byrohalli-wash-3')) return washImg3;
+  }
+  return mf;
+}
 
 export default function ProjectDetailPage() {
   const { slug } = useParams();
@@ -22,8 +40,49 @@ export default function ProjectDetailPage() {
         setProject(data);
       } catch (err) {
         console.error(err);
+        // Fallback for School Beautification RI Inauguration
+        if (slug === 'school-beautification-ri-inauguration') {
+          setProject({
+            title: 'School Beautification & Cleanliness Drive — RI Inauguration',
+            slug: 'school-beautification-ri-inauguration',
+            focus_area_name: 'Education & Digital Literacy',
+            focus_area_color: '#3B82F6',
+            status: 'COMPLETED',
+            location: 'Government School, Dasarahalli, Hebbal, Bengaluru, Karnataka',
+            start_date: '2025-07-19',
+            end_date: '2025-07-19',
+            budget: 150000,
+            raised_amount: 150000,
+            beneficiaries_count: 450,
+            progress_percentage: 100.0,
+            summary: 'Commemorating the RI Inauguration with school wall painting, creative educational murals, and campus cleanliness drives to create an inspiring learning environment.',
+            description: 'As part of the Responsible Individuals (RI) Inauguration Event held on 19 July 2025 at Dasarahalli, Hebbal, our dedicated volunteer corps, youth leaders, and team members transformed the local Government School into an uplifting, colorful sanctuary for young learners. The initiative combined thorough campus-wide cleanliness drives with vibrant, creative educational wall paintings and sketches designed to stimulate curiosity and civic pride among children. Volunteers scraped and primed weathered school walls, painted interactive educational art, cleaned classroom spaces, and created a renewed, dignified school environment that teachers and students cherish every single day.',
+            problem_statement: 'Dilapidated wall surfaces, weathered exterior corridors, and lack of visual learning elements in community government schools negatively affect student enthusiasm, attendance, and pride in their academic spaces.',
+            solution_approach: 'A volunteer-powered campus renewal: structured cleanliness drives, wall priming, artistic educational murals, and community ownership to foster a positive, motivating school atmosphere.',
+            objectives: [
+              { id: 'obj-1', title: 'Campus cleanliness and sanitation drive', target: '100% grounds & corridors cleared', order: 1 },
+              { id: 'obj-2', title: 'Wall preparation and artistic educational murals', target: '1,200+ sq ft vibrantly painted', order: 2 },
+              { id: 'obj-3', title: 'School environment revitalization and volunteer engagement', target: 'Engage 40+ active RI volunteers', order: 3 },
+            ],
+            activities: [
+              { id: 'act-1', title: 'School Campus Cleanliness & Debris Clearance', date: '2025-07-19', outcome: 'Cleared school grounds, removed accumulated debris, and primed building walls' },
+              { id: 'act-2', title: 'Creative Wall Art, Murals & Painting Drive', date: '2025-07-19', outcome: 'Completed colorful educational murals, learning diagrams, and aesthetic sketches' },
+              { id: 'act-3', title: 'Official RI Inauguration & Community Handover Ceremony', date: '2025-07-19', outcome: 'Dedicated revitalized learning corridors to students and faculty with community pledge' },
+            ],
+            partners: [
+              { id: 'pt-1', partner_name: 'Government School Dasarahalli', role: 'Host Institution & Faculty' },
+              { id: 'pt-2', partner_name: 'Responsible Individuals Volunteer Corps', role: 'Event Organizer & Execution Team' },
+            ],
+            media: [
+              { media_file: inaugurationImg1, caption: 'RI Volunteers painting vibrant murals and educational artwork on school walls' },
+              { media_file: inaugurationImg2, caption: 'Creative sketches and artistic wall detailing by youth volunteers' },
+              { media_file: inaugurationImg3, caption: 'Campus cleanliness drive and exterior wall preparation in progress' },
+              { media_file: inaugurationImg4, caption: 'Volunteers collaborating on revitalizing school learning corridors' },
+            ]
+          });
+        }
         // Fallback for Hosa Byrohalli WASH project if API has network/CORS hiccup
-        if (slug === 'hosa-byrohalli-wash-programme') {
+        else if (slug === 'hosa-byrohalli-wash-programme') {
           setProject({
             title: 'WASH Awareness & School Sanitation Programme',
             slug: 'hosa-byrohalli-wash-programme',
@@ -101,11 +160,18 @@ export default function ProjectDetailPage() {
   } = project;
 
   // Resolve media items (inject local authentic assets if needed)
-  const displayMedia = (media && media.length > 0) ? media : (slug === 'hosa-byrohalli-wash-programme' ? [
-    { media_file: washImg1, caption: 'Interactive WASH awareness session with students at Hosa Byrohalli Government School' },
-    { media_file: washImg2, caption: 'Distribution of learning stationery and sanitation supplies to students' },
-    { media_file: washImg3, caption: 'School sanitation facility inspection and infrastructure condition assessment' },
-  ] : []);
+  const displayMedia = (media && media.length > 0) ? media : (
+    slug === 'school-beautification-ri-inauguration' ? [
+      { media_file: inaugurationImg1, caption: 'RI Volunteers painting vibrant murals and educational artwork on school walls' },
+      { media_file: inaugurationImg2, caption: 'Creative sketches and artistic wall detailing by youth volunteers' },
+      { media_file: inaugurationImg3, caption: 'Campus cleanliness drive and exterior wall preparation in progress' },
+      { media_file: inaugurationImg4, caption: 'Volunteers collaborating on revitalizing school learning corridors' },
+    ] : (slug === 'hosa-byrohalli-wash-programme' ? [
+      { media_file: washImg1, caption: 'Interactive WASH awareness session with students at Hosa Byrohalli Government School' },
+      { media_file: washImg2, caption: 'Distribution of learning stationery and sanitation supplies to students' },
+      { media_file: washImg3, caption: 'School sanitation facility inspection and infrastructure condition assessment' },
+    ] : [])
+  );
 
   return (
     <div className="project-detail-root">
@@ -221,7 +287,7 @@ export default function ProjectDetailPage() {
                   {displayMedia.map((m, idx) => (
                     <div key={idx} className="detail-media-item">
                       <img 
-                        src={m.media_file || m.url || m.src} 
+                        src={resolveMediaSrc(m)} 
                         alt={m.caption || `Field photograph ${idx + 1}`} 
                         className="detail-media-img"
                       />

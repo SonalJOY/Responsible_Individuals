@@ -14,6 +14,7 @@ import livelihoodImg from '../../assets/area-livelihood.jpg';
 import civicImg from '../../assets/area-civic.jpg';
 import educationImg from '../../assets/area-education.jpg';
 import washCoverImg from '../../assets/hosa-byrohalli-wash-1.jpg';
+import inaugurationCoverImg from '../../assets/ri-inauguration-beautification-1.jpg';
 
 // Helper to resolve an authentic photo for any project
 export function getProjectCoverImage(project) {
@@ -24,6 +25,9 @@ export function getProjectCoverImage(project) {
   const t = (project?.title || '').toLowerCase();
   const f = (project?.focus_area_name || '').toLowerCase();
 
+  if (s.includes('inauguration') || s.includes('beautification') || t.includes('inauguration') || t.includes('beautification') || s.includes('dasarahalli')) {
+    return inaugurationCoverImg;
+  }
   if (s.includes('wash') || s.includes('byrohalli') || t.includes('wash') || t.includes('byrohalli')) {
     return washCoverImg;
   }

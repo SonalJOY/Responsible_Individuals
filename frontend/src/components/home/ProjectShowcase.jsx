@@ -11,6 +11,7 @@ import wasteImg from '../../assets/area-community.jpg';
 import waterMonitoringImg from '../../assets/citizen-water-monitoring.jpg';
 import desiltingImg from '../../assets/varthur-volunteers-desilting.jpg';
 import washImg1 from '../../assets/hosa-byrohalli-wash-1.jpg';
+import inaugurationImg1 from '../../assets/ri-inauguration-beautification-1.jpg';
 
 export default function ProjectShowcase({ projects = [] }) {
   // Responsive cardWidth for different screen sizes (enlarged: 440px desktop)
@@ -93,11 +94,22 @@ export default function ProjectShowcase({ projects = [] }) {
       link: '/projects/lake-rejuvenation-bengaluru-east',
     },
     {
+      id: 'wash-hygiene',
       src: washImg1,
       alt: 'Students at Hosa Byrohalli Government School attending the WASH health, hygiene and sanitation programme',
       title: 'School WASH & Hygiene Initiative',
       subtitle: 'Health & Water Sanitation',
+      description: 'Promoting lifelong hygiene habits, clean sanitation facilities, and educational stationery distribution.',
       link: '/projects/hosa-byrohalli-wash-programme',
+    },
+    {
+      id: 'school-beautification-inauguration',
+      src: inaugurationImg1,
+      alt: 'Volunteers and youth leaders transforming government school walls with vibrant murals during the RI Inauguration',
+      title: 'School Beautification & Cleanliness Drive',
+      subtitle: 'Education & Community Action',
+      description: 'Commemorating the RI Inauguration with campus cleanliness drives and inspiring educational wall murals.',
+      link: '/projects/school-beautification-ri-inauguration',
     },
   ];
 

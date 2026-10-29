@@ -22,6 +22,10 @@ import educationImg from '../../assets/area-education.jpg';
 import washImg1 from '../../assets/hosa-byrohalli-wash-1.jpg';
 import washImg2 from '../../assets/hosa-byrohalli-wash-2.jpg';
 import washImg3 from '../../assets/hosa-byrohalli-wash-3.jpg';
+import inaugurationImg1 from '../../assets/ri-inauguration-beautification-1.jpg';
+import inaugurationImg2 from '../../assets/ri-inauguration-beautification-2.jpg';
+import inaugurationImg3 from '../../assets/ri-inauguration-beautification-3.jpg';
+import inaugurationImg4 from '../../assets/ri-inauguration-beautification-4.jpg';
 
 // Comprehensive portfolio of verified ground projects for rich imagery and exploration
 const EXTENDED_PROJECTS_CATALOG = [
@@ -233,6 +237,25 @@ const EXTENDED_PROJECTS_CATALOG = [
     cover_image: washImg1,
     photo_count: 14,
     tags: ['WASH', 'School Sanitation', 'Hygiene Awareness', 'Child Health']
+  },
+  {
+    id: 'proj-ext-12',
+    title: 'School Beautification & Cleanliness Drive — RI Inauguration',
+    slug: 'school-beautification-ri-inauguration',
+    category_name: 'Education & Digital Access',
+    focus_area_name: 'Education & Digital Literacy',
+    focus_area_color: '#3B82F6',
+    status: 'COMPLETED',
+    location: 'Government School, Dasarahalli, Hebbal, Bengaluru',
+    summary: 'Commemorating the RI Inauguration with school wall painting, creative educational murals, and campus cleanliness drives to create an inspiring learning environment.',
+    budget: 150000,
+    raised_amount: 150000,
+    beneficiaries_count: 450,
+    progress_percentage: 100.0,
+    featured: true,
+    cover_image: inaugurationImg1,
+    photo_count: 16,
+    tags: ['School Beautification', 'Campus Cleanliness', 'Creative Murals', 'Youth Action']
   }
 ];
 
@@ -327,6 +350,14 @@ const FIELD_DISPATCHES = [
     location: 'Hosa Byrohalli Govt School',
     date: 'Dec 2025',
     caption: 'Field team and volunteers conducting interactive handwashing workshops and distributing educational supplies to students.'
+  },
+  {
+    id: 'fd-08',
+    img: inaugurationImg1,
+    title: 'School Mural & Beautification Drive',
+    location: 'Govt School Dasarahalli, Hebbal',
+    date: 'Jul 2025',
+    caption: 'Volunteers and youth leaders transforming campus walls with vibrant educational murals during the RI Inauguration.'
   }
 ];
 
