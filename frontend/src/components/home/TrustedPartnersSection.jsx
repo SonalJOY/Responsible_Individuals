@@ -116,7 +116,7 @@ export default function TrustedPartnersSection() {
 
       <style>{`
         .trusted-partners-section {
-          background-color: #FFFFFF;
+          background-color: transparent;
           padding: 5.5rem 0 6rem 0;
           border-top: 1px solid var(--border-subtle, #E2E8F0);
           border-bottom: 1px solid var(--border-subtle, #E2E8F0);
@@ -209,8 +209,10 @@ export default function TrustedPartnersSection() {
           display: flex;
           align-items: center;
           gap: 0.85rem;
-          background: var(--cream-50, #FDFBF7);
-          border: 1px solid var(--border-subtle, #E2E8F0);
+          background: rgba(253, 251, 247, 0.85);
+          backdrop-filter: blur(10px);
+          -webkit-backdrop-filter: blur(10px);
+          border: 1px solid rgba(226, 232, 240, 0.85);
           padding: 0.95rem 1.85rem;
           border-radius: var(--radius-pill, 9999px);
           box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
@@ -221,7 +223,7 @@ export default function TrustedPartnersSection() {
 
         .partner-card-capsule:hover {
           transform: translateY(-3px) scale(1.02);
-          background: #FFFFFF;
+          background: rgba(255, 255, 255, 0.96);
           border-color: var(--primary-saffron, #F59E0B);
           box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
         }

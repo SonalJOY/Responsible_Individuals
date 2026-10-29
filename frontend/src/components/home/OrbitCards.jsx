@@ -318,7 +318,7 @@ export default function OrbitCards({
 
       <style>{`
         .wheel-section-root {
-          background-color: var(--cream-100);
+          background-color: transparent;
           padding: 6rem 0;
           position: relative;
           z-index: 10;
@@ -362,21 +362,24 @@ export default function OrbitCards({
           user-select: none;
         }
         .orbit-pillar-card {
-          background: #FFFFFF;
-          border: 1px solid var(--border-subtle, #E2E8F0);
+          background: rgba(255, 255, 255, 0.88);
+          backdrop-filter: blur(14px);
+          -webkit-backdrop-filter: blur(14px);
+          border: 1px solid rgba(226, 232, 240, 0.85);
           border-radius: 22px;
           padding: 1.4rem 1.5rem;
-          box-shadow: 0 10px 30px rgba(15, 23, 42, 0.07);
+          box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
           display: flex;
           flex-direction: column;
           gap: 0.65rem;
-          transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.28s ease;
+          transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.28s ease, background-color 0.25s ease;
           pointer-events: auto;
           cursor: pointer;
         }
         .orbit-pillar-card:hover {
           transform: translateY(-5px) scale(1.02);
-          box-shadow: 0 20px 45px rgba(15, 23, 42, 0.12);
+          background: rgba(255, 255, 255, 0.98);
+          box-shadow: 0 20px 45px rgba(15, 23, 42, 0.1);
           border-color: var(--primary-saffron, #F97316);
         }
         .orbit-card-top {
@@ -452,8 +455,10 @@ export default function OrbitCards({
           pointer-events: none;
         }
         .center-hub-card {
-          background: #FFFFFF;
-          border: 2px solid var(--border-subtle, #E2E8F0);
+          background: rgba(255, 255, 255, 0.92);
+          backdrop-filter: blur(14px);
+          -webkit-backdrop-filter: blur(14px);
+          border: 2px solid rgba(245, 158, 11, 0.35);
           border-radius: var(--radius-pill);
           width: 150px;
           height: 150px;
@@ -461,7 +466,7 @@ export default function OrbitCards({
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          box-shadow: 0 16px 36px rgba(15, 23, 42, 0.1);
+          box-shadow: 0 16px 36px rgba(15, 23, 42, 0.08);
         }
         .center-logo-img-wrapper {
           width: 48px;
