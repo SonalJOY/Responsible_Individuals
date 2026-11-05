@@ -1,18 +1,23 @@
-
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-
 import {
   ShieldCheck,
   Lock,
   Mail,
   AlertCircle,
+  Eye,
+  EyeOff,
+  ArrowRight,
+  KeyRound,
 } from 'lucide-react';
+import './LoginPage.css';
 
 export default function LoginPage() {
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
 
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -106,6 +111,13 @@ export default function LoginPage() {
         data.identifier || identifier.trim()
       );
 
+      // Save rememberMe preference if needed
+      if (rememberMe) {
+        localStorage.setItem('ri_remember_me', 'true');
+      } else {
+        localStorage.removeItem('ri_remember_me');
+      }
+
       // Navigate to login OTP page
       navigate('/login-otp');
 
@@ -129,265 +141,223 @@ export default function LoginPage() {
     }
   };
 
-  // UI
   return (
-    <div className="login-page-root">
-      <div className="login-card-box">
+    <div className="ri-login-wrapper">
+      {/* Ambient background lighting */}
+      <div className="ri-login-ambient-orb ri-login-ambient-orb-1" aria-hidden="true" />
+      <div className="ri-login-ambient-orb ri-login-ambient-orb-2" aria-hidden="true" />
 
-        {/* Header */}
-        <div className="login-header">
-          <div className="login-logo-wrap">
-            <ShieldCheck
-              size={28}
-              color="var(--primary-saffron, #F97316)"
-            />
+      <div className="ri-login-container">
+        {/* LEFT PANEL: Community Impact Showcase */}
+        <div className="ri-login-showcase">
+          <div className="ri-login-showcase-bg" aria-hidden="true" />
+          <div className="ri-login-showcase-gradient-overlay" aria-hidden="true" />
+
+          <div className="ri-login-showcase-content">
+            {/* Top Brand Badge */}
+            <div>
+              <div className="ri-login-badge">
+                <span className="ri-badge-dot" />
+                <span>Changemaker & Impact Portal</span>
+              </div>
+
+              {/* Showcase Hero Headline */}
+              <div className="ri-showcase-hero">
+                <h2 className="ri-showcase-heading">
+                  Building Responsible Communities. <br />
+                  <span>Creating Sustainable Impact.</span>
+                </h2>
+                <p className="ri-showcase-subtext">
+                  Join thousands of dedicated volunteers, donors, and grassroots partners driving positive change in education, environment, and social welfare.
+                </p>
+              </div>
+            </div>
+
+            {/* Middle Section: Live Impact Metrics & Testimonial */}
+            <div>
+              <div className="ri-impact-stats-grid">
+                <div className="ri-stat-card">
+                  <div className="ri-stat-value">45,000+</div>
+                  <div className="ri-stat-label">Lives Impacted</div>
+                </div>
+                <div className="ri-stat-card">
+                  <div className="ri-stat-value">180+</div>
+                  <div className="ri-stat-label">Field Drives</div>
+                </div>
+                <div className="ri-stat-card">
+                  <div className="ri-stat-value">100%</div>
+                  <div className="ri-stat-label">Direct Impact</div>
+                </div>
+              </div>
+
+              <div className="ri-quote-card">
+                <p className="ri-quote-text">
+                  “Real societal impact isn't accidental. It begins with individual responsibility and collective community action.”
+                </p>
+                <div className="ri-quote-author">
+                  <div className="ri-author-info">
+                    <div className="ri-author-avatar-group">
+                      <div className="ri-avatar-circle ri-avatar-1">RI</div>
+                      <div className="ri-avatar-circle ri-avatar-2">VA</div>
+                      <div className="ri-avatar-circle ri-avatar-3">SR</div>
+                    </div>
+                    <div className="ri-author-meta">
+                      <span className="ri-author-name">Responsible Individuals</span>
+                      <span className="ri-author-role">Community Network</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom Security Footer */}
+            <div className="ri-showcase-footer">
+              <ShieldCheck size={18} />
+              <span>Verified Non-Profit Portal • End-to-End Encrypted • Multi-Factor Auth</span>
+            </div>
           </div>
-
-          <h1 className="login-title">
-            Welcome Back
-          </h1>
-
-          <p className="login-sub">
-            Sign in to your Responsible Individuals account.
-          </p>
         </div>
 
-        {/* Error */}
-        {error && (
-          <div className="login-error-alert">
-            <AlertCircle size={16} />
-            <span>{error}</span>
-          </div>
-        )}
-
-        {/* Login Form */}
-        <form onSubmit={handleLogin} autoComplete="off">
-
-          {/* Email or Phone */}
-          <div className="form-group">
-            <label className="form-label" htmlFor="login_identifier">
-              Email Address or Phone Number
-            </label>
-
-            <div className="input-icon-wrap">
-              <Mail
-                size={16}
-                className="input-icon"
-              />
-
-              <input
-                type="text"
-                id="login_identifier"
-                name="login_identifier"
-                autoComplete="off"
-                required
-                className="form-control"
-                placeholder="name@example.com or phone number"
-                value={identifier}
-                onChange={(e) =>
-                  setIdentifier(e.target.value)
-                }
-                disabled={loading}
-              />
-            </div>
-          </div>
-
-          {/* Password */}
-          <div className="form-group">
-            <label className="form-label" htmlFor="login_password">
-              Password
-            </label>
-
-            <div className="input-icon-wrap">
-              <Lock
-                size={16}
-                className="input-icon"
-              />
-
-              <input
-                type="password"
-                id="login_password"
-                name="login_password"
-                autoComplete="new-password"
-                required
-                className="form-control"
-                placeholder="Enter your password"
-                value={password}
-                onChange={(e) =>
-                  setPassword(e.target.value)
-                }
-                disabled={loading}
-              />
+        {/* RIGHT PANEL: Authentication Form */}
+        <div className="ri-login-form-panel">
+          {/* Header */}
+          <div className="ri-form-header">
+            <div className="ri-header-brand-row">
+              <div className="ri-logo-icon-box">
+                <ShieldCheck size={26} strokeWidth={2.2} />
+              </div>
+              <span className="ri-platform-tag">Secure Sign In</span>
             </div>
 
-            {/* Forgot Password Link */}
-            <div className="forgot-password-login-link">
-              <Link to="/forgot-password">
-                Forgot Password?
+            <h1 className="ri-form-title">Welcome Back</h1>
+            <p className="ri-form-subtitle">
+              Sign in to manage your volunteer drives, project impact, or organization portal.
+            </p>
+          </div>
+
+          {/* Error Alert */}
+          {error && (
+            <div className="ri-login-error" role="alert">
+              <AlertCircle size={18} />
+              <span>{error}</span>
+            </div>
+          )}
+
+          {/* Login Form */}
+          <form onSubmit={handleLogin} autoComplete="off" className="ri-form-body">
+            {/* Email or Phone Input */}
+            <div className="ri-form-group">
+              <div className="ri-form-label-row">
+                <label className="ri-form-label" htmlFor="login_identifier">
+                  Email Address or Mobile Number
+                </label>
+              </div>
+
+              <div className="ri-input-container">
+                <Mail size={18} className="ri-input-leading-icon" />
+                <input
+                  type="text"
+                  id="login_identifier"
+                  name="login_identifier"
+                  autoComplete="off"
+                  required
+                  className="ri-input-field"
+                  placeholder="name@example.com or 10-digit mobile"
+                  value={identifier}
+                  onChange={(e) => setIdentifier(e.target.value)}
+                  disabled={loading}
+                />
+              </div>
+            </div>
+
+            {/* Password Input */}
+            <div className="ri-form-group">
+              <div className="ri-form-label-row">
+                <label className="ri-form-label" htmlFor="login_password">
+                  Password
+                </label>
+              </div>
+
+              <div className="ri-input-container with-trailing-icon">
+                <Lock size={18} className="ri-input-leading-icon" />
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  id="login_password"
+                  name="login_password"
+                  autoComplete="new-password"
+                  required
+                  className="ri-input-field"
+                  placeholder="Enter your account password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  disabled={loading}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="ri-password-toggle-btn"
+                  title={showPassword ? 'Hide password' : 'Show password'}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  tabIndex={-1}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+            </div>
+
+            {/* Meta Row: Remember Me & Forgot Password */}
+            <div className="ri-form-meta-row">
+              <label className="ri-checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="ri-checkbox-input"
+                />
+                <span>Remember me</span>
+              </label>
+
+              <Link to="/forgot-password" className="ri-forgot-link">
+                Forgot password?
               </Link>
             </div>
+
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="ri-submit-btn"
+            >
+              {loading ? (
+                <>
+                  <div className="ri-spinner" />
+                  <span>Verifying Credentials...</span>
+                </>
+              ) : (
+                <>
+                  <span>Sign In to Your Account</span>
+                  <ArrowRight size={18} />
+                </>
+              )}
+            </button>
+          </form>
+
+          {/* Footer & Registration Prompt */}
+          <div className="ri-form-footer">
+            <div className="ri-register-prompt">
+              <span>Don't have an account yet?</span>
+              <Link to="/register" className="ri-register-link">
+                Create Account
+              </Link>
+            </div>
+
+            <div className="ri-form-security-badge">
+              <KeyRound size={13} />
+              <span>Multi-Factor OTP verification enabled for account security</span>
+            </div>
           </div>
-
-          {/* Login Button */}
-          <button
-            type="submit"
-            disabled={loading}
-            className="btn btn-primary login-btn"
-          >
-            {loading ? 'Signing In...' : 'Sign In'}
-          </button>
-        </form>
-
-        {/* Register Link */}
-        <div className="register-link-box">
-          <span>
-            Don't have an account?
-          </span>
-
-          <Link
-            to="/register"
-            className="register-link"
-          >
-            Create Account
-          </Link>
         </div>
       </div>
-
-      {/* Styles */}
-      <style>{`
-        .login-page-root {
-          min-height: calc(100vh - 76px);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 3rem 1.5rem;
-          background: #F8FAFC;
-        }
-
-        .login-card-box {
-          width: 100%;
-          max-width: 440px;
-          background: #FFFFFF;
-          border: 1px solid var(--border-subtle);
-          border-radius: var(--radius-xl);
-          padding: 2.75rem 2.25rem;
-          box-shadow: var(--shadow-md);
-        }
-
-        .login-header {
-          text-align: center;
-          margin-bottom: 2rem;
-        }
-
-        .login-logo-wrap {
-          width: 52px;
-          height: 52px;
-          border-radius: var(--radius-md);
-          background: #FFF7ED;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          margin: 0 auto 1.25rem auto;
-        }
-
-        .login-title {
-          font-size: 1.6rem;
-          font-weight: 800;
-          color: var(--slate-900);
-          margin-bottom: 0.5rem;
-        }
-
-        .login-sub {
-          font-size: 0.875rem;
-          color: var(--text-muted);
-          line-height: 1.5;
-        }
-
-        .login-error-alert {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          background: #FEF2F2;
-          color: #DC2626;
-          padding: 0.75rem 1rem;
-          border-radius: var(--radius-md);
-          font-size: 0.85rem;
-          margin-bottom: 1.5rem;
-          border: 1px solid #FCA5A5;
-        }
-
-        .input-icon-wrap {
-          position: relative;
-        }
-
-        .input-icon {
-          position: absolute;
-          left: 1rem;
-          top: 50%;
-          transform: translateY(-50%);
-          color: var(--slate-400);
-        }
-
-        .input-icon-wrap .form-control {
-          padding-left: 2.5rem;
-        }
-
-        /* Forgot Password Link */
-        .forgot-password-login-link {
-          display: flex;
-          justify-content: flex-end;
-          margin-top: 0.5rem;
-          margin-bottom: 0.25rem;
-        }
-
-        .forgot-password-login-link a {
-          color: var(--primary-saffron, #F97316);
-          font-size: 0.875rem;
-          font-weight: 600;
-          text-decoration: none;
-        }
-
-        .forgot-password-login-link a:hover {
-          color: #EA580C;
-          text-decoration: underline;
-        }
-
-        .login-btn {
-          width: 100%;
-          margin-top: 0.75rem;
-        }
-
-        .register-link-box {
-          margin-top: 1.5rem;
-          padding-top: 1.25rem;
-          border-top: 1px dashed var(--border-subtle);
-          display: flex;
-          justify-content: center;
-          gap: 0.4rem;
-          font-size: 0.875rem;
-          color: var(--slate-500);
-        }
-
-        .register-link {
-          color: var(--primary-saffron, #F97316);
-          font-weight: 700;
-          text-decoration: none;
-        }
-
-        .register-link:hover {
-          color: #EA580C;
-          text-decoration: underline;
-        }
-
-        .login-card-box input:-webkit-autofill,
-        .login-card-box input:-webkit-autofill:hover, 
-        .login-card-box input:-webkit-autofill:focus, 
-        .login-card-box input:-webkit-autofill:active {
-          -webkit-box-shadow: 0 0 0 30px #ffffff inset !important;
-          -webkit-text-fill-color: var(--slate-900) !important;
-          transition: background-color 5000s ease-in-out 0s;
-        }
-      `}</style>
     </div>
   );
 }
