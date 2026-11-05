@@ -1,0 +1,1011 @@
+.volunteer-dashboard-page {
+  min-height: 100vh;
+  background-color: var(--background, #090D16);
+  color: var(--text-primary, #F8FAFC);
+  padding: 2.5rem 1.5rem 5rem;
+  font-family: var(--font-body, system-ui, -apple-system, sans-serif);
+}
+
+.dashboard-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* ==========================================================================
+   Header Section
+   ========================================================================== */
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  padding-bottom: 1.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 1.75rem;
+}
+
+.dashboard-header-left {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.dashboard-avatar-badge {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, var(--primary-saffron, #F97316), #EA580C);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #FFFFFF;
+  box-shadow: 0 10px 25px rgba(249, 115, 22, 0.3);
+}
+
+.dashboard-title-wrap h1 {
+  font-size: 1.85rem;
+  font-weight: 800;
+  color: #FFFFFF;
+  margin: 0 0 0.35rem 0;
+  font-family: var(--font-heading, inherit);
+  letter-spacing: -0.02em;
+}
+
+.dashboard-user-role-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.role-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.25rem 0.65rem;
+  border-radius: 9999px;
+}
+
+.role-tag.volunteer {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10B981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.role-tag.pending {
+  background: rgba(245, 158, 11, 0.15);
+  color: #F59E0B;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.role-tag.admin {
+  background: rgba(249, 115, 22, 0.15);
+  color: #F97316;
+  border: 1px solid rgba(249, 115, 22, 0.3);
+}
+
+.role-tag.approved {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10B981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.role-tag.waitlisted {
+  background: rgba(14, 165, 233, 0.15);
+  color: #38BDF8;
+  border: 1px solid rgba(14, 165, 233, 0.3);
+}
+
+.role-tag.rejected {
+  background: rgba(148, 163, 184, 0.15);
+  color: #94A3B8;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+}
+
+.user-email-subtitle {
+  color: #94A3B8;
+  font-size: 0.85rem;
+}
+
+.verification-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  color: #34D399;
+  background: rgba(52, 211, 153, 0.08);
+  padding: 0.2rem 0.55rem;
+  border-radius: 6px;
+  border: 1px solid rgba(52, 211, 153, 0.2);
+}
+
+.dashboard-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.btn-dashboard-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.6rem 1.15rem;
+  border-radius: 10px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.btn-dashboard-outline {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #F8FAFC;
+}
+
+.btn-dashboard-outline:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.25);
+  color: #FFFFFF;
+}
+
+.btn-dashboard-primary {
+  background: linear-gradient(135deg, var(--primary-saffron, #F97316), #EA580C);
+  color: #FFFFFF;
+  box-shadow: 0 4px 15px rgba(249, 115, 22, 0.25);
+}
+
+.btn-dashboard-primary:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+
+/* ==========================================================================
+   4-Tab Navigation Bar
+   ========================================================================== */
+.dashboard-tabs-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(12px);
+  padding: 0.4rem;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 2rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.dashboard-tabs-bar::-webkit-scrollbar {
+  display: none;
+}
+
+.dashboard-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.25rem;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #94A3B8;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.dashboard-tab-btn:hover {
+  color: #FFFFFF;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.dashboard-tab-btn.active {
+  color: #FFFFFF;
+  background: rgba(249, 115, 22, 0.15);
+  border: 1px solid rgba(249, 115, 22, 0.3);
+  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.15);
+}
+
+.tab-count-pill {
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: rgba(249, 115, 22, 0.3);
+  color: #FDBA74;
+  padding: 0.1rem 0.45rem;
+  border-radius: 9999px;
+}
+
+.tab-dot-badge {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--primary-saffron, #F97316);
+  box-shadow: 0 0 8px var(--primary-saffron, #F97316);
+}
+
+/* ==========================================================================
+   Tab Panel Container
+   ========================================================================== */
+.tab-panel-container {
+  animation: fadeInTab 0.25s ease-out;
+}
+
+@keyframes fadeInTab {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.tab-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.75rem;
+}
+
+.tab-header-row h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #FFFFFF;
+  margin: 0 0 0.25rem 0;
+}
+
+.tab-header-subtitle {
+  color: #94A3B8;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+/* ==========================================================================
+   Quick Stats Grid (Overview Tab)
+   ========================================================================== */
+.stats-metric-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.stat-metric-card {
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 1.35rem 1.5rem;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.stat-metric-card:hover {
+  border-color: rgba(255, 255, 255, 0.16);
+  transform: translateY(-2px);
+}
+
+.stat-metric-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.stat-metric-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stat-metric-icon.icon-blue {
+  background: rgba(14, 165, 233, 0.15);
+  color: #38BDF8;
+}
+
+.stat-metric-icon.icon-emerald {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34D399;
+}
+
+.stat-metric-icon.icon-saffron {
+  background: rgba(249, 115, 22, 0.15);
+  color: #FB923C;
+}
+
+.stat-metric-icon.icon-purple {
+  background: rgba(168, 85, 247, 0.15);
+  color: #C084FC;
+}
+
+.stat-metric-tag {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #94A3B8;
+}
+
+.stat-metric-value {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #FFFFFF;
+  margin-bottom: 0.15rem;
+}
+
+.stat-unit {
+  font-size: 1.15rem;
+  font-weight: 500;
+  color: #94A3B8;
+}
+
+.stat-metric-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #CBD5E1;
+  margin-bottom: 0.25rem;
+}
+
+.stat-metric-subtitle {
+  font-size: 0.78rem;
+  color: #94A3B8;
+  line-height: 1.4;
+}
+
+/* ==========================================================================
+   Opportunity Hand-off Card
+   ========================================================================== */
+.opportunity-handoff-card {
+  background: linear-gradient(135deg, rgba(249, 115, 22, 0.12) 0%, rgba(14, 165, 233, 0.06) 100%);
+  border: 1px solid rgba(249, 115, 22, 0.35);
+  border-radius: 18px;
+  padding: 1.75rem;
+  margin-bottom: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.opportunity-handoff-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--primary-saffron, #F97316);
+}
+
+.handoff-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--primary-saffron, #F97316);
+  margin-bottom: 0.5rem;
+}
+
+.handoff-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #FFFFFF;
+  margin: 0 0 0.5rem 0;
+}
+
+.handoff-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  font-size: 0.85rem;
+  color: #CBD5E1;
+  margin-bottom: 1rem;
+}
+
+.handoff-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.handoff-description {
+  color: #94A3B8;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin-bottom: 1.25rem;
+  max-width: 850px;
+}
+
+.handoff-alert-warning {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #FCA5A5;
+  padding: 1rem 1.25rem;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+}
+
+/* ==========================================================================
+   Dashboard Overview Grid & Cards
+   ========================================================================== */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.dashboard-panel-card {
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 1.75rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.panel-card-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary-saffron, #F97316);
+}
+
+.panel-card-header h2 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #FFFFFF;
+  margin: 0;
+}
+
+.panel-card-body {
+  flex: 1;
+  color: #94A3B8;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.summary-field-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.65rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 0.88rem;
+}
+
+.summary-field-label {
+  color: #94A3B8;
+  font-weight: 500;
+}
+
+.summary-field-value {
+  color: #F8FAFC;
+  font-weight: 600;
+}
+
+.interest-chips-wrap {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.interest-chip-sm {
+  font-size: 0.75rem;
+  background: rgba(249, 115, 22, 0.12);
+  color: #FDBA74;
+  border: 1px solid rgba(249, 115, 22, 0.25);
+  padding: 0.15rem 0.5rem;
+  border-radius: 6px;
+}
+
+.dashboard-empty-panel {
+  text-align: center;
+  padding: 1.5rem;
+  color: #94A3B8;
+}
+
+.app-list-item {
+  padding: 0.85rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.app-list-title {
+  color: #FFFFFF;
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 0.2rem;
+}
+
+.app-list-date {
+  font-size: 0.78rem;
+  color: #94A3B8;
+}
+
+.initiative-focus-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.initiative-pill {
+  font-size: 0.82rem;
+  color: #CBD5E1;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 0.45rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* ==========================================================================
+   Opportunities Tab Scaffold
+   ========================================================================== */
+.opportunity-full-card {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 18px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+.opp-card-badge-row {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 0.75rem;
+}
+
+.opp-focus-pill {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  background: rgba(249, 115, 22, 0.15);
+  color: #FB923C;
+  border: 1px solid rgba(249, 115, 22, 0.3);
+  padding: 0.2rem 0.65rem;
+  border-radius: 9999px;
+}
+
+.opp-status-pill {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  background: rgba(16, 185, 129, 0.15);
+  color: #34D399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  padding: 0.2rem 0.65rem;
+  border-radius: 9999px;
+}
+
+.opp-card-title {
+  font-size: 1.65rem;
+  font-weight: 800;
+  color: #FFFFFF;
+  margin: 0 0 1rem 0;
+}
+
+.opp-card-meta-bar {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  padding: 0.85rem 1rem;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 10px;
+  margin-bottom: 1.5rem;
+  font-size: 0.85rem;
+  color: #CBD5E1;
+}
+
+.meta-bar-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.opp-card-section {
+  margin-bottom: 1.5rem;
+}
+
+.opp-card-section h4 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #F8FAFC;
+  margin: 0 0 0.5rem 0;
+}
+
+.opp-card-section p {
+  color: #94A3B8;
+  font-size: 0.92rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.opp-phase-notice {
+  background: rgba(249, 115, 22, 0.08);
+  border: 1px solid rgba(249, 115, 22, 0.25);
+  color: #FED7AA;
+  padding: 1rem 1.25rem;
+  border-radius: 12px;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.dashboard-empty-state-large {
+  text-align: center;
+  padding: 4rem 1.5rem;
+  background: rgba(15, 23, 42, 0.4);
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+  border-radius: 18px;
+}
+
+.dashboard-empty-state-large h3 {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #FFFFFF;
+  margin: 1rem 0 0.5rem 0;
+}
+
+.dashboard-empty-state-large p {
+  color: #94A3B8;
+  font-size: 0.92rem;
+  max-width: 500px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* ==========================================================================
+   My Applications Tab
+   ========================================================================== */
+.applications-full-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.application-detail-card {
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 1.5rem;
+}
+
+.app-detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.app-focus-tag {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--primary-saffron, #F97316);
+  letter-spacing: 0.05em;
+  margin-bottom: 0.25rem;
+  display: inline-block;
+}
+
+.app-detail-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #FFFFFF;
+  margin: 0;
+}
+
+.app-detail-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  font-size: 0.85rem;
+  color: #94A3B8;
+  margin-bottom: 1rem;
+}
+
+.app-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.app-detail-sop-box {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  padding: 0.85rem 1rem;
+  margin-top: 0.85rem;
+  border-left: 3px solid rgba(255, 255, 255, 0.15);
+}
+
+.sop-box-label {
+  display: block;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #94A3B8;
+  font-weight: 700;
+  margin-bottom: 0.35rem;
+}
+
+.app-detail-sop-box p {
+  color: #CBD5E1;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.app-review-notes-box {
+  background: rgba(14, 165, 233, 0.08);
+  border: 1px solid rgba(14, 165, 233, 0.2);
+  border-radius: 10px;
+  padding: 0.85rem 1rem;
+  margin-top: 0.75rem;
+}
+
+.notes-box-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #38BDF8;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.app-review-notes-box p {
+  color: #E0F2FE;
+  font-size: 0.88rem;
+  margin: 0;
+}
+
+/* ==========================================================================
+   My Profile Self-Service Tab
+   ========================================================================== */
+.profile-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.profile-alert {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  border-radius: 12px;
+  font-size: 0.9rem;
+}
+
+.profile-alert.success {
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: #34D399;
+}
+
+.profile-alert.error {
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #FCA5A5;
+}
+
+.form-sections-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  gap: 1.5rem;
+}
+
+.form-card-section {
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 1.75rem;
+}
+
+.form-card-section h3 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #FFFFFF;
+  margin: 0 0 1.25rem 0;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.form-field-group {
+  margin-bottom: 1.15rem;
+}
+
+.form-field-group label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #CBD5E1;
+  margin-bottom: 0.4rem;
+}
+
+.profile-text-input,
+.profile-select-input,
+.profile-textarea-input {
+  width: 100%;
+  box-sizing: border-box;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #F8FAFC;
+  padding: 0.7rem 0.9rem;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  font-family: inherit;
+}
+
+.profile-text-input:focus,
+.profile-select-input:focus,
+.profile-textarea-input:focus {
+  outline: none;
+  border-color: var(--primary-saffron, #F97316);
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15);
+}
+
+.readonly-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.profile-text-input.readonly {
+  background: rgba(255, 255, 255, 0.04);
+  color: #94A3B8;
+  cursor: not-allowed;
+  padding-right: 2.5rem;
+  border-style: dashed;
+}
+
+.readonly-lock-icon {
+  position: absolute;
+  right: 0.85rem;
+  color: #64748B;
+  pointer-events: none;
+}
+
+.field-hint {
+  display: block;
+  font-size: 0.75rem;
+  color: #64748B;
+  margin-top: 0.35rem;
+}
+
+.form-row-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.interests-selection-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.4rem;
+}
+
+.interest-select-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.82rem;
+  font-weight: 500;
+  padding: 0.4rem 0.8rem;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  color: #94A3B8;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.interest-select-chip:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #F8FAFC;
+}
+
+.interest-select-chip.selected {
+  background: rgba(249, 115, 22, 0.15);
+  color: #FED7AA;
+  border-color: rgba(249, 115, 22, 0.4);
+}
+
+.profile-form-footer {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding-top: 1rem;
+}
+
+/* ==========================================================================
+   Responsive Adaptations
+   ========================================================================== */
+@media (max-width: 768px) {
+  .volunteer-dashboard-page {
+    padding: 1.5rem 1rem 4rem;
+  }
+
+  .dashboard-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .dashboard-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .stats-metric-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-sections-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-row-2col {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tab-panel-container {
+    animation: none;
+  }
+  .stat-metric-card,
+  .btn-dashboard-action,
+  .interest-select-chip {
+    transition: none;
+  }
+}

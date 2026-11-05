@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { 
   useVolunteerOpportunities, 
@@ -8,14 +9,16 @@ import {
   useMyVolunteerApplications
 } from '../../hooks/useVolunteer';
 import { 
-  HeartHandshake, MapPin, Clock, CheckCircle2, 
+  MapPin, Clock, CheckCircle2, 
   Send, Filter, X, AlertCircle, LogIn, 
-  UserCheck, RotateCcw, Check
+  UserCheck, RotateCcw, Check, Sparkles,
+  ArrowDown, ArrowRight, ShieldCheck, HeartHandshake,
+  Compass, Users, Calendar
 } from 'lucide-react';
 import Modal from '../../components/common/Modal';
-import InteractiveDotGrid from '../../components/common/InteractiveDotGrid';
 import VolunteerPhotoStrip from '../../components/common/VolunteerPhotoStrip';
 import WhyVolunteerSection from '../../components/common/WhyVolunteerSection';
+import VolunteerImpactStrip from '../../components/common/VolunteerImpactStrip';
 import {
   validatePhone,
   validateEmail,
@@ -27,6 +30,7 @@ import {
 } from '../../utils/validation';
 
 export default function VolunteerPage() {
+  const navigate = useNavigate();
   const { user, login, registerVolunteer } = useAuth();
   
   // Custom hooks
@@ -122,7 +126,26 @@ export default function VolunteerPage() {
     }
   }, [user, profile]);
 
-  const openApplyModal = (opp) => {
+  const scrollToOpportunities = () => {
+    const el = document.getElementById('opportunities');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  const handleApplyClick = (opp) => {
+    const oppIdentifier = opp.slug || opp.id;
+    if (oppIdentifier) {
+      sessionStorage.setItem('ri_target_opportunity', String(oppIdentifier));
+    }
+    if (user) {
+      navigate(`/volunteer/dashboard?opportunity=${encodeURIComponent(oppIdentifier)}`);
+    } else {
+      navigate(`/volunteer-portal?opportunity=${encodeURIComponent(oppIdentifier)}`);
+    }
+  };
+
+  const _openApplyModal = (opp) => {
     setSelectedOpp(opp);
     resetApplicationState();
     setLoginError('');
@@ -184,12 +207,10 @@ export default function VolunteerPage() {
     const updated = { ...formData, [name]: value };
     setFormData(updated);
 
-    // Revalidate touched fields or password fields live
     if (touched[name] || name === 'password' || name === 'confirm_password' || name === 'phone' || name === 'email') {
       const err = validateSingleField(name, value, updated);
       setFieldErrors((prev) => ({ ...prev, [name]: err }));
 
-      // If password is changed and confirm_password was entered or touched, re-evaluate confirm_password
       if (name === 'password' && (touched.confirm_password || updated.confirm_password)) {
         const confirmErr = validateConfirmPassword(value, updated.confirm_password);
         setFieldErrors((prev) => ({ ...prev, confirm_password: confirmErr }));
@@ -209,7 +230,6 @@ export default function VolunteerPage() {
     setLoginLoading(true);
     try {
       await login(loginCreds.email, loginCreds.password);
-      // Switches seamlessly into authenticated application mode
       refetchApplications();
     } catch (err) {
       console.error(err);
@@ -223,7 +243,6 @@ export default function VolunteerPage() {
     e.preventDefault();
     if (!selectedOpp) return;
 
-    // Determine fields to validate based on auth state
     const fieldsToValidate = user
       ? ['phone', 'city', 'statement_of_purpose']
       : ['first_name', 'email', 'password', 'confirm_password', 'phone', 'city', 'statement_of_purpose'];
@@ -242,7 +261,6 @@ export default function VolunteerPage() {
     setTouched((prev) => ({ ...prev, ...newTouched }));
     setFieldErrors(errors);
 
-    // If validation fails, focus the first invalid field and do not call API
     if (Object.keys(errors).length > 0) {
       const fieldIdMap = {
         first_name: 'vol_first_name',
@@ -268,7 +286,6 @@ export default function VolunteerPage() {
 
     try {
       if (user) {
-        // Authenticated volunteer flow
         await applyAsAuthenticated({
           opportunity_id: selectedOpp.id,
           statement_of_purpose: formData.statement_of_purpose.trim(),
@@ -280,7 +297,6 @@ export default function VolunteerPage() {
         });
         refetchApplications();
       } else {
-        // Visitor registration + application flow
         const regPayload = {
           email: formData.email.trim().toLowerCase(),
           password: formData.password,
@@ -303,80 +319,161 @@ export default function VolunteerPage() {
           experience: formData.experience.trim(),
         };
 
-        await registerAndApply(regPayload, applyPayload, registerVolunteer);
+        const regRes = await registerAndApply(regPayload, applyPayload, registerVolunteer);
+        if (regRes?.requires_otp) {
+          sessionStorage.setItem('ri_verification_identifier', regRes.identifier || formData.email.trim());
+          const oppIdentifier = selectedOpp?.slug || selectedOpp?.id;
+          if (oppIdentifier) {
+            sessionStorage.setItem('ri_target_opportunity', String(oppIdentifier));
+          }
+          navigate(`/verify-otp?opportunity=${encodeURIComponent(oppIdentifier || '')}`);
+          return;
+        }
         refetchApplications();
       }
     } catch {
-      // Error is cleanly populated in custom hook and displayed in error banner
+      // Handled via custom hook error state
     }
   };
 
-  // Distinct locations & commitment options extracted for filter dropdowns
+  // Helper to pair opportunity with genuine initiative photography
+  const getOpportunityImage = (opp) => {
+    const title = (opp?.title || '').toLowerCase();
+    const area = (opp?.focus_area_name || '').toLowerCase();
+
+    if (title.includes('water') || title.includes('lake') || area.includes('water') || area.includes('wetland')) {
+      return '/images/stories/citizen-water-monitoring.jpg';
+    }
+    if (title.includes('stem') || title.includes('robot') || title.includes('mentor') || title.includes('teach') || area.includes('education')) {
+      return '/images/volunteer_interaction.jpeg';
+    }
+    if (title.includes('tree') || title.includes('sapling') || title.includes('afforest') || area.includes('environment')) {
+      return '/images/environment_image.jpeg';
+    }
+    if (title.includes('art') || title.includes('craft') || title.includes('drawing')) {
+      return '/images/students_art.jpeg';
+    }
+    return '/images/Group_selfie.jpeg';
+  };
+
   const uniqueLocations = Array.from(new Set(opportunities.map((o) => o.location).filter(Boolean)));
 
   return (
-    <div className="volunteer-page-root">
-      {/* Hero Header */}
-      <section className="volunteer-hero">
-        <InteractiveDotGrid
-          spacing={34}
-          interactionRadius={140}
-          repelForce={16}
-          dotRadius={1.4}
-          dotOpacity={0.26}
-          connectionOpacity={0.20}
-          dotColor="#34D399"
-          accentColor="#A78BFA"
-          connectionColor="#A78BFA"
-        />
-        <div className="container" style={{ position: 'relative', zIndex: 2 }}>
-          <span className="section-badge">Get Involved</span>
-          <h1 className="volunteer-hero-title">Become a Responsible Individual</h1>
-          <p className="volunteer-hero-subtitle">
-            Give your time, skills, and energy to revive community water bodies, mentor rural students in robotics, and drive zero-waste neighborhoods.
-          </p>
+    <div className="volunteer-page-editorial-root">
+      {/* ====================================================================
+          1. HERO SECTION — IMMERSIVE, EDITORIAL WITH AUTHENTIC PHOTOGRAPHY
+          ==================================================================== */}
+      <section className="volunteer-hero-editorial" aria-label="Volunteer Hero">
+        <div className="volunteer-hero-media-wrapper">
+          <img 
+            src="/images/environment_image.jpeg" 
+            alt="Community volunteers planting native saplings and restoring local environments"
+            className="volunteer-hero-bg-img"
+          />
+          <div className="volunteer-hero-overlay" />
+        </div>
+
+        <div className="container volunteer-hero-content-wrap">
+          <div className="volunteer-hero-content">
+            <div className="section-badge volunteer-hero-badge">
+              <Sparkles size={14} className="badge-sparkle-hero" />
+              <span>Grassroots Civic Stewardship</span>
+            </div>
+
+            <h1 className="volunteer-hero-heading">
+              Be a Responsible Individual
+            </h1>
+
+            <p className="volunteer-hero-text">
+              Contribute your time, skills, and energy to grassroots community initiatives. 
+              Whether reviving neighborhood water bodies, mentoring students in experiential science, 
+              or planting native groves, every hour creates verified ground-level impact.
+            </p>
+
+            <div className="volunteer-hero-actions">
+              <button 
+                type="button" 
+                onClick={scrollToOpportunities} 
+                className="btn btn-primary volunteer-hero-primary-btn"
+                aria-label="Explore Volunteer Opportunities"
+              >
+                <span>Explore Opportunities</span>
+                <ArrowDown size={16} />
+              </button>
+
+              <button 
+                type="button" 
+                onClick={scrollToOpportunities}
+                className="btn btn-outline-white volunteer-hero-secondary-btn"
+                aria-label="Share Your Skills with our initiatives"
+              >
+                <Compass size={16} />
+                <span>Share Your Skills</span>
+              </button>
+            </div>
+
+            {/* Verified On-Ground Highlights */}
+            <div className="volunteer-hero-highlights">
+              <div className="hero-highlight-pill">
+                <ShieldCheck size={15} className="highlight-icon" />
+                <span>Structured Orientation Provided</span>
+              </div>
+              <div className="hero-highlight-pill">
+                <Users size={15} className="highlight-icon" />
+                <span>Collaborative Community Teams</span>
+              </div>
+              <div className="hero-highlight-pill">
+                <Calendar size={15} className="highlight-icon" />
+                <span>Flexible Weekend Field Drives</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Premium Animated Impact Statistics Strip */}
+          <VolunteerImpactStrip />
         </div>
       </section>
 
-      {/* Volunteer Stories Animated Photo Strip (Phase 3B-UI) */}
+      {/* ====================================================================
+          2. VOICES OF OUR VOLUNTEERS — REAL TESTIMONIALS (WARM-WHITE & SAFFRON)
+          ==================================================================== */}
       <VolunteerPhotoStrip 
-        onExploreRoles={() => {
-          const el = document.getElementById('opportunities');
-          if (el) el.scrollIntoView({ behavior: 'smooth' });
-        }}
+        onExploreRoles={scrollToOpportunities}
       />
 
-      {/* Why Volunteer Section (Phase 3B-UI) */}
+      {/* ====================================================================
+          3. WHY VOLUNTEER WITH US — 4 BENEFIT CARDS
+          ==================================================================== */}
       <WhyVolunteerSection 
-        onExploreRoles={() => {
-          const el = document.getElementById('opportunities');
-          if (el) el.scrollIntoView({ behavior: 'smooth' });
-        }}
+        onExploreRoles={scrollToOpportunities}
       />
 
-      {/* Opportunities Section */}
-      <section className="section bg-light-alt" id="opportunities">
+      {/* ====================================================================
+          4. ACTIVE VOLUNTEER OPPORTUNITIES — WIDER, SCAN-FRIENDLY & ACCESSIBLE
+          ==================================================================== */}
+      <section className="section volunteer-opps-section" id="opportunities">
         <div className="container">
-          <div className="section-header">
-            <span className="section-badge">Open Calls</span>
-            <h2 className="section-title">Active Volunteer Roles</h2>
-            <p className="section-subtitle">
-              Choose an initiative matching your schedule and skills. All roles include comprehensive on-ground orientation.
+          <div className="section-header opps-section-header">
+            <span className="section-badge opps-badge">Open Calls</span>
+            <h2 className="section-title opps-title">Active Volunteer Roles</h2>
+            <p className="section-subtitle opps-subtitle">
+              Choose an initiative matching your location, interests, and schedule. 
+              Every role includes clear safety guidance, experienced coordination, and on-ground orientation.
             </p>
           </div>
 
-          {/* Interactive Backend Filter Bar */}
-          <div className="opp-filters-bar">
-            <div className="filters-label">
-              <Filter size={16} />
+          {/* Clean, Scan-Friendly Filter Bar */}
+          <div className="opp-filters-bar-modern">
+            <div className="filters-label-modern">
+              <Filter size={17} className="filter-icon-saffron" />
               <span>Filter Opportunities:</span>
             </div>
 
-            <div className="filters-inputs-wrap">
+            <div className="filters-inputs-wrap-modern">
               {/* Location Filter */}
-              <div className="filter-item">
+              <div className="filter-select-container">
                 <select
-                  className="filter-select"
+                  className="filter-select-modern"
                   value={filters.location || ''}
                   onChange={(e) => updateFilters({ location: e.target.value })}
                   aria-label="Filter by Location"
@@ -389,9 +486,9 @@ export default function VolunteerPage() {
               </div>
 
               {/* Status / Availability Filter */}
-              <div className="filter-item">
+              <div className="filter-select-container">
                 <select
-                  className="filter-select"
+                  className="filter-select-modern"
                   value={filters.status || 'OPEN'}
                   onChange={(e) => updateFilters({ status: e.target.value })}
                   aria-label="Filter by Role Status"
@@ -405,12 +502,14 @@ export default function VolunteerPage() {
               {/* Reset Filters */}
               {(filters.location || (filters.status && filters.status !== 'OPEN')) && (
                 <button 
+                  type="button"
                   onClick={clearFilters} 
-                  className="filter-reset-btn"
+                  className="filter-reset-btn-modern"
                   title="Clear all filters"
+                  aria-label="Reset all filters"
                 >
                   <RotateCcw size={14} />
-                  <span>Reset</span>
+                  <span>Reset Filters</span>
                 </button>
               )}
             </div>
@@ -418,73 +517,112 @@ export default function VolunteerPage() {
 
           {/* Opportunities Cards Grid / State Handling */}
           {oppsLoading ? (
-            <div className="opps-loading-state">
-              <div className="spinner-indicator" />
-              <p>Loading available volunteer roles...</p>
+            <div className="opps-loading-state-modern">
+              <div className="spinner-indicator-saffron" />
+              <h3>Retrieving Available Initiatives</h3>
+              <p>Connecting to grassroots project database...</p>
             </div>
           ) : oppsError ? (
-            <div className="opps-error-state">
-              <AlertCircle size={32} color="#EF4444" />
-              <h3>Failed to Load Opportunities</h3>
+            <div className="opps-error-state-modern">
+              <AlertCircle size={36} color="#DC2626" />
+              <h3>Unable to Load Opportunities</h3>
               <p>{oppsError}</p>
-              <button onClick={() => refetchOpps()} className="btn btn-outline btn-sm">
+              <button 
+                type="button"
+                onClick={() => refetchOpps()} 
+                className="btn btn-primary btn-sm"
+              >
                 Try Again
               </button>
             </div>
           ) : opportunities.length === 0 ? (
-            <div className="opps-empty-state">
-              <HeartHandshake size={48} color="#94A3B8" />
-              <h3>No Opportunities Match Your Criteria</h3>
-              <p>Try resetting the filters or check back soon as new seasonal initiatives launch regularly.</p>
-              <button onClick={clearFilters} className="btn btn-primary btn-sm" style={{ marginTop: '1rem' }}>
-                View All Roles
+            <div className="opps-empty-state-modern">
+              <HeartHandshake size={48} className="empty-state-icon" />
+              <h3>No Roles Match Your Selected Filters</h3>
+              <p>Try clearing your location or status filter to see other active initiatives, or check back soon.</p>
+              <button 
+                type="button"
+                onClick={clearFilters} 
+                className="btn btn-primary btn-sm" 
+                style={{ marginTop: '1rem' }}
+              >
+                View All Open Roles
               </button>
             </div>
           ) : (
-            <div className="opps-grid">
+            <div className="opps-grid-modern">
               {opportunities.map((opp) => {
                 const spotsLeft = opp.spots_available - opp.spots_filled;
                 const isClosed = opp.status === 'CLOSED' || opp.status === 'FILLED' || spotsLeft <= 0;
+                const oppImg = getOpportunityImage(opp);
 
                 return (
-                  <div key={opp.id} className="card opp-card">
-                    <div className="opp-card-top">
-                      <span className="opp-area-badge">
-                        {opp.focus_area_name || 'Community Impact'}
-                      </span>
-                      <span className={`opp-spots-badge ${isClosed ? 'filled' : ''}`}>
-                        {isClosed ? 'Role Filled' : `${spotsLeft} spots remaining`}
-                      </span>
-                    </div>
-
-                    <h3 className="opp-title">{opp.title}</h3>
-                    <p className="opp-desc">{opp.description}</p>
-
-                    <div className="opp-meta-list">
-                      <div className="opp-meta-row">
-                        <MapPin size={16} color="var(--primary-saffron, #F97316)" />
-                        <span><strong>Location:</strong> {opp.location}</span>
-                      </div>
-                      <div className="opp-meta-row">
-                        <Clock size={16} color="var(--secondary-light-blue, #0EA5E9)" />
-                        <span><strong>Commitment:</strong> {opp.commitment}</span>
+                  <article key={opp.id} className="opp-card-modern">
+                    {/* Media Thumbnail */}
+                    <div className="opp-card-media-wrap">
+                      <img 
+                        src={oppImg} 
+                        alt={opp.title} 
+                        className="opp-card-img"
+                        loading="lazy"
+                      />
+                      <div className="opp-card-media-tags">
+                        <span className="opp-area-badge-modern">
+                          {opp.focus_area_name || 'Community Impact'}
+                        </span>
+                        <span className={`opp-spots-badge-modern ${isClosed ? 'filled' : 'open'}`}>
+                          {isClosed ? 'Role Filled' : `${spotsLeft} spots available`}
+                        </span>
                       </div>
                     </div>
 
-                    <div className="opp-requirements-box">
-                      <span className="req-label">Requirements:</span>
-                      <p className="req-text">{opp.requirements}</p>
-                    </div>
+                    {/* Card Information */}
+                    <div className="opp-card-content">
+                      <h3 className="opp-card-title">{opp.title}</h3>
+                      <p className="opp-card-desc">{opp.description}</p>
 
-                    <button 
-                      onClick={() => openApplyModal(opp)} 
-                      disabled={isClosed}
-                      className={`btn ${isClosed ? 'btn-secondary' : 'btn-primary'} opp-apply-btn`}
-                    >
-                      <span>{isClosed ? 'Role Filled' : 'Apply for this Role'}</span>
-                      {!isClosed && <Send size={15} />}
-                    </button>
-                  </div>
+                      {/* Key Logistics Meta Box */}
+                      <div className="opp-meta-box">
+                        <div className="opp-meta-item">
+                          <MapPin size={16} className="opp-meta-icon" />
+                          <div>
+                            <span className="opp-meta-label">Location</span>
+                            <span className="opp-meta-val">{opp.location}</span>
+                          </div>
+                        </div>
+
+                        <div className="opp-meta-item">
+                          <Clock size={16} className="opp-meta-icon" />
+                          <div>
+                            <span className="opp-meta-label">Commitment</span>
+                            <span className="opp-meta-val">{opp.commitment}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Requirements Box */}
+                      {opp.requirements && (
+                        <div className="opp-req-box-modern">
+                          <span className="opp-req-title">Role Requirements</span>
+                          <p className="opp-req-body">{opp.requirements}</p>
+                        </div>
+                      )}
+
+                      {/* Action CTA */}
+                      <div className="opp-card-footer">
+                        <button
+                          type="button"
+                          onClick={() => handleApplyClick(opp)}
+                          disabled={isClosed}
+                          className={`btn ${isClosed ? 'btn-secondary-disabled' : 'btn-primary'} opp-action-btn`}
+                          aria-label={isClosed ? `${opp.title} is filled` : `Apply for ${opp.title}`}
+                        >
+                          <span>{isClosed ? 'Role Filled' : 'Apply for this Role'}</span>
+                          {!isClosed && <Send size={15} />}
+                        </button>
+                      </div>
+                    </div>
+                  </article>
                 );
               })}
             </div>
@@ -492,10 +630,53 @@ export default function VolunteerPage() {
         </div>
       </section>
 
-      {/* Application Wizard Modal */}
+      {/* ====================================================================
+          5. FINAL CALL TO ACTION — AUTHENTIC VOLUNTEER GROUP PHOTOGRAPH
+          ==================================================================== */}
+      <section className="volunteer-final-cta-section" aria-label="Volunteer Call to Action">
+        <div className="final-cta-media-wrap">
+          <img 
+            src="/images/Group_selfie.jpeg" 
+            alt="Responsible Individuals volunteer squad gathered in the field"
+            className="final-cta-bg-img"
+          />
+          <div className="final-cta-overlay" />
+        </div>
+
+        <div className="container final-cta-container">
+          <div className="final-cta-card">
+            <span className="final-cta-badge">Join The Movement</span>
+            <h2 className="final-cta-title">Ready to Make a Difference?</h2>
+            <p className="final-cta-text">
+              Join a dedicated community working towards healthier environments, stronger communities, and brighter futures. 
+              Bring your energy, ideas, and commitment to ground-level change.
+            </p>
+
+            <div className="final-cta-buttons">
+              <button 
+                type="button" 
+                onClick={scrollToOpportunities} 
+                className="btn btn-primary final-cta-btn-primary"
+              >
+                <span>Become a Volunteer</span>
+                <ArrowRight size={16} />
+              </button>
+
+              <Link to="/projects" className="btn btn-outline-white final-cta-btn-secondary">
+                <span>Explore Our Work</span>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ====================================================================
+          6. APPLICATION WIZARD MODAL — FULL EXISTING LOGIC PRESERVED
+          ==================================================================== */}
       <Modal 
         isOpen={modalOpen} 
         onClose={closeApplyModal}
+        maxWidth="620px"
         title={
           successApplication 
             ? 'Application Submitted' 
@@ -505,10 +686,9 @@ export default function VolunteerPage() {
         }
       >
         {successApplication ? (
-          /* Confirmation State for fresh submission */
           <div className="application-success-box">
             <div className="success-icon-wrap">
-              <CheckCircle2 size={48} color="var(--primary-saffron, #F97316)" />
+              <CheckCircle2 size={52} color="#D97706" />
             </div>
             <h3>Thank You, {formData.first_name || user?.first_name || 'Volunteer'}!</h3>
             <div className="success-status-pill">Status: PENDING REVIEW</div>
@@ -517,6 +697,7 @@ export default function VolunteerPage() {
               Our volunteer coordination team will review your profile alignment and reach out with orientation schedules within 48 hours.
             </p>
             <button 
+              type="button"
               onClick={closeApplyModal} 
               className="btn btn-primary" 
               style={{ marginTop: '1.5rem', width: '100%' }}
@@ -525,27 +706,25 @@ export default function VolunteerPage() {
             </button>
           </div>
         ) : user && myAppsLoading && !existingApplication ? (
-          /* Loading State while checking existing applications */
           <div className="app-status-loading">
-            <div className="spinner-indicator" />
+            <div className="spinner-indicator-saffron" />
             <p>Checking your application status...</p>
           </div>
         ) : existingApplication ? (
-          /* Application Already Submitted / Status View */
           <div className="existing-app-status-box">
             <div className="app-status-icon-wrap">
               {existingApplication.status === 'APPROVED' ? (
-                <CheckCircle2 size={48} color="var(--primary-saffron, #F97316)" />
+                <CheckCircle2 size={48} color="#059669" />
               ) : existingApplication.status === 'REJECTED' ? (
                 <AlertCircle size={48} color="#EF4444" />
               ) : (
-                <Clock size={48} color="#F59E0B" />
+                <Clock size={48} color="#D97706" />
               )}
             </div>
 
             <h3 className="app-status-title">Application Already Submitted</h3>
             <p className="app-status-subtitle">
-              You have already submitted an application for this volunteer initiative. Below is the current status of your application:
+              You have already submitted an application for this volunteer initiative. Below is the current status:
             </p>
 
             <div className={`app-status-card status-${(existingApplication.status || 'PENDING').toLowerCase()}`}>
@@ -612,9 +791,7 @@ export default function VolunteerPage() {
             </button>
           </div>
         ) : (
-          /* Application Form Flow */
           <div className="modal-form-flow">
-            {/* Error Banner */}
             {submitError && (
               <div className="modal-error-alert" role="alert">
                 <AlertCircle size={18} className="error-icon" />
@@ -623,6 +800,7 @@ export default function VolunteerPage() {
                   <span>{submitError}</span>
                 </div>
                 <button 
+                  type="button"
                   onClick={() => resetApplicationState()} 
                   className="error-dismiss-btn"
                   aria-label="Dismiss error"
@@ -632,17 +810,15 @@ export default function VolunteerPage() {
               </div>
             )}
 
-            {/* User Authentication Status Banner */}
             {user ? (
               <div className="authenticated-user-banner">
-                <UserCheck size={18} color="var(--primary-saffron, #F97316)" />
+                <UserCheck size={18} color="#D97706" />
                 <div>
                   <span>Applying as: <strong>{user.get_full_name || user.first_name || user.email}</strong></span>
                   <span className="auth-email-hint">{user.email}</span>
                 </div>
               </div>
             ) : (
-              /* Unauthenticated Visitor Tabs */
               <div className="auth-mode-selector">
                 <button 
                   type="button" 
@@ -661,7 +837,6 @@ export default function VolunteerPage() {
               </div>
             )}
 
-            {/* Visitor Quick Login Tab */}
             {!user && authMode === 'login' ? (
               <form onSubmit={handleInlineLogin} className="inline-login-form">
                 {loginError && (
@@ -692,15 +867,18 @@ export default function VolunteerPage() {
                     onChange={(e) => setLoginCreds({ ...loginCreds, password: e.target.value })}
                   />
                 </div>
-                <button type="submit" disabled={loginLoading} className="btn btn-primary" style={{ width: '100%', marginTop: '0.5rem' }}>
+                <button 
+                  type="submit" 
+                  disabled={loginLoading} 
+                  className="btn btn-primary" 
+                  style={{ width: '100%', marginTop: '0.5rem' }}
+                >
                   <LogIn size={15} />
                   <span>{loginLoading ? 'Authenticating...' : 'Sign In & Continue Application'}</span>
                 </button>
               </form>
             ) : (
-              /* Application Form (For both Authenticated and Registering Volunteers) */
               <form onSubmit={handleApplicationSubmit} className="volunteer-form" noValidate>
-                {/* Registration fields if user is not authenticated */}
                 {!user && (
                   <>
                     <div className="form-grid-2">
@@ -807,7 +985,7 @@ export default function VolunteerPage() {
                       </div>
                     </div>
 
-                    {/* Compact Password Strength & Requirement Checklist */}
+                    {/* Password Feedback */}
                     <div className="password-feedback-section">
                       {formData.password && (
                         <div className="pwd-strength-wrap">
@@ -862,7 +1040,7 @@ export default function VolunteerPage() {
                   </>
                 )}
 
-                {/* Common Profile & Logistics Fields */}
+                {/* Common Profile Fields */}
                 <div className="form-grid-2">
                   <div className="form-group">
                     <label className="form-label" htmlFor="vol_phone">Phone Number *</label>
@@ -944,13 +1122,12 @@ export default function VolunteerPage() {
                     id="vol_skills"
                     type="text"
                     className="form-control"
-                    placeholder="e.g. Teaching, Water Testing, Event Management, Photography"
+                    placeholder="e.g. Teaching, Water Testing, Event Coordination, Photography"
                     value={formData.skills}
                     onChange={(e) => handleFieldChange('skills', e.target.value)}
                   />
                 </div>
 
-                {/* Dynamic Interest Chips (If unauthenticated registration) */}
                 {!user && interests.length > 0 && (
                   <div className="form-group">
                     <label className="form-label">Impact Areas of Interest</label>
@@ -973,7 +1150,6 @@ export default function VolunteerPage() {
                   </div>
                 )}
 
-                {/* Application Statement */}
                 <div className="form-group">
                   <label className="form-label" htmlFor="vol_statement">Why do you want to join this initiative? *</label>
                   <textarea
@@ -1028,238 +1204,702 @@ export default function VolunteerPage() {
         )}
       </Modal>
 
-      {/* Scoped CSS Styles */}
+      {/* ====================================================================
+          SCOPED STYLES — EDITORIAL WARM-WHITE, CHARCOAL & SAFFRON DESIGN SYSTEM
+          ==================================================================== */}
       <style>{`
-        .volunteer-hero {
+        .volunteer-page-editorial-root {
+          background-color: #FFFDF8;
+          color: #171717;
+          min-height: 100vh;
+        }
+
+        /* 1. Hero Section */
+        .volunteer-hero-editorial {
           position: relative;
+          min-height: 680px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
           overflow: hidden;
-          background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
-          color: white;
-          padding: 5rem 0 4rem 0;
-          text-align: center;
+          padding: 6.5rem 0 5rem 0;
+          color: #FFFFFF;
         }
-        .volunteer-hero .section-badge {
-          background: rgba(125, 211, 252, 0.15);
-          color: #7DD3FC;
-          border-color: rgba(125, 211, 252, 0.35);
-        }
-        .volunteer-hero-title {
-          color: white;
-          font-size: 2.75rem;
-          font-weight: 800;
-          margin-bottom: 1.25rem;
-        }
-        @media (min-width: 768px) {
-          .volunteer-hero-title {
-            font-size: 3.5rem;
+
+        @media (min-width: 992px) {
+          .volunteer-hero-editorial {
+            min-height: 760px;
+            padding: 7.5rem 0 5.5rem 0;
           }
         }
-        .volunteer-hero-subtitle {
-          font-size: 1.15rem;
-          color: #CBD5E1;
-          max-width: 740px;
+
+        .volunteer-hero-media-wrapper {
+          position: absolute;
+          inset: 0;
+          z-index: 0;
+        }
+
+        .volunteer-hero-bg-img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          object-position: center 35%;
+          transform: scale(1.02);
+          transition: transform 12s ease-out;
+        }
+
+        .volunteer-hero-overlay {
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(
+            180deg, 
+            rgba(23, 23, 23, 0.82) 0%, 
+            rgba(23, 23, 23, 0.68) 50%, 
+            rgba(23, 23, 23, 0.90) 100%
+          );
+        }
+
+        .volunteer-hero-content-wrap {
+          position: relative;
+          z-index: 2;
+          width: 100%;
+        }
+
+        .volunteer-hero-content {
+          max-width: 820px;
           margin: 0 auto;
+          text-align: center;
+        }
+
+        .volunteer-hero-badge {
+          background: rgba(245, 158, 11, 0.2);
+          color: #FDE68A;
+          border: 1px solid rgba(245, 158, 11, 0.45);
+          display: inline-flex;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 0.4rem 1.15rem;
+          border-radius: 9999px;
+          font-size: 0.825rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
+          margin-bottom: 1.5rem;
+          backdrop-filter: blur(4px);
+        }
+
+        .badge-sparkle-hero {
+          color: #F59E0B;
+        }
+
+        .volunteer-hero-heading {
+          color: #FFFFFF;
+          font-size: clamp(2.35rem, 5.5vw, 4rem);
+          font-weight: 800;
+          letter-spacing: -0.03em;
+          line-height: 1.15;
+          margin-bottom: 1.35rem;
+          text-shadow: 0 2px 16px rgba(0, 0, 0, 0.35);
+        }
+
+        .volunteer-hero-text {
+          font-size: clamp(1.05rem, 2vw, 1.25rem);
+          color: #E2E8F0;
+          max-width: 720px;
+          margin: 0 auto 2.25rem auto;
+          line-height: 1.7;
+          text-shadow: 0 1px 8px rgba(0, 0, 0, 0.4);
+        }
+
+        .volunteer-hero-actions {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          justify-content: center;
+          gap: 1rem;
+          margin-bottom: 2.75rem;
+        }
+
+        .volunteer-hero-primary-btn {
+          background: #F59E0B;
+          color: #171717;
+          font-weight: 700;
+          border: none;
+          padding: 0.85rem 1.85rem;
+          border-radius: 12px;
+          box-shadow: 0 6px 20px rgba(245, 158, 11, 0.35);
+        }
+
+        .volunteer-hero-primary-btn:hover {
+          background: #D97706;
+          color: #FFFFFF;
+          transform: translateY(-2px);
+          box-shadow: 0 8px 24px rgba(217, 119, 6, 0.45);
+        }
+
+        .btn-outline-white {
+          background: rgba(255, 255, 255, 0.08);
+          border: 1.5px solid rgba(255, 255, 255, 0.4);
+          color: #FFFFFF;
+          font-weight: 600;
+          padding: 0.85rem 1.85rem;
+          border-radius: 12px;
+          backdrop-filter: blur(4px);
+        }
+
+        .btn-outline-white:hover {
+          background: rgba(255, 255, 255, 0.2);
+          border-color: #FFFFFF;
+          color: #FFFFFF;
+          transform: translateY(-2px);
+        }
+
+        .volunteer-hero-highlights {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          justify-content: center;
+          gap: 0.85rem;
+        }
+
+        .hero-highlight-pill {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.45rem;
+          background: rgba(23, 23, 23, 0.6);
+          border: 1px solid rgba(255, 255, 255, 0.15);
+          padding: 0.4rem 0.95rem;
+          border-radius: 9999px;
+          font-size: 0.825rem;
+          color: #F1F5F9;
+          backdrop-filter: blur(4px);
+        }
+
+        .highlight-icon {
+          color: #F59E0B;
+        }
+
+        /* 4. Active Volunteer Opportunities */
+        .volunteer-opps-section {
+          background-color: #FAF8F2;
+          padding: 6rem 0 5.5rem 0;
+          border-bottom: 1px solid #E8E1D5;
+        }
+
+        .opps-section-header {
+          text-align: center;
+          max-width: 720px;
+          margin: 0 auto 3.5rem auto;
+        }
+
+        .opps-badge {
+          background: #FFF7ED;
+          color: #B45309;
+          border: 1px solid rgba(245, 158, 11, 0.35);
+          display: inline-flex;
+          align-items: center;
+          padding: 0.35rem 1rem;
+          border-radius: 9999px;
+          font-size: 0.8rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          margin-bottom: 0.85rem;
+        }
+
+        .opps-title {
+          font-size: 2.5rem;
+          font-weight: 800;
+          color: #171717;
+          letter-spacing: -0.025em;
+          margin-bottom: 0.85rem;
+        }
+
+        @media (min-width: 768px) {
+          .opps-title {
+            font-size: 2.85rem;
+          }
+        }
+
+        .opps-subtitle {
+          font-size: 1.1rem;
+          color: #475569;
           line-height: 1.65;
         }
-        .opp-filters-bar {
+
+        /* Filter Bar Modern */
+        .opp-filters-bar-modern {
           background: #FFFFFF;
-          border: 1px solid var(--border-subtle);
-          border-radius: var(--radius-lg);
+          border: 1px solid #E8E1D5;
+          border-radius: 16px;
           padding: 1rem 1.5rem;
-          margin-bottom: 2rem;
+          margin-bottom: 2.5rem;
           display: flex;
           flex-wrap: wrap;
           align-items: center;
           justify-content: space-between;
           gap: 1rem;
-          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+          box-shadow: 0 2px 8px rgba(23, 23, 23, 0.03);
         }
-        .filters-label {
+
+        .filters-label-modern {
           display: flex;
           align-items: center;
-          gap: 0.5rem;
-          font-size: 0.875rem;
+          gap: 0.6rem;
+          font-size: 0.9rem;
           font-weight: 700;
-          color: var(--slate-700);
+          color: #171717;
         }
-        .filters-inputs-wrap {
+
+        .filter-icon-saffron {
+          color: #D97706;
+        }
+
+        .filters-inputs-wrap-modern {
           display: flex;
           flex-wrap: wrap;
           align-items: center;
           gap: 0.75rem;
         }
-        .filter-select {
-          padding: 0.45rem 0.85rem;
-          border-radius: var(--radius-md);
-          border: 1px solid var(--border-subtle);
-          background: var(--bg-surface);
-          font-size: 0.85rem;
-          color: var(--slate-800);
-          font-weight: 500;
+
+        .filter-select-container {
+          position: relative;
+        }
+
+        .filter-select-modern {
+          padding: 0.6rem 1.1rem;
+          border-radius: 10px;
+          border: 1px solid #E8E1D5;
+          background: #FFFDF8;
+          font-size: 0.875rem;
+          color: #171717;
+          font-weight: 600;
           outline: none;
           cursor: pointer;
+          min-height: 42px;
+          transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
-        .filter-select:focus {
-          border-color: var(--primary-600);
+
+        .filter-select-modern:focus {
+          border-color: #F59E0B;
+          box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
         }
-        .filter-reset-btn {
+
+        .filter-reset-btn-modern {
           display: inline-flex;
           align-items: center;
-          gap: 0.35rem;
-          padding: 0.45rem 0.75rem;
-          border-radius: var(--radius-md);
-          background: #F1F5F9;
-          border: 1px solid #CBD5E1;
-          font-size: 0.8rem;
-          font-weight: 600;
-          color: var(--slate-700);
+          gap: 0.4rem;
+          padding: 0.6rem 1rem;
+          border-radius: 10px;
+          background: #FFF7ED;
+          border: 1px solid rgba(245, 158, 11, 0.35);
+          font-size: 0.825rem;
+          font-weight: 700;
+          color: #B45309;
           cursor: pointer;
-          transition: background var(--transition-fast);
+          min-height: 42px;
+          transition: all 0.2s ease;
         }
-        .filter-reset-btn:hover {
-          background: #E2E8F0;
+
+        .filter-reset-btn-modern:hover {
+          background: #FEF3C7;
+          color: #92400E;
+          transform: translateY(-1px);
         }
-        .opps-loading-state,
-        .opps-empty-state,
-        .opps-error-state {
+
+        /* Loading / Error / Empty States */
+        .opps-loading-state-modern,
+        .opps-empty-state-modern,
+        .opps-error-state-modern {
           text-align: center;
-          padding: 4rem 2rem;
+          padding: 4.5rem 2rem;
           background: #FFFFFF;
-          border: 1px dashed var(--border-subtle);
-          border-radius: var(--radius-xl);
+          border: 1px dashed #E8E1D5;
+          border-radius: 20px;
+          box-shadow: 0 4px 16px rgba(23, 23, 23, 0.02);
         }
-        .spinner-indicator {
-          width: 36px;
-          height: 36px;
-          border: 3px solid rgba(249, 115, 22, 0.2);
-          border-top-color: var(--primary-saffron, #F97316);
+
+        .opps-loading-state-modern h3,
+        .opps-empty-state-modern h3,
+        .opps-error-state-modern h3 {
+          font-size: 1.35rem;
+          font-weight: 700;
+          color: #171717;
+          margin: 1rem 0 0.5rem 0;
+        }
+
+        .opps-loading-state-modern p,
+        .opps-empty-state-modern p,
+        .opps-error-state-modern p {
+          color: #64748B;
+          font-size: 0.95rem;
+          max-width: 480px;
+          margin: 0 auto;
+        }
+
+        .empty-state-icon {
+          color: #D97706;
+          opacity: 0.7;
+        }
+
+        .spinner-indicator-saffron {
+          width: 40px;
+          height: 40px;
+          border: 3.5px solid rgba(245, 158, 11, 0.2);
+          border-top-color: #D97706;
           border-radius: 50%;
           animation: spin 0.8s linear infinite;
-          margin: 0 auto 1rem auto;
+          margin: 0 auto;
         }
+
         @keyframes spin {
           to { transform: rotate(360deg); }
         }
-        .opps-grid {
+
+        /* Opportunities Grid */
+        .opps-grid-modern {
           display: grid;
           grid-template-columns: 1fr;
           gap: 2rem;
         }
-        @media (min-width: 768px) {
-          .opps-grid {
+
+        @media (min-width: 840px) {
+          .opps-grid-modern {
             grid-template-columns: repeat(2, 1fr);
           }
         }
-        .opp-card {
-          padding: 2.25rem;
-          display: flex;
-          flex-direction: column;
+
+        .opp-card-modern {
           background: #FFFFFF;
-        }
-        .opp-card-top {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 1rem;
-        }
-        .opp-area-badge {
-          background: var(--primary-50);
-          color: var(--primary-800);
-          font-size: 0.75rem;
-          font-weight: 700;
-          padding: 0.25rem 0.65rem;
-          border-radius: var(--radius-pill);
-        }
-        .opp-spots-badge {
-          font-size: 0.75rem;
-          font-weight: 600;
-          color: #059669;
-        }
-        .opp-spots-badge.filled {
-          color: #DC2626;
-          background: #FEF2F2;
-          padding: 0.2rem 0.5rem;
-          border-radius: var(--radius-sm);
-        }
-        .opp-title {
-          font-size: 1.35rem;
-          font-weight: 700;
-          color: var(--slate-900);
-          margin-bottom: 0.75rem;
-        }
-        .opp-desc {
-          font-size: 0.9rem;
-          color: var(--text-muted);
-          line-height: 1.55;
-          margin-bottom: 1.25rem;
-        }
-        .opp-meta-list {
+          border: 1px solid #E8E1D5;
+          border-radius: 18px;
+          overflow: hidden;
           display: flex;
           flex-direction: column;
-          gap: 0.5rem;
-          font-size: 0.85rem;
-          color: var(--slate-700);
-          margin-bottom: 1.25rem;
+          box-shadow: 0 4px 18px rgba(23, 23, 23, 0.04);
+          transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
         }
-        .opp-meta-row {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
+
+        .opp-card-modern:hover {
+          transform: translateY(-4px);
+          border-color: #F59E0B;
+          box-shadow: 0 14px 32px -8px rgba(217, 119, 6, 0.12);
         }
-        .opp-requirements-box {
-          background: var(--slate-50);
+
+        .opp-card-media-wrap {
+          position: relative;
+          width: 100%;
+          height: 190px;
+          background: #0F172A;
+          overflow: hidden;
+        }
+
+        .opp-card-img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          object-position: center 30%;
+          transition: transform 0.6s ease;
+        }
+
+        .opp-card-modern:hover .opp-card-img {
+          transform: scale(1.04);
+        }
+
+        .opp-card-media-tags {
+          position: absolute;
+          inset: 0;
           padding: 1rem;
-          border-radius: var(--radius-md);
-          margin-bottom: 1.5rem;
-          border: 1px solid var(--slate-200);
+          display: flex;
+          align-items: flex-start;
+          justify-content: space-between;
+          background: linear-gradient(180deg, rgba(23, 23, 23, 0.5) 0%, rgba(23, 23, 23, 0) 50%);
+        }
+
+        .opp-area-badge-modern {
+          background: #FFF7ED;
+          color: #92400E;
+          border: 1px solid rgba(245, 158, 11, 0.4);
+          font-size: 0.75rem;
+          font-weight: 700;
+          padding: 0.3rem 0.75rem;
+          border-radius: 9999px;
+          letter-spacing: 0.02em;
+        }
+
+        .opp-spots-badge-modern {
+          font-size: 0.75rem;
+          font-weight: 700;
+          padding: 0.3rem 0.75rem;
+          border-radius: 9999px;
+          letter-spacing: 0.02em;
+        }
+
+        .opp-spots-badge-modern.open {
+          background: #ECFDF5;
+          color: #065F46;
+          border: 1px solid #A7F3D0;
+        }
+
+        .opp-spots-badge-modern.filled {
+          background: #FEF2F2;
+          color: #991B1B;
+          border: 1px solid #FECACA;
+        }
+
+        .opp-card-content {
+          padding: 1.75rem;
+          display: flex;
+          flex-direction: column;
           flex: 1;
         }
-        .req-label {
+
+        .opp-card-title {
+          font-size: 1.35rem;
+          font-weight: 800;
+          color: #171717;
+          margin-bottom: 0.65rem;
+          line-height: 1.3;
+        }
+
+        .opp-card-desc {
+          font-size: 0.925rem;
+          color: #475569;
+          line-height: 1.6;
+          margin-bottom: 1.35rem;
+        }
+
+        .opp-meta-box {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 1rem;
+          background: #FFFDF8;
+          border: 1px solid #E8E1D5;
+          border-radius: 12px;
+          padding: 0.85rem 1rem;
+          margin-bottom: 1.25rem;
+        }
+
+        .opp-meta-item {
+          display: flex;
+          align-items: flex-start;
+          gap: 0.6rem;
+        }
+
+        .opp-meta-icon {
+          color: #D97706;
+          flex-shrink: 0;
+          margin-top: 0.15rem;
+        }
+
+        .opp-meta-label {
           display: block;
-          font-size: 0.75rem;
+          font-size: 0.7rem;
           font-weight: 700;
-          color: var(--slate-500);
+          color: #64748B;
           text-transform: uppercase;
+          letter-spacing: 0.04em;
+        }
+
+        .opp-meta-val {
+          display: block;
+          font-size: 0.875rem;
+          font-weight: 600;
+          color: #171717;
+          line-height: 1.35;
+        }
+
+        .opp-req-box-modern {
+          background: #FAF8F2;
+          border-left: 3px solid #F59E0B;
+          padding: 0.85rem 1rem;
+          border-radius: 8px;
+          margin-bottom: 1.5rem;
+          flex: 1;
+        }
+
+        .opp-req-title {
+          display: block;
+          font-size: 0.725rem;
+          font-weight: 700;
+          color: #92400E;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
           margin-bottom: 0.25rem;
         }
-        .req-text {
+
+        .opp-req-body {
           font-size: 0.85rem;
-          color: var(--slate-700);
-          line-height: 1.45;
+          color: #475569;
+          line-height: 1.5;
+          margin: 0;
         }
-        .opp-apply-btn {
+
+        .opp-card-footer {
+          margin-top: auto;
+          padding-top: 0.5rem;
+        }
+
+        .opp-action-btn {
           width: 100%;
+          min-height: 46px;
+          font-weight: 700;
         }
+
+        .btn-secondary-disabled {
+          background: #E2E8F0;
+          color: #94A3B8;
+          border: none;
+          cursor: not-allowed;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          padding: 0.75rem 1.65rem;
+          border-radius: 8px;
+          font-size: 0.95rem;
+        }
+
+        /* 5. Final Call to Action */
+        .volunteer-final-cta-section {
+          position: relative;
+          min-height: 420px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          overflow: hidden;
+          padding: 5.5rem 0;
+          color: #FFFFFF;
+        }
+
+        .final-cta-media-wrap {
+          position: absolute;
+          inset: 0;
+          z-index: 0;
+        }
+
+        .final-cta-bg-img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          object-position: center 30%;
+        }
+
+        .final-cta-overlay {
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(
+            135deg, 
+            rgba(23, 23, 23, 0.88) 0%, 
+            rgba(23, 23, 23, 0.78) 60%, 
+            rgba(217, 119, 6, 0.55) 100%
+          );
+        }
+
+        .final-cta-container {
+          position: relative;
+          z-index: 2;
+        }
+
+        .final-cta-card {
+          max-width: 740px;
+          margin: 0 auto;
+          text-align: center;
+        }
+
+        .final-cta-badge {
+          background: rgba(245, 158, 11, 0.25);
+          color: #FDE68A;
+          border: 1px solid rgba(245, 158, 11, 0.45);
+          display: inline-block;
+          padding: 0.35rem 1rem;
+          border-radius: 9999px;
+          font-size: 0.8rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
+          margin-bottom: 1.25rem;
+        }
+
+        .final-cta-title {
+          font-size: clamp(2.2rem, 4.5vw, 3.25rem);
+          font-weight: 800;
+          color: #FFFFFF;
+          letter-spacing: -0.025em;
+          margin-bottom: 1rem;
+          line-height: 1.2;
+        }
+
+        .final-cta-text {
+          font-size: 1.15rem;
+          color: #E2E8F0;
+          line-height: 1.65;
+          margin-bottom: 2.25rem;
+        }
+
+        .final-cta-buttons {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          justify-content: center;
+          gap: 1rem;
+        }
+
+        .final-cta-btn-primary {
+          background: #F59E0B;
+          color: #171717;
+          font-weight: 700;
+          border: none;
+          padding: 0.85rem 1.85rem;
+          border-radius: 12px;
+          box-shadow: 0 6px 20px rgba(245, 158, 11, 0.35);
+        }
+
+        .final-cta-btn-primary:hover {
+          background: #D97706;
+          color: #FFFFFF;
+          transform: translateY(-2px);
+        }
+
+        .final-cta-btn-secondary {
+          white-space: nowrap;
+        }
+
+        /* 6. Application Modal Styles */
         .form-grid-2 {
           display: grid;
           grid-template-columns: 1fr;
           gap: 1rem;
         }
+
         @media (min-width: 500px) {
           .form-grid-2 {
             grid-template-columns: 1fr 1fr;
           }
         }
+
         .modal-error-alert {
           background: #FEF2F2;
           border: 1px solid #FCA5A5;
           color: #991B1B;
           padding: 0.85rem 1rem;
-          border-radius: var(--radius-md);
+          border-radius: 10px;
           margin-bottom: 1.25rem;
           display: flex;
           align-items: flex-start;
           gap: 0.65rem;
           font-size: 0.85rem;
         }
+
         .error-text-content {
           flex: 1;
           line-height: 1.4;
         }
+
         .error-text-content strong {
           display: block;
           margin-bottom: 0.15rem;
         }
+
         .error-dismiss-btn {
           background: transparent;
           border: none;
@@ -1267,85 +1907,98 @@ export default function VolunteerPage() {
           cursor: pointer;
           padding: 0;
         }
+
         .authenticated-user-banner {
           display: flex;
           align-items: center;
           gap: 0.75rem;
-          background: #ECFDF5;
-          border: 1px solid #A7F3D0;
+          background: #FFF7ED;
+          border: 1px solid #FDE68A;
           padding: 0.75rem 1rem;
-          border-radius: var(--radius-md);
+          border-radius: 10px;
           margin-bottom: 1.25rem;
           font-size: 0.875rem;
-          color: #065F46;
+          color: #92400E;
         }
+
         .auth-email-hint {
           display: block;
           font-size: 0.75rem;
-          color: #047857;
+          color: #B45309;
         }
+
         .auth-mode-selector {
           display: grid;
           grid-template-columns: 1fr 1fr;
           gap: 0.5rem;
-          background: #F1F5F9;
+          background: #FAF8F2;
           padding: 0.25rem;
-          border-radius: var(--radius-md);
+          border-radius: 10px;
+          border: 1px solid #E8E1D5;
           margin-bottom: 1.25rem;
         }
+
         .auth-tab-btn {
-          padding: 0.5rem 0.75rem;
+          padding: 0.55rem 0.75rem;
           border: none;
           background: transparent;
-          border-radius: var(--radius-sm);
+          border-radius: 8px;
           font-size: 0.8rem;
           font-weight: 700;
-          color: var(--slate-600);
+          color: #64748B;
           cursor: pointer;
-          transition: all var(--transition-fast);
+          transition: all 0.2s ease;
         }
+
         .auth-tab-btn.active {
           background: #FFFFFF;
-          color: var(--slate-900);
-          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+          color: #171717;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
         }
+
         .interest-chips-grid {
           display: flex;
           flex-wrap: wrap;
           gap: 0.4rem;
           margin-top: 0.35rem;
         }
+
         .interest-chip {
           display: inline-flex;
           align-items: center;
           gap: 0.35rem;
           padding: 0.35rem 0.75rem;
-          border-radius: var(--radius-pill);
-          border: 1px solid var(--border-subtle);
-          background: #F8FAFC;
-          color: var(--slate-700);
+          border-radius: 9999px;
+          border: 1px solid #E8E1D5;
+          background: #FFFDF8;
+          color: #475569;
           font-size: 0.775rem;
           font-weight: 600;
           cursor: pointer;
-          transition: all var(--transition-fast);
+          transition: all 0.15s ease;
         }
+
         .interest-chip:hover {
-          background: #F1F5F9;
+          background: #FAF8F2;
           border-color: #CBD5E1;
         }
+
         .interest-chip.active {
           background: #FFF7ED;
-          border-color: var(--primary-saffron, #F97316);
-          color: #C2410C;
+          border-color: #D97706;
+          color: #92400E;
           font-weight: 700;
         }
+
         .application-success-box {
           text-align: center;
           padding: 1.5rem 0;
         }
+
         .success-icon-wrap {
           margin-bottom: 1rem;
         }
+
         .success-status-pill {
           display: inline-block;
           background: #FEF3C7;
@@ -1353,24 +2006,28 @@ export default function VolunteerPage() {
           font-size: 0.75rem;
           font-weight: 800;
           padding: 0.25rem 0.75rem;
-          border-radius: var(--radius-pill);
+          border-radius: 9999px;
           margin-bottom: 1rem;
           letter-spacing: 0.05em;
         }
+
         .success-desc {
-          color: var(--text-muted);
+          color: #475569;
           font-size: 0.95rem;
           line-height: 1.6;
           max-width: 480px;
           margin: 0 auto;
         }
+
         .form-control.is-invalid {
           border-color: #EF4444 !important;
           background-color: rgba(254, 242, 242, 0.4) !important;
         }
+
         .form-control.is-invalid:focus {
           box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15) !important;
         }
+
         .field-error-text {
           display: flex;
           align-items: center;
@@ -1380,17 +2037,20 @@ export default function VolunteerPage() {
           font-weight: 500;
           margin-top: 0.35rem;
         }
+
         .password-feedback-section {
           margin-top: -0.25rem;
           margin-bottom: 1rem;
         }
+
         .pwd-strength-wrap {
           margin-bottom: 0.65rem;
           padding: 0.5rem 0.75rem;
-          background: #F8FAFC;
-          border: 1px solid var(--border-subtle);
-          border-radius: var(--radius-md);
+          background: #FAF8F2;
+          border: 1px solid #E8E1D5;
+          border-radius: 10px;
         }
+
         .pwd-strength-meta {
           display: flex;
           justify-content: space-between;
@@ -1398,42 +2058,49 @@ export default function VolunteerPage() {
           font-size: 0.775rem;
           margin-bottom: 0.35rem;
         }
+
         .pwd-strength-label {
-          color: var(--slate-600);
+          color: #475569;
           font-weight: 600;
         }
+
         .pwd-strength-badge {
           font-size: 0.75rem;
           font-weight: 700;
           text-transform: uppercase;
           letter-spacing: 0.03em;
         }
+
         .pwd-strength-track {
           width: 100%;
           height: 5px;
           background: #E2E8F0;
-          border-radius: var(--radius-pill);
+          border-radius: 9999px;
           overflow: hidden;
         }
+
         .pwd-strength-bar {
           height: 100%;
           transition: width 0.25s ease, background-color 0.25s ease;
-          border-radius: var(--radius-pill);
+          border-radius: 9999px;
         }
+
         .pwd-requirements-card {
-          background: #F8FAFC;
-          border: 1px solid var(--border-subtle);
-          border-radius: var(--radius-md);
+          background: #FAF8F2;
+          border: 1px solid #E8E1D5;
+          border-radius: 10px;
           padding: 0.75rem 1rem;
         }
+
         .pwd-req-title {
           font-size: 0.775rem;
           font-weight: 700;
-          color: var(--slate-700);
+          color: #171717;
           margin-bottom: 0.5rem;
           text-transform: uppercase;
           letter-spacing: 0.04em;
         }
+
         .pwd-req-list {
           list-style: none;
           padding: 0;
@@ -1442,23 +2109,27 @@ export default function VolunteerPage() {
           grid-template-columns: 1fr;
           gap: 0.35rem;
         }
+
         @media (min-width: 540px) {
           .pwd-req-list {
             grid-template-columns: 1fr 1fr;
           }
         }
+
         .pwd-req-item {
           display: flex;
           align-items: center;
           gap: 0.4rem;
           font-size: 0.775rem;
-          color: var(--slate-500);
+          color: #64748B;
           transition: color 0.2s ease;
         }
+
         .pwd-req-item.passed {
           color: #059669;
           font-weight: 600;
         }
+
         .pwd-req-icon {
           display: inline-flex;
           align-items: center;
@@ -1467,53 +2138,64 @@ export default function VolunteerPage() {
           font-size: 0.85rem;
           font-weight: 700;
         }
+
         .app-status-loading {
           text-align: center;
           padding: 3rem 1rem;
         }
+
         .app-status-loading p {
-          color: var(--text-muted);
+          color: #64748B;
           font-size: 0.9rem;
           margin-top: 0.5rem;
         }
+
         .existing-app-status-box {
           text-align: center;
           padding: 0.5rem 0;
         }
+
         .app-status-icon-wrap {
           margin-bottom: 0.75rem;
         }
+
         .app-status-title {
           font-size: 1.35rem;
-          font-weight: 700;
-          color: var(--slate-900);
+          font-weight: 800;
+          color: #171717;
           margin-bottom: 0.35rem;
         }
+
         .app-status-subtitle {
-          color: var(--text-muted);
+          color: #64748B;
           font-size: 0.9rem;
           line-height: 1.5;
           margin-bottom: 1.25rem;
         }
+
         .app-status-card {
-          background: #F8FAFC;
-          border: 1px solid var(--border-subtle);
-          border-radius: var(--radius-lg);
+          background: #FAF8F2;
+          border: 1px solid #E8E1D5;
+          border-radius: 14px;
           padding: 1.25rem;
           text-align: left;
         }
+
         .app-status-card.status-approved {
           border-color: #A7F3D0;
           background: #F0FDF4;
         }
+
         .app-status-card.status-rejected {
           border-color: #FECACA;
           background: #FEF2F2;
         }
+
         .app-status-card.status-waitlisted {
           border-color: #DDD6FE;
           background: #F5F3FF;
         }
+
         .app-status-card-header {
           display: flex;
           justify-content: space-between;
@@ -1522,68 +2204,80 @@ export default function VolunteerPage() {
           gap: 0.5rem;
           margin-bottom: 1rem;
         }
+
         .app-status-role-title {
           font-weight: 700;
           font-size: 1.05rem;
-          color: var(--slate-900);
+          color: #171717;
         }
+
         .app-status-pill {
           font-size: 0.75rem;
           font-weight: 800;
           padding: 0.3rem 0.75rem;
-          border-radius: var(--radius-pill);
+          border-radius: 9999px;
           letter-spacing: 0.03em;
         }
+
         .pill-pending {
           background: #FEF3C7;
           color: #92400E;
         }
+
         .pill-approved {
           background: #DCFCE7;
           color: #15803D;
         }
+
         .pill-rejected {
           background: #FEE2E2;
           color: #B91C1C;
         }
+
         .pill-waitlisted {
           background: #EDE9FE;
           color: #6D28D9;
         }
+
         .app-status-details-grid {
           display: grid;
           grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
           gap: 0.75rem;
           padding: 0.75rem 0;
-          border-top: 1px solid var(--border-subtle);
-          border-bottom: 1px solid var(--border-subtle);
+          border-top: 1px solid #E8E1D5;
+          border-bottom: 1px solid #E8E1D5;
           margin-bottom: 0.85rem;
         }
+
         .app-status-detail-item {
           display: flex;
           flex-direction: column;
           gap: 0.15rem;
         }
+
         .app-status-detail-item .detail-label {
           font-size: 0.7rem;
           font-weight: 700;
-          color: var(--slate-500);
+          color: #64748B;
           text-transform: uppercase;
         }
+
         .app-status-detail-item .detail-value {
           font-size: 0.85rem;
           font-weight: 600;
-          color: var(--slate-800);
+          color: #171717;
         }
+
         .app-status-message {
           font-size: 0.825rem;
-          color: var(--slate-600);
-          background: rgba(255, 255, 255, 0.8);
+          color: #334155;
+          background: rgba(255, 255, 255, 0.85);
           padding: 0.75rem;
-          border-radius: var(--radius-md);
+          border-radius: 8px;
           border: 1px solid rgba(0, 0, 0, 0.05);
           line-height: 1.5;
         }
+
         .app-status-message p {
           margin: 0;
         }

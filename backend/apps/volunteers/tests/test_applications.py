@@ -77,6 +77,10 @@ class VolunteerApplicationTests(APITestCase):
         })
         self.user = reg['user']
         self.profile = reg['volunteer_profile']
+        self.profile.approval_status = VolunteerProfile.ApprovalStatus.APPROVED
+        self.profile.save(update_fields=['approval_status'])
+        self.user.role = User.Role.VOLUNTEER
+        self.user.save(update_fields=['role'])
         self.apply_url = reverse('volunteers:volunteer-apply')
 
     def test_valid_authenticated_application(self):

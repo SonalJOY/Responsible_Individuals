@@ -1,351 +1,257 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { 
-  BookOpen, Users, Sparkles, CheckCircle2,
-  Search, HeartHandshake, Lightbulb, Building2, TrendingUp, GraduationCap, Award,
-  X, Mail, Phone, MapPin, ArrowRight, ExternalLink
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'motion/react';
+import {
+  BookOpen, Users, HeartHandshake, ShieldCheck,
+  Search, Lightbulb, TrendingUp, GraduationCap, Award,
+  TreePine, HeartPulse, CheckCircle2, ArrowRight, ChevronLeft, ChevronRight,
+  X, Heart
 } from 'lucide-react';
-import Reveal from '../../components/common/Reveal';
-import { StaggerContainer, StaggerItem } from '../../components/common/StaggerContainer';
+import useCountUp from '../../hooks/useCountUp';
 import useScrollReveal from '../../hooks/useScrollReveal';
-import WarpText from '../../components/common/WarpText';
 
-// Centralized media configurations — easily replaceable in one location
+// Local authentic photographs
+import areaHealthcareImg from '../../assets/area-healthcare.jpg';
+
+import './AboutPage.css';
+
+// Centralized media configurations
 const HERO_VIDEO_SRC = '/videos/about-hero.mp4';
 const HERO_POSTER_SRC = '/images/about-hero.jpg';
 
-const VISION_IMAGE_SRC = '/images/about-vision.jpg';
-const VISION_IMAGE_ALT = 'Rural government school students reading books together in an improved classroom with their teacher';
+// Animation motion variants with subtle, coordinated motion system
+const fadeUpVariant = {
+  hidden: { opacity: 0, y: 22 },
+  visible: (custom = 0) => ({
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.48,
+      delay: custom * 0.08,
+      ease: [0.16, 1, 0.3, 1],
+    },
+  }),
+};
 
-const MISSION_IMAGE_SRC = '/images/about-mission.jpg';
-const MISSION_IMAGE_ALT = 'Volunteers and teachers collaborating in a rural school classroom to provide educational materials and digital learning resources';
+const staggerContainerVariant = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.09,
+      delayChildren: 0.04,
+    },
+  },
+};
 
-const RURAL_ED_IMAGE_SRC = 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=600&q=80';
-const COMMUNITY_ACTION_IMAGE_SRC = 'https://images.unsplash.com/photo-1559027615-cd4628902d4a?auto=format&fit=crop&w=600&q=80';
+const heroHeadlineVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.12,
+      delayChildren: 0.08,
+    },
+  },
+};
+
+const heroLineVariants = {
+  hidden: { opacity: 0, y: 26 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.65,
+      ease: [0.16, 1, 0.3, 1],
+    },
+  },
+};
+
+// Stage crossfade variant for methodology stepper
+const stageCrossfadeVariant = {
+  initial: { opacity: 0, y: 12 },
+  animate: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.32, ease: [0.16, 1, 0.3, 1] },
+  },
+  exit: {
+    opacity: 0,
+    y: -8,
+    transition: { duration: 0.18, ease: [0.16, 1, 0.3, 1] },
+  },
+};
+
+// Sub-component for individual animated impact metric panel
+function EditorialImpactMetric({ targetValue, label, note, isVisible, icon: Icon, showConnector = true, custom = 0 }) {
+  const animatedDisplay = useCountUp(targetValue, isVisible, { duration: 1100 });
+
+  return (
+    <motion.div
+      className="impact-metric-panel"
+      variants={fadeUpVariant}
+      custom={custom}
+      aria-label={`${targetValue} ${label} - ${note}`}
+    >
+      {Icon && (
+        <div className="impact-panel-icon-wrap" aria-hidden="true">
+          <Icon size={22} className="impact-panel-icon" />
+        </div>
+      )}
+      <div className="impact-panel-number" aria-hidden="true">
+        {animatedDisplay}
+      </div>
+      <div className="impact-panel-label">{label}</div>
+      <div className="impact-panel-note">{note}</div>
+      {showConnector && <div className="impact-milestone-connector" aria-hidden="true" />}
+    </motion.div>
+  );
+}
 
 export default function AboutPage() {
   const heroVideoRef = useRef(null);
-  const [hoveredSticky, setHoveredSticky] = useState(null);
-  const [visionMouse, setVisionMouse] = useState({ x: 0, y: 0 });
-  const [missionMouse, setMissionMouse] = useState({ x: 0, y: 0 });
+  const [heroParallax, setHeroParallax] = useState({ x: 0, y: 0 });
 
-  // Subtle Parallax Cursor Refs for Editorial Flank Visuals
-  const leftFlankRef = useRef(null);
-  const leftFlankRaf = useRef(null);
-  const rightFlankRef = useRef(null);
-  const rightFlankRaf = useRef(null);
+  // Real-time scroll progress indicator (0 to 1) & Story parallax offset
+  const [scrollProgress, setScrollProgress] = useState(0);
+  const [storyParallax, setStoryParallax] = useState(0);
 
-  // Ensure hero video autoplays smoothly
+  const [videoError, setVideoError] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(() => (
+    typeof window !== 'undefined' && window.matchMedia
+      ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      : false
+  ));
+
   useEffect(() => {
-    if (heroVideoRef.current) {
+    if (typeof window === 'undefined' || !window.matchMedia) return;
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const listener = (e) => setReducedMotion(e.matches);
+    mediaQuery.addEventListener('change', listener);
+    return () => mediaQuery.removeEventListener('change', listener);
+  }, []);
+
+  // Autoplay hero video smoothly with clear playback when motion enabled
+  useEffect(() => {
+    if (heroVideoRef.current && !reducedMotion) {
+      heroVideoRef.current.playbackRate = 0.85;
       heroVideoRef.current.play().catch(() => {});
     }
-  }, []);
+  }, [reducedMotion]);
 
-  // Interactive 8-Step Impact Orbit State
-  const [activeStageIdx, setActiveStageIdx] = useState(0);
-  const [hoveredStep, setHoveredStep] = useState(null);
-  const [isHoveringCard, setIsHoveringCard] = useState(false);
-
-  const orbit3DRef = useRef(null);
-  const hubRef = useRef(null);
-  const orbitRaf = useRef(null);
-
-  const [stickySectionRef, isStickySectionVisible] = useScrollReveal({
-    threshold: 0.12,
-    rootMargin: '0px 0px -30px 0px',
-    triggerOnce: true,
-  });
-
-  // LIVING IMPACT FLOW — State & Smooth RAF Cursor Parallax
-  const [activeFlowIdx, setActiveFlowIdx] = useState(0);
-  const [hoveredFlowIdx, setHoveredFlowIdx] = useState(null);
-  const impactFlowRef = useRef(null);
-  const impactFlowRaf = useRef(null);
-  const [impactSectionRef, isImpactSectionVisible] = useScrollReveal({
-    threshold: 0.08,
-    rootMargin: '0px 0px -30px 0px',
-    triggerOnce: true,
-  });
-
-  // Automatic Living Impact Flow Active Step Cycle (every 3.0s continuously)
+  // Subtle background mouse parallax respecting reduced-motion preferences
   useEffect(() => {
-    const timer = setInterval(() => {
-      setActiveFlowIdx((prev) => (prev + 1) % 4);
-    }, 3000);
-    return () => clearInterval(timer);
+    if (typeof window === 'undefined' || !window.matchMedia) return;
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (mediaQuery.matches) return;
+
+    const handleMouseMove = (e) => {
+      const { innerWidth, innerHeight } = window;
+      const x = ((e.clientX / innerWidth) - 0.5) * 14;
+      const y = ((e.clientY / innerHeight) - 0.5) * 14;
+      setHeroParallax({ x, y });
+    };
+
+    window.addEventListener('mousemove', handleMouseMove, { passive: true });
+    return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
-  const handleFlowMouseMove = (e) => {
-    if (typeof window !== 'undefined') {
-      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-      if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
-    }
-    const rect = e.currentTarget.getBoundingClientRect();
-    const relX = (e.clientX - (rect.left + rect.width / 2)) / (rect.width / 2);
-    const relY = (e.clientY - (rect.top + rect.height / 2)) / (rect.height / 2);
+  // Scroll listener for top progress bar & subtle story image parallax (throttled with rAF)
+  useEffect(() => {
+    let ticking = false;
+    const isReduced = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    if (impactFlowRaf.current) cancelAnimationFrame(impactFlowRaf.current);
-    impactFlowRaf.current = requestAnimationFrame(() => {
-      if (impactFlowRef.current) {
-        impactFlowRef.current.style.setProperty('--flow-cpx', `${(relX * 8).toFixed(2)}px`);
-        impactFlowRef.current.style.setProperty('--flow-cpy', `${(relY * 8).toFixed(2)}px`);
-        impactFlowRef.current.style.setProperty('--flow-crotx', `${(-relY * 2.0).toFixed(2)}deg`);
-        impactFlowRef.current.style.setProperty('--flow-croty', `${(relX * 2.5).toFixed(2)}deg`);
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+          if (docHeight > 0) {
+            const currentProgress = Math.min(Math.max(window.scrollY / docHeight, 0), 1);
+            setScrollProgress(currentProgress);
+          }
+
+          if (!isReduced) {
+            const storyEl = document.getElementById('story');
+            if (storyEl) {
+              const rect = storyEl.getBoundingClientRect();
+              if (rect.top < window.innerHeight && rect.bottom > 0) {
+                // Subtle parallax factor (max ~18px shift)
+                const offset = ((rect.top / window.innerHeight) - 0.5) * 24;
+                setStoryParallax(offset);
+              }
+            }
+          }
+
+          ticking = false;
+        });
+        ticking = true;
       }
-    });
-  };
+    };
 
-  const handleFlowMouseLeave = () => {
-    if (impactFlowRaf.current) cancelAnimationFrame(impactFlowRaf.current);
-    if (impactFlowRef.current) {
-      impactFlowRef.current.style.setProperty('--flow-cpx', '0px');
-      impactFlowRef.current.style.setProperty('--flow-cpy', '0px');
-      impactFlowRef.current.style.setProperty('--flow-crotx', '0deg');
-      impactFlowRef.current.style.setProperty('--flow-croty', '0deg');
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Methodology Stepper State (calm, user-directed progress)
+  const [activeStep, setActiveStep] = useState(0);
+
+  const handleNextStep = useCallback(() => {
+    setActiveStep((prev) => (prev + 1) % 8);
+  }, []);
+
+  const handlePrevStep = useCallback(() => {
+    setActiveStep((prev) => (prev - 1 + 8) % 8);
+  }, []);
+
+  // Keyboard navigation for stepper tabs
+  const handleStepperKeyDown = (e, idx) => {
+    if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      const next = (idx + 1) % 8;
+      setActiveStep(next);
+      const nextTab = document.getElementById(`step-tab-${methodologySteps[next].num}`);
+      if (nextTab) nextTab.focus();
+    } else if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      const prev = (idx - 1 + 8) % 8;
+      setActiveStep(prev);
+      const prevTab = document.getElementById(`step-tab-${methodologySteps[prev].num}`);
+      if (prevTab) prevTab.focus();
     }
   };
 
-  const [approachRef, isApproachVisible] = useScrollReveal({
-    threshold: 0.08,
+  // Section visibility hooks for triggering count-up
+  const [impactRef, isImpactVisible] = useScrollReveal({
+    threshold: 0.15,
     rootMargin: '0px 0px -40px 0px',
     triggerOnce: true,
   });
 
-
-
-  const handleLeftFlankMouseMove = (e) => {
-    if (typeof window !== 'undefined') {
-      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-      if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
-    }
-    const rect = e.currentTarget.getBoundingClientRect();
-    const relX = (e.clientX - (rect.left + rect.width / 2)) / (rect.width / 2);
-    const relY = (e.clientY - (rect.top + rect.height / 2)) / (rect.height / 2);
-
-    if (leftFlankRaf.current) cancelAnimationFrame(leftFlankRaf.current);
-    leftFlankRaf.current = requestAnimationFrame(() => {
-      if (leftFlankRef.current) {
-        leftFlankRef.current.style.setProperty('--flank-x', `${(relX * 5).toFixed(2)}px`);
-        leftFlankRef.current.style.setProperty('--flank-y', `${(relY * 5).toFixed(2)}px`);
-        leftFlankRef.current.style.setProperty('--flank-scale', '1.025');
-      }
-    });
-  };
-
-  const handleLeftFlankMouseLeave = () => {
-    if (leftFlankRaf.current) cancelAnimationFrame(leftFlankRaf.current);
-    if (leftFlankRef.current) {
-      leftFlankRef.current.style.setProperty('--flank-x', '0px');
-      leftFlankRef.current.style.setProperty('--flank-y', '0px');
-      leftFlankRef.current.style.setProperty('--flank-scale', '1');
-    }
-  };
-
-  const handleRightFlankMouseMove = (e) => {
-    if (typeof window !== 'undefined') {
-      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-      if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
-    }
-    const rect = e.currentTarget.getBoundingClientRect();
-    const relX = (e.clientX - (rect.left + rect.width / 2)) / (rect.width / 2);
-    const relY = (e.clientY - (rect.top + rect.height / 2)) / (rect.height / 2);
-
-    if (rightFlankRaf.current) cancelAnimationFrame(rightFlankRaf.current);
-    rightFlankRaf.current = requestAnimationFrame(() => {
-      if (rightFlankRef.current) {
-        rightFlankRef.current.style.setProperty('--flank-x', `${(relX * 5).toFixed(2)}px`);
-        rightFlankRef.current.style.setProperty('--flank-y', `${(relY * 5).toFixed(2)}px`);
-        rightFlankRef.current.style.setProperty('--flank-scale', '1.025');
-      }
-    });
-  };
-
-  const handleRightFlankMouseLeave = () => {
-    if (rightFlankRaf.current) cancelAnimationFrame(rightFlankRaf.current);
-    if (rightFlankRef.current) {
-      rightFlankRef.current.style.setProperty('--flank-x', '0px');
-      rightFlankRef.current.style.setProperty('--flank-y', '0px');
-      rightFlankRef.current.style.setProperty('--flank-scale', '1');
-    }
-  };
-
-  const handleVisionMouseMove = (e) => {
-    if (typeof window !== 'undefined') {
-      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-      if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
-    }
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = ((e.clientX - rect.left) / rect.width - 0.5) * 6; // 3px max
-    const y = ((e.clientY - rect.top) / rect.height - 0.5) * 6;
-    setVisionMouse({ x, y });
-  };
-
-  const handleMissionMouseMove = (e) => {
-    if (typeof window !== 'undefined') {
-      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-      if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
-    }
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = ((e.clientX - rect.left) / rect.width - 0.5) * 6; // 3px max
-    const y = ((e.clientY - rect.top) / rect.height - 0.5) * 6;
-    setMissionMouse({ x, y });
-  };
-
-  // 3D Orbit Cursor Parallax with requestAnimationFrame (zero React re-renders on mousemove)
-  const handleSectionMouseMove = (e) => {
-    if (typeof window !== 'undefined') {
-      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-      if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
-    }
-    const rect = e.currentTarget.getBoundingClientRect();
-    const relX = (e.clientX - (rect.left + rect.width / 2)) / (rect.width / 2);
-    const relY = (e.clientY - (rect.top + rect.height / 2)) / (rect.height / 2);
-
-    if (orbitRaf.current) cancelAnimationFrame(orbitRaf.current);
-    orbitRaf.current = requestAnimationFrame(() => {
-      if (orbit3DRef.current) {
-        const rotX = -relY * 2.2;
-        const rotY = relX * 2.8;
-        const transX = relX * 6;
-        const transY = relY * 6;
-        orbit3DRef.current.style.transform = `perspective(1200px) translate3d(${transX.toFixed(1)}px, ${transY.toFixed(1)}px, 0) rotateX(${rotX.toFixed(2)}deg) rotateY(${rotY.toFixed(2)}deg)`;
-      }
-      if (hubRef.current) {
-        const hubTransX = -relX * 3.5;
-        const hubTransY = -relY * 3.5;
-        hubRef.current.style.transform = `translate(-50%, -50%) translate3d(${hubTransX.toFixed(1)}px, ${hubTransY.toFixed(1)}px, 10px)`;
-      }
-    });
-  };
-
-  const handleSectionMouseLeave = () => {
-    if (orbitRaf.current) cancelAnimationFrame(orbitRaf.current);
-    if (orbit3DRef.current) {
-      orbit3DRef.current.style.transform = 'perspective(1200px) translate3d(0, 0, 0) rotateX(0deg) rotateY(0deg)';
-      orbit3DRef.current.style.transition = 'transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)';
-    }
-    if (hubRef.current) {
-      hubRef.current.style.transform = 'translate(-50%, -50%) translate3d(0, 0, 0)';
-      hubRef.current.style.transition = 'transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)';
-    }
-  };
-
-  // Automatic active stage cycle (every 3.5s unless user is hovering a card)
-  useEffect(() => {
-    if (isHoveringCard) return;
-    const timer = setInterval(() => {
-      setActiveStageIdx((prev) => (prev + 1) % 8);
-    }, 3500);
-    return () => clearInterval(timer);
-  }, [isHoveringCard]);
+  // Sequential Metric Counter Activation (Animation C: 1,000ms–2,400ms sequential start)
+  const [metricSeqActive, setMetricSeqActive] = useState([false, false, false, false]);
 
   useEffect(() => {
-    return () => {
-      if (orbitRaf.current) cancelAnimationFrame(orbitRaf.current);
-      if (impactFlowRaf.current) cancelAnimationFrame(impactFlowRaf.current);
-    };
-  }, []);
+    if (isImpactVisible) {
+      const isReduced = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (isReduced) {
+        setMetricSeqActive([true, true, true, true]);
+        return;
+      }
+      const t1 = setTimeout(() => setMetricSeqActive((prev) => [true, prev[1], prev[2], prev[3]]), 1000);
+      const t2 = setTimeout(() => setMetricSeqActive((prev) => [prev[0], true, prev[2], prev[3]]), 1350);
+      const t3 = setTimeout(() => setMetricSeqActive((prev) => [prev[0], prev[1], true, prev[3]]), 1700);
+      const t4 = setTimeout(() => setMetricSeqActive((prev) => [prev[0], prev[1], prev[2], true]), 2050);
+      return () => {
+        clearTimeout(t1);
+        clearTimeout(t2);
+        clearTimeout(t3);
+        clearTimeout(t4);
+      };
+    }
+  }, [isImpactVisible]);
 
-  // Four Core Transformation Focus Areas ("Living Impact Flow")
-  const impactFlowSteps = [
-    {
-      num: '01',
-      title: 'Better Schools',
-      category: 'CLASSROOMS & FACILITIES',
-      desc: 'Upgrading rural classrooms, clean sanitation, solar lighting, and dignified spaces.',
-      image: 'https://images.unsplash.com/photo-1580582932707-520aed937b7b?auto=format&fit=crop&w=600&q=80',
-      icon: Building2,
-      posClass: 'flow-pos-0',
-    },
-    {
-      num: '02',
-      title: 'Learning Resources',
-      category: 'BOOKS & DIGITAL TOOLS',
-      desc: 'Supplying libraries with regional books, STEM kits, stationery, and digital tablets.',
-      image: 'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&w=600&q=80',
-      icon: BookOpen,
-      posClass: 'flow-pos-1',
-    },
-    {
-      num: '03',
-      title: 'Teacher Support',
-      category: 'EDUCATOR EMPOWERMENT',
-      desc: 'Empowering teachers with dedicated volunteer assistants, workshops, and teaching aids.',
-      image: 'https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=600&q=80',
-      icon: GraduationCap,
-      posClass: 'flow-pos-2',
-    },
-    {
-      num: '04',
-      title: 'Community Action',
-      category: 'PARENTS & VOLUNTEERS',
-      desc: 'Mobilizing parent-teacher councils, local youth, and volunteer networks for stewardship.',
-      image: 'https://images.unsplash.com/photo-1559027615-cd4628902d4a?auto=format&fit=crop&w=600&q=80',
-      icon: HeartHandshake,
-      posClass: 'flow-pos-3',
-    },
-  ];
-
-  const methodologySteps = [
-    {
-      num: '01',
-      title: 'Identify Need',
-      desc: 'Assessing classroom infrastructure & student learning gaps on the ground.',
-      image: 'https://images.unsplash.com/photo-1580582932707-520aed937b7b?auto=format&fit=crop&w=600&q=80',
-      icon: Search,
-    },
-    {
-      num: '02',
-      title: 'Build Trust',
-      desc: 'Partnering closely with teachers, parents & village education committees.',
-      image: 'https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=600&q=80',
-      icon: HeartHandshake,
-    },
-    {
-      num: '03',
-      title: 'Plan Support',
-      desc: 'Co-creating customized learning roadmaps & school upgrade blueprints.',
-      image: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=600&q=80',
-      icon: Lightbulb,
-    },
-    {
-      num: '04',
-      title: 'Bring Partners',
-      desc: 'Mobilizing corporate CSR sponsors, citizen donors & skilled volunteers.',
-      image: 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&w=600&q=80',
-      icon: Users,
-    },
-    {
-      num: '05',
-      title: 'Deliver Support',
-      desc: 'Supplying smart classrooms, library books & clean sanitation amenities.',
-      image: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=600&q=80',
-      icon: BookOpen,
-    },
-    {
-      num: '06',
-      title: 'Measure Change',
-      desc: 'Evaluating student literacy gains, regular attendance & holistic growth.',
-      image: 'https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?auto=format&fit=crop&w=600&q=80',
-      icon: TrendingUp,
-    },
-    {
-      num: '07',
-      title: 'Sustain Impact',
-      desc: 'Empowering school leaders & teachers for enduring local institutional ownership.',
-      image: 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=600&q=80',
-      icon: GraduationCap,
-    },
-    {
-      num: '08',
-      title: 'Scale Success',
-      desc: 'Replicating proven transformation models across neighboring school clusters.',
-      image: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=600&q=80',
-      icon: Award,
-    },
-  ];
-
-  // Leadership & Profile Modal State
+  // Leadership Profile Modal State & Keyboard Navigation
   const [selectedLeader, setSelectedLeader] = useState(null);
   const [isModalClosing, setIsModalClosing] = useState(false);
   const cardRefs = useRef({});
@@ -358,7 +264,7 @@ export default function AboutPage() {
     setIsModalClosing(false);
   };
 
-  const closeLeaderModal = () => {
+  const closeLeaderModal = useCallback(() => {
     setIsModalClosing(true);
     setTimeout(() => {
       setSelectedLeader(null);
@@ -366,10 +272,9 @@ export default function AboutPage() {
       if (lastFocusedCard.current) {
         lastFocusedCard.current.focus();
       }
-    }, 280);
-  };
+    }, 200);
+  }, []);
 
-  // Modal accessibility, scroll lock & escape listener
   useEffect(() => {
     if (selectedLeader) {
       document.body.style.overflow = 'hidden';
@@ -394,3631 +299,1357 @@ export default function AboutPage() {
     } else {
       document.body.style.overflow = '';
     }
-  }, [selectedLeader]);
-
-  const team = [
+  }, [selectedLeader, closeLeaderModal]);
+  const methodologySteps = [
     {
-      id: 'aruna-natarajan',
-      name: 'Dr. Aruna Natarajan',
-      role: 'Executive Chairperson',
-      shortDesc: 'Urban wetland conservation, watershed science, and citizen-backed hydrology policy.',
-      bio: 'Former environmental scientist with 22 years of experience leading urban wetland conservation and hydrology policy across southern India. She champions open ecological data and participatory governance.',
-      image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=800&q=80',
-      email: 'aruna.natarajan@responsibleindividuals.org',
-      linkedin: 'https://linkedin.com',
-      location: 'Bengaluru, India',
-      focusAreas: ['Wetland Hydrology', 'Citizen Governance', 'Hydrology Policy'],
+      num: '01',
+      title: 'Identify Need',
+      desc: 'Conducting on-the-ground baseline audits to evaluate classroom infrastructure and student learning gaps.',
+      deliverable: 'Ground-truth mapping of learning deficits and water stress.',
+      icon: Search,
     },
     {
-      id: 'karthik-raman',
-      name: 'Karthik Raman',
-      role: 'Head of Grassroots Programs',
-      shortDesc: 'Spearheading digital education access and classroom upgrades in over 400 rural government schools.',
-      bio: 'Social development veteran who has spearheaded digital education access in over 400 rural government schools across underserved educational clusters.',
-      image: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=800&q=80',
-      email: 'karthik.raman@responsibleindividuals.org',
-      linkedin: 'https://linkedin.com',
-      location: 'Mysuru, India',
-      focusAreas: ['Rural Education', 'Digital Access', 'Grassroots Stewardship'],
+      num: '02',
+      title: 'Build Trust',
+      desc: 'Partnering closely with teachers, parents, and village committees before designing interventions.',
+      deliverable: 'Panchayat consensus and community co-design agreements.',
+      icon: HeartHandshake,
     },
     {
-      id: 'meera-deshmukh',
-      name: 'Meera Deshmukh',
-      role: 'Director of Impact & Governance',
-      shortDesc: 'Specialist in CSR compliance, social return on investment (SROI), and beneficiary protection.',
-      bio: 'Certified auditor specializing in CSR compliance, social return on investment (SROI), and beneficiary protection frameworks.',
-      image: 'https://images.unsplash.com/photo-1580894732444-8ecded7900cd?auto=format&fit=crop&w=800&q=80',
-      email: 'meera.deshmukh@responsibleindividuals.org',
-      linkedin: 'https://linkedin.com',
-      location: 'Bengaluru, India',
-      focusAreas: ['CSR Compliance', 'SROI Impact', 'Audited Governance'],
+      num: '03',
+      title: 'Plan Support',
+      desc: 'Co-creating customized learning roadmaps and school upgrade blueprints with transparent milestones.',
+      deliverable: 'Modular blueprints, equipment schedules, and budget plans.',
+      icon: Lightbulb,
     },
     {
-      id: 'vikas-chenna',
-      name: 'Vikas Chenna',
-      role: 'Lead Ecologist & Field Hydrologist',
-      shortDesc: 'Expert in native flora, constructed wetland bioswales, and biodiversity documentation.',
-      bio: 'Expert in native Karnataka flora, constructed wetland bioswales, and community biodiversity documentation with extensive field experience across Western Ghats catchments.',
-      image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80',
-      email: 'vikas.chenna@responsibleindividuals.org',
-      linkedin: 'https://linkedin.com',
-      location: 'Shivamogga, India',
-      focusAreas: ['Constructed Wetlands', 'Flora Taxonomies', 'Field Hydrology'],
+      num: '04',
+      title: 'Bring Partners',
+      desc: 'Mobilizing corporate CSR partners, citizen donors, and skilled volunteers for targeted clusters.',
+      deliverable: 'Multi-stakeholder resource alignment with open accounting.',
+      icon: Users,
+    },
+    {
+      num: '05',
+      title: 'Deliver Support',
+      desc: 'Supplying smart classrooms, hands-on science kits, and safe drinking water amenities.',
+      deliverable: 'Physical installation and field verification.',
+      icon: BookOpen,
+    },
+    {
+      num: '06',
+      title: 'Measure Change',
+      desc: 'Tracking student literacy gains, regular attendance, and ecological water telemetry.',
+      deliverable: 'Quarterly verified impact metrics published openly.',
+      icon: TrendingUp,
+    },
+    {
+      num: '07',
+      title: 'Sustain Impact',
+      desc: 'Mentoring school leaders and local youth for enduring institutional ownership.',
+      deliverable: 'School Management Committee capacity building and handover.',
+      icon: GraduationCap,
+    },
+    {
+      num: '08',
+      title: 'Scale Success',
+      desc: 'Replicating proven transformation models across neighboring school clusters and sub-basins.',
+      deliverable: 'Cluster-level scaling blueprints and open-source documentation.',
+      icon: Award,
     },
   ];
 
+  // Authentic Leadership & Governance (Chetan, Manoj Pawar, Mansa, Praveen, Shabarish S)
+  const leadershipTeam = [
+    {
+      id: 'chetan',
+      name: 'Chetan',
+      image: '/images/leadership/Chetan.jpeg',
+      objectPosition: 'center 20%',
+    },
+    {
+      id: 'manoj-pawar',
+      name: 'Manoj Pawar',
+      image: '/images/leadership/Manoj Pawar.jpeg',
+      objectPosition: 'center 15%',
+    },
+    {
+      id: 'mansa',
+      name: 'Mansa',
+      image: '/images/leadership/Mansa.jpeg',
+      objectPosition: 'center 20%',
+    },
+    {
+      id: 'praveen',
+      name: 'Praveen',
+      image: '/images/leadership/Praveen.jpeg',
+      objectPosition: 'center 18%',
+    },
+    {
+      id: 'shabarish-s',
+      name: 'Shabarish S',
+      image: '/images/leadership/Shabarish S.jpeg',
+      objectPosition: 'center 20%',
+    },
+  ];
+
+  const CurrentStepIcon = methodologySteps[activeStep].icon;
+
   return (
-    <div className="about-page-root">
-      {/* Full-Bleed Continuous Video Background About Hero Section */}
-      <section className="about-hero">
-        {/* Layer 1: Background Video */}
-        <video
-          ref={heroVideoRef}
-          className="hero-background-video"
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="metadata"
-          poster={HERO_POSTER_SRC}
-          aria-hidden="true"
-          tabIndex={-1}
-        >
-          <source src={HERO_VIDEO_SRC} type="video/mp4" />
-          <source src={HERO_VIDEO_SRC} type="video/webm" />
-        </video>
+    <div className="about-editorial-root">
+      {/* Real-time Saffron Scroll Progress Indicator */}
+      <div
+        className="about-scroll-progress-bar"
+        style={{ transform: `scaleX(${scrollProgress})` }}
+        aria-hidden="true"
+      />
 
-        {/* Layer 2: Dark Green Cinematic Translucent Overlay & Ambient Glow */}
-        <div className="hero-dark-overlay" aria-hidden="true" />
-        <div className="hero-ambient-glow" aria-hidden="true" />
-
-        {/* Layer 3: High-Contrast Hero Content */}
-        <div className="container hero-content-relative">
-          <div className="about-hero-content-box">
-            <div className="section-badge animate-hero-badge">
-              <Sparkles size={14} className="badge-sparkle-icon" />
-              <span>Who We Are</span>
-            </div>
-            
-            <h1 className="about-hero-title animate-hero-title">
-              <span className="sr-only">A Foundation Built on Accountable Citizen Action</span>
-              <span className="about-hero-line about-hero-line-1" aria-hidden="true">
-                <span className="about-hero-text-static">A Foundation Built on</span>
-                <WarpText
-                  text="A Foundation Built on"
-                  color="#FFFFFF"
-                  warpStrength={0.055}
-                  warpScale={1.6}
-                  speed={0.32}
-                  pointerInfluence={0.40}
-                  pointerStrength={0.28}
-                  refraction={0.012}
-                  ripple={true}
-                  className="about-hero-warp-layer"
-                />
-              </span>
-              <span className="about-hero-line about-hero-line-2" aria-hidden="true">
-                <span className="about-hero-text-static hero-highlight-text">Accountable Citizen Action</span>
-                <WarpText
-                  text="Accountable Citizen Action"
-                  color="#39D98A"
-                  warpStrength={0.055}
-                  warpScale={1.6}
-                  speed={0.32}
-                  pointerInfluence={0.40}
-                  pointerStrength={0.28}
-                  refraction={0.012}
-                  ripple={true}
-                  className="about-hero-warp-layer"
-                />
-              </span>
-            </h1>
-            
-            <p className="about-hero-subtitle animate-hero-subtitle">
-              We empower citizen committees, institutions, and CSR partners with scientific blueprints, open data governance, and sustained community co-ownership.
-            </p>
-
-            <div className="hero-meta-pills animate-hero-detail">
-              <div className="hero-meta-pill">
-                <div className="meta-pill-dot" />
-                <span>Grassroots Stewardship</span>
-              </div>
-              <div className="hero-meta-pill">
-                <div className="meta-pill-dot" />
-                <span>100% Verifiable Field Impact</span>
-              </div>
-            </div>
+      {/* ====================================================================
+          A. REBUILT EDITORIAL HERO SECTION — ASYMMETRIC IMMERSIVE COMPOSITION
+          ==================================================================== */}
+      <section className="about-hero-rebuilt" aria-label="About Responsible Individuals Hero">
+        {/* Ambient atmospheric backdrop with soft saffron glow and 3 slow organic morphing shapes */}
+        <div className="hero-rebuilt-ambient-backdrop" aria-hidden="true">
+          <div className="hero-rebuilt-ambient-glow" />
+          <div className="hero-ambient-organic-layer">
+            <svg className="hero-ambient-blob blob-1" viewBox="0 0 600 600" fill="none">
+              <path
+                d="M380,80 C480,140, 540,260, 500,380 C460,500, 340,540, 220,510 C100,480, 40,380, 60,260 C80,140, 280,20, 380,80 Z"
+                fill="url(#blob-gradient-1)"
+              />
+              <defs>
+                <radialGradient id="blob-gradient-1" cx="40%" cy="40%" r="60%">
+                  <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.14" />
+                  <stop offset="60%" stopColor="#E8B85C" stopOpacity="0.08" />
+                  <stop offset="100%" stopColor="#D99A2B" stopOpacity="0" />
+                </radialGradient>
+              </defs>
+            </svg>
+            <svg className="hero-ambient-blob blob-2" viewBox="0 0 600 600" fill="none">
+              <path
+                d="M440,160 C520,240, 510,390, 420,470 C330,550, 180,530, 110,430 C40,330, 70,180, 170,100 C270,20, 360,80, 440,160 Z"
+                fill="url(#blob-gradient-2)"
+              />
+              <defs>
+                <radialGradient id="blob-gradient-2" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stopColor="#FFF4D9" stopOpacity="0.12" />
+                  <stop offset="70%" stopColor="#E8B85C" stopOpacity="0.05" />
+                  <stop offset="100%" stopColor="#C78B22" stopOpacity="0" />
+                </radialGradient>
+              </defs>
+            </svg>
+            <svg className="hero-ambient-blob blob-3" viewBox="0 0 600 600" fill="none">
+              <path
+                d="M320,60 C420,70, 510,160, 520,280 C530,400, 450,500, 330,520 C210,540, 110,460, 80,340 C50,220, 120,120, 220,70 C270,45, 320,60, 320,60 Z"
+                fill="url(#blob-gradient-3)"
+              />
+              <defs>
+                <radialGradient id="blob-gradient-3" cx="45%" cy="45%" r="55%">
+                  <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.10" />
+                  <stop offset="55%" stopColor="#E8B85C" stopOpacity="0.06" />
+                  <stop offset="100%" stopColor="#D99A2B" stopOpacity="0" />
+                </radialGradient>
+              </defs>
+            </svg>
           </div>
+          <div className="hero-rebuilt-ambient-texture" />
         </div>
-      </section>
 
-      {/* Vision & Mission Sticky Notes Section */}
-      <section id="vision" className="section sticky-notes-section" ref={stickySectionRef}>
-        <div className="container sticky-section-container">
-          {/* Section Introduction */}
-          <Reveal animation="fade-up" className="section-header sticky-section-header">
-            <span className="section-badge">Our Purpose</span>
-            <h2 className="section-title">Vision &amp; Mission</h2>
-          </Reveal>
+        {/* Signature Water-to-Roots Animated SVG: Water flows → Roots grow → Communities connect */}
+        <div className="hero-water-roots-container" aria-hidden="true">
+          <svg
+            className="hero-water-roots-svg"
+            viewBox="0 0 600 900"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            {/* Flowing Water Stream */}
+            <path
+              className="hero-svg-path hero-water-main"
+              d="M 320 0 C 310 120, 260 220, 280 340 C 295 430, 260 520, 240 620 C 225 690, 210 750, 200 800"
+              stroke="#FFFFFF"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+            />
+            {/* Branch Tributaries */}
+            <path
+              className="hero-svg-path hero-branch-1"
+              d="M 280 340 C 340 390, 420 440, 480 470 C 520 490, 560 510, 600 520"
+              stroke="#FFFFFF"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+            />
+            <path
+              className="hero-svg-path hero-branch-2"
+              d="M 260 520 C 210 570, 160 620, 110 650 C 70 675, 30 690, 0 700"
+              stroke="#FFFFFF"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+            />
+            {/* Root Capillaries */}
+            <path
+              className="hero-svg-path hero-root-1"
+              d="M 240 620 C 265 670, 290 720, 310 780"
+              stroke="rgba(255, 255, 255, 0.75)"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+            />
+            <path
+              className="hero-svg-path hero-root-2"
+              d="M 200 800 C 185 840, 170 870, 150 900"
+              stroke="rgba(255, 255, 255, 0.7)"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+            />
+            <path
+              className="hero-svg-path hero-root-3"
+              d="M 200 800 C 220 840, 245 875, 270 900"
+              stroke="rgba(255, 255, 255, 0.7)"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+            />
+            {/* Emerging Botanical Leaves & Nodes */}
+            <path
+              className="hero-botanical-leaf leaf-node-1"
+              d="M 280 340 C 292 324, 316 326, 310 344 C 304 362, 280 340, 280 340 Z"
+              fill="rgba(255, 255, 255, 0.75)"
+            />
+            <path
+              className="hero-botanical-leaf leaf-node-2"
+              d="M 480 470 C 496 458, 516 468, 508 486 C 498 502, 480 470, 480 470 Z"
+              fill="rgba(255, 255, 255, 0.7)"
+            />
+            <path
+              className="hero-botanical-leaf leaf-node-3"
+              d="M 260 520 C 246 506, 230 518, 238 534 C 248 548, 260 520, 260 520 Z"
+              fill="rgba(255, 255, 255, 0.7)"
+            />
+            <path
+              className="hero-botanical-leaf leaf-node-4"
+              d="M 110 650 C 96 638, 84 652, 94 666 C 104 678, 110 650, 110 650 Z"
+              fill="rgba(255, 255, 255, 0.65)"
+            />
+          </svg>
+        </div>
 
-          {/* Large Editorial Visual Storytelling Composition Stage */}
-          <div className="vision-mission-stage">
-            {/* LEFT SIDE — RURAL EDUCATION Large Editorial Photo Panel */}
-            <div 
-              className={`editorial-visual-flank flank-left ${isStickySectionVisible ? 'flank-revealed' : ''}`}
-              onMouseMove={handleLeftFlankMouseMove}
-              onMouseLeave={handleLeftFlankMouseLeave}
-            >
-              <div className="editorial-float-layer">
-                <div 
-                  className="editorial-photo-card editorial-photo-left"
-                  ref={leftFlankRef}
-                >
-                  <div className="editorial-photo-frame">
-                    <img
-                      src={RURAL_ED_IMAGE_SRC}
-                      alt="Rural classroom students and teacher learning together"
-                      className="editorial-img"
-                      loading="lazy"
-                    />
-                    <div className="editorial-img-gloss" />
-                    <div className="editorial-pin-badge pin-emerald" aria-hidden="true" />
-                  </div>
-                  <div className="editorial-meta">
-                    <span className="editorial-badge badge-emerald">RURAL EDUCATION</span>
-                    <p className="editorial-subline">Learning &bull; Opportunity &bull; Growth</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* UNCHANGED: Central Vision & Mission Cards */}
-            <div className="sticky-notes-container">
-              {/* Vision Sticky Note */}
-              <div
-                className={`sticky-note-wrapper sticky-vision-wrapper ${
-                  isStickySectionVisible ? 'sticky-revealed' : ''
-                } ${hoveredSticky === 'vision' ? 'is-focused' : ''} ${
-                  hoveredSticky === 'mission' ? 'is-dimmed' : ''
-                }`}
-                onMouseEnter={() => setHoveredSticky('vision')}
-                onMouseLeave={() => {
-                  setHoveredSticky(null);
-                  setVisionMouse({ x: 0, y: 0 });
-                }}
-                onMouseMove={handleVisionMouseMove}
+        <div className="about-editorial-container hero-rebuilt-container">
+          {/* Main Asymmetric Grid: Left Editorial Typography & Right Cinematic Showcase */}
+          <div className="hero-rebuilt-grid">
+            {/* Left Column: Expressive Typography, Eyebrow, Narrative & Actions */}
+            <div className="hero-rebuilt-content">
+              {/* 1. Organisation Identifier Eyebrow */}
+              <motion.div
+                className="hero-rebuilt-eyebrow"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.48, ease: [0.16, 1, 0.3, 1] }}
               >
-                <div
-                  className="sticky-note-card sticky-card-vision"
-                  style={{
-                    transform: hoveredSticky === 'vision'
-                      ? `rotate(-0.5deg) scale(1.03) translateY(-8px) translate3d(${visionMouse.x}px, ${visionMouse.y}px, 0)`
-                      : undefined,
-                  }}
-                >
-                  {/* Semi-transparent Washi Tape Accent */}
-                  <div className="washi-tape washi-tape-emerald" aria-hidden="true" />
+                <span className="hero-rebuilt-eyebrow-accent" aria-hidden="true" />
+                <span className="hero-rebuilt-eyebrow-text">
+                  RESPONSIBLE INDIVIDUALS FOUNDATION · EST. 2014
+                </span>
+              </motion.div>
 
-                  {/* Subtle corner fold accent */}
-                  <div className="sticky-corner-fold" aria-hidden="true" />
-
-                  {/* Card Image Container (~35-40% height) */}
-                  <div className="sticky-image-frame">
-                    <img
-                      src={VISION_IMAGE_SRC}
-                      alt={VISION_IMAGE_ALT}
-                      className="sticky-card-img"
-                      loading="lazy"
-                    />
-                    <div className="sticky-image-overlay" />
-                  </div>
-
-                  {/* Card Content */}
-                  <div className="sticky-content-body">
-                    <div className="sticky-tag-wrapper">
-                      <span className="sticky-tag tag-emerald">
-                        <BookOpen size={14} className="sticky-tag-icon" />
-                        <span>OUR VISION</span>
-                      </span>
-                    </div>
-
-                    <h3 className="sticky-statement">
-                      &ldquo;Every child deserves the opportunity to learn, grow, and thrive.&rdquo;
-                    </h3>
-
-                    <p className="sticky-desc">
-                      Building stronger rural schools and creating supportive learning environments where every student can reach their full potential.
-                    </p>
-
-                    <div className="sticky-footer">
-                      <span className="sticky-pillar-tag pillar-emerald">
-                        Equal Opportunity &amp; Quality Learning
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Mission Sticky Note */}
-              <div
-                className={`sticky-note-wrapper sticky-mission-wrapper ${
-                  isStickySectionVisible ? 'sticky-revealed' : ''
-                } ${hoveredSticky === 'mission' ? 'is-focused' : ''} ${
-                  hoveredSticky === 'vision' ? 'is-dimmed' : ''
-                }`}
-                onMouseEnter={() => setHoveredSticky('mission')}
-                onMouseLeave={() => {
-                  setHoveredSticky(null);
-                  setMissionMouse({ x: 0, y: 0 });
-                }}
-                onMouseMove={handleMissionMouseMove}
+              {/* 2. Main Dominant Headline */}
+              <motion.h1
+                className="hero-rebuilt-headline"
+                variants={heroHeadlineVariants}
+                initial="hidden"
+                animate="visible"
               >
-                <div
-                  className="sticky-note-card sticky-card-blue"
-                  style={{
-                    transform: hoveredSticky === 'mission'
-                      ? `rotate(0.5deg) scale(1.03) translateY(-8px) translate3d(${missionMouse.x}px, ${missionMouse.y}px, 0)`
-                      : undefined,
-                  }}
-                >
-                  {/* Semi-transparent Washi Tape Accent */}
-                  <div className="washi-tape washi-tape-blue" aria-hidden="true" />
+                <motion.span className="hero-headline-line" variants={heroLineVariants}>
+                  Change Begins When
+                </motion.span>
+                <motion.span className="hero-headline-line" variants={heroLineVariants}>
+                  We Take Responsibility.
+                </motion.span>
+              </motion.h1>
 
-                  {/* Subtle corner fold accent */}
-                  <div className="sticky-corner-fold" aria-hidden="true" />
+              {/* 3. Secondary Headline Accent */}
+              <motion.div
+                className="hero-rebuilt-subheadline"
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.58, delay: 0.18, ease: [0.16, 1, 0.3, 1] }}
+              >
+                <span className="hero-subheadline-text">
+                  Together, We <span className="hero-subheadline-emphasis">Transform</span> Communities.
+                </span>
+              </motion.div>
 
-                  {/* Card Image Container (~35-40% height) */}
-                  <div className="sticky-image-frame">
-                    <img
-                      src={MISSION_IMAGE_SRC}
-                      alt={MISSION_IMAGE_ALT}
-                      className="sticky-card-img"
-                      loading="lazy"
-                    />
-                    <div className="sticky-image-overlay" />
-                  </div>
+              {/* 4. Supporting Description with Controlled Line Length */}
+              <motion.p
+                className="hero-rebuilt-description"
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.28, ease: [0.16, 1, 0.3, 1] }}
+              >
+                Empowering rural communities through open hydrology blueprints, modern classrooms, and enduring citizen ownership.
+              </motion.p>
 
-                  {/* Card Content */}
-                  <div className="sticky-content-body">
-                    <div className="sticky-tag-wrapper">
-                      <span className="sticky-tag tag-blue">
-                        <Users size={14} className="sticky-tag-icon" />
-                        <span>OUR MISSION</span>
-                      </span>
-                    </div>
-
-                    <h3 className="sticky-statement">
-                      &ldquo;Strengthening rural government schools through resources, people, and opportunity.&rdquo;
-                    </h3>
-
-                    <p className="sticky-desc">
-                      Working with teachers, communities, volunteers, and partners to create measurable, generational improvements in education.
-                    </p>
-
-                    <div className="sticky-footer">
-                      <span className="sticky-pillar-tag pillar-blue">
-                        Community Action &amp; School Support
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              {/* 5. Clearly Differentiated CTA Buttons */}
+              <motion.div
+                className="hero-rebuilt-actions"
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.38, ease: [0.16, 1, 0.3, 1] }}
+              >
+                <a href="#story" className="btn-hero-primary btn-editorial-saffron">
+                  <span>Our Story</span>
+                  <ArrowRight size={16} className="btn-arrow-icon" />
+                </a>
+                <a href="#approach" className="btn-hero-secondary btn-editorial-outline">
+                  <span>Explore Our Approach</span>
+                  <ArrowRight size={16} className="btn-arrow-icon" />
+                </a>
+              </motion.div>
             </div>
 
-            {/* RIGHT SIDE — COMMUNITY ACTION Large Editorial Photo Panel */}
-            <div 
-              className={`editorial-visual-flank flank-right ${isStickySectionVisible ? 'flank-revealed' : ''}`}
-              onMouseMove={handleRightFlankMouseMove}
-              onMouseLeave={handleRightFlankMouseLeave}
+            {/* Right Column: Layered Photographic Showcase with Organic Reveal & Botanical Accents */}
+            <motion.div
+              className="hero-rebuilt-visual-col"
+              initial={{ opacity: 0, scale: 0.96, y: 24 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ duration: 0.72, delay: 0.16, ease: [0.16, 1, 0.3, 1] }}
             >
-              <div className="editorial-float-layer">
-                <div 
-                  className="editorial-photo-card editorial-photo-right"
-                  ref={rightFlankRef}
-                >
-                  <div className="editorial-photo-frame">
-                    <img
-                      src={COMMUNITY_ACTION_IMAGE_SRC}
-                      alt="Community volunteers providing educational support and resources"
-                      className="editorial-img"
-                      loading="lazy"
+              <div
+                className="hero-showcase-frame"
+                style={{
+                  transform: !reducedMotion ? `translate3d(${heroParallax.x * 0.7}px, ${heroParallax.y * 0.7}px, 0)` : 'none',
+                }}
+              >
+                {/* Secondary Offset Frame / Depth Layer */}
+                <div className="hero-showcase-depth-backdrop" aria-hidden="true" />
+
+                {/* Botanical Decorative Frame Accents */}
+                <div className="hero-frame-botanical-accent corner-top-right" aria-hidden="true">
+                  <svg viewBox="0 0 54 54" fill="none">
+                    <path
+                      d="M8,46 C16,36 32,24 46,8 M46,8 C36,12 28,20 26,30 M46,8 C42,18 36,26 28,32"
+                      stroke="#FFFFFF"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
                     />
-                    <div className="editorial-img-gloss" />
-                    <div className="editorial-pin-badge pin-blue" aria-hidden="true" />
-                  </div>
-                  <div className="editorial-meta">
-                    <span className="editorial-badge badge-blue">COMMUNITY ACTION</span>
-                    <p className="editorial-subline">People &bull; Resources &bull; Support</p>
-                  </div>
+                    <circle cx="46" cy="8" r="2.5" fill="#FFFFFF" />
+                  </svg>
                 </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+                <div className="hero-frame-botanical-accent corner-bottom-left" aria-hidden="true">
+                  <svg viewBox="0 0 54 54" fill="none">
+                    <path
+                      d="M46,8 C36,18 20,30 8,46 M8,46 C18,42 26,34 28,24 M8,46 C12,36 18,28 26,22"
+                      stroke="#FFFFFF"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                    />
+                    <circle cx="8" cy="46" r="2.5" fill="#FFFFFF" />
+                  </svg>
+                </div>
 
-      {/* Our Impact Section — Clean Card-based Presentation */}
-      <section 
-        id="csr-partners" 
-        className="section living-flow-section bg-white"
-        ref={impactSectionRef}
-        onMouseMove={handleFlowMouseMove}
-        onMouseLeave={handleFlowMouseLeave}
-      >
-        <div id="impact-in-action" style={{ position: 'absolute', top: 0 }} aria-hidden="true" />
-
-        <div className="container relative-z-2">
-          <Reveal animation="fade-up" className="section-header living-flow-header">
-            <span className="section-badge">Our Impact</span>
-            <h2 className="section-title">Turning Support Into Opportunity</h2>
-            <p className="section-subtitle">
-              Creating stronger learning environments through people, resources, and community action.
-            </p>
-          </Reveal>
-
-          {/* Desktop & Tablet Living Flow Stage */}
-          <div className="living-flow-viewport" ref={impactFlowRef}>
-            <div className="living-flow-stage">
-              {/* 4 Large Flow Cards (Matching Vision/Mission Visual Scale & Dimensions) */}
-              {impactFlowSteps.map((step, idx) => {
-                const IconComp = step.icon;
-                const isActive = activeFlowIdx === idx;
-                const isHovered = hoveredFlowIdx === idx;
-                return (
-                  <div
-                    key={step.num}
-                    className={`flow-card-node flow-float-${idx} ${step.posClass}`}
-                    onMouseEnter={() => setHoveredFlowIdx(idx)}
-                    onMouseLeave={() => setHoveredFlowIdx(null)}
-                    onClick={() => setActiveFlowIdx(idx)}
-                  >
-                    <div className="flow-card-parallax-wrap">
-                      <div className={`flow-card-inner ${isActive ? 'is-active-flow-card' : ''} ${isHovered ? 'is-hovered-flow-card' : ''}`}>
-                        {/* Prominent Image Frame (215px height, matching Vision/Mission cards) */}
-                        <div className="flow-card-img-wrap">
-                          <img
-                            src={step.image}
-                            alt={step.title}
-                            className="flow-card-img"
-                            loading="lazy"
-                          />
-                          <div className="flow-card-img-overlay" />
-
-                          {/* Stage Number Badge */}
-                          <div className="flow-card-num-badge">
-                            <span>{step.num}</span>
-                          </div>
-
-                          {/* Icon Badge */}
-                          <div className="flow-card-icon-badge">
-                            <IconComp size={16} />
-                          </div>
-                        </div>
-
-                        {/* Card Content Body (Matching Vision/Mission typography and visual weight) */}
-                        <div className="flow-card-content-body">
-                          <div className="flow-card-tag-wrapper">
-                            <span className="flow-card-tag">
-                              <IconComp size={13} className="flow-tag-icon" />
-                              <span>{step.category}</span>
-                            </span>
-                          </div>
-
-                          <h3 className="flow-card-title">{step.title}</h3>
-
-                          <p className="flow-card-desc">{step.desc}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Mobile Vertical Flow Journey (<768px) */}
-          <div className="living-flow-mobile">
-            <div className="flow-mobile-track">
-              <div className="flow-mobile-list">
-                {impactFlowSteps.map((step, idx) => {
-                  const IconComp = step.icon;
-                  const isActive = activeFlowIdx === idx;
-                  return (
-                    <div
-                      key={step.num}
-                      className={`flow-mobile-item flow-mobile-float-${idx} ${isActive ? 'flow-mobile-item-active' : ''}`}
-                      onClick={() => setActiveFlowIdx(idx)}
-                    >
-                      <div className="flow-mobile-dot">
-                        <span>{step.num}</span>
-                      </div>
-                      <div className="flow-mobile-card">
-                        <div className="flow-mobile-img-wrap">
-                          <img src={step.image} alt={step.title} className="flow-mobile-img" loading="lazy" />
-                          <div className="flow-mobile-icon-badge">
-                            <IconComp size={14} />
-                          </div>
-                        </div>
-                        <div className="flow-mobile-card-body">
-                          <div className="flow-mobile-tag-wrap">
-                            <span className="flow-mobile-category">{step.category}</span>
-                          </div>
-                          <h4 className="flow-mobile-title">{step.title}</h4>
-                          <p className="flow-mobile-desc">{step.desc}</p>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Interactive 8-Step Impact Orbit Section */}
-      <section 
-        id="approach" 
-        className="section methodology-section bg-light-alt" 
-        ref={approachRef}
-        onMouseMove={handleSectionMouseMove}
-        onMouseLeave={handleSectionMouseLeave}
-      >
-        {/* Living Ambient Background Glow Accents */}
-        <div className="methodology-ambient-aura methodology-ambient-aura-1" aria-hidden="true" />
-        <div className="methodology-ambient-aura methodology-ambient-aura-2" aria-hidden="true" />
-
-        <div className="container relative-z-2">
-          <Reveal animation="fade-up" className="section-header methodology-header">
-            <span className="section-badge">Our Approach</span>
-            <h2 className="section-title">From Need to Lasting Impact</h2>
-            <p className="section-subtitle">
-              An interconnected 8-stage transformation ecosystem orbiting around sustainable rural school empowerment.
-            </p>
-          </Reveal>
-
-          {/* Desktop & Tablet 3D Interactive Orbit Viewport */}
-          <div className="orbit-system-viewport">
-            <div 
-              className={`orbit-3d-stage ${isHoveringCard ? 'orbit-is-paused' : ''}`} 
-              ref={orbit3DRef}
-            >
-              {/* SVG Elliptical Orbit Track with Traveling Light Particle */}
-              <svg className="orbit-svg-track" viewBox="0 0 1040 580" aria-hidden="true">
-                <ellipse cx="520" cy="290" rx="400" ry="215" className="orbit-ellipse-line" />
-                <ellipse cx="520" cy="290" rx="400" ry="215" className="orbit-ellipse-dashed" />
-              </svg>
-
-              {/* Central Impact Hub Focal Point */}
-              <div className="impact-hub-center" ref={hubRef}>
-                <div className="hub-outer-ring hub-outer-ring-1" aria-hidden="true" />
-                <div className="hub-outer-ring hub-outer-ring-2" aria-hidden="true" />
-                
-                <div className="hub-core-card">
-                  <img 
-                    src="https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=800&q=80" 
-                    alt="Rural School Impact Hub" 
-                    className="hub-core-img"
-                    loading="lazy"
+                {/* Primary Community Image Window with Organic Mask Reveal */}
+                <div className="hero-showcase-image-wrap hero-photo-organic-reveal">
+                  <img
+                    src="/images/about-hero-community.jpg"
+                    alt="Responsible Individuals volunteers and community members participating in an on-ground grassroots drive"
+                    className="hero-showcase-img"
+                    loading="eager"
                   />
-                  <div className="hub-core-overlay" />
-                  
-                  <div className="hub-core-content">
-                    <div className="hub-core-badge">
-                      <Sparkles size={12} className="hub-sparkle-icon" />
-                      <span>IMPACT HUB</span>
-                    </div>
-                    <h3 className="hub-core-title">Rural School</h3>
-                    <p className="hub-core-subtitle">Education &amp; Community Impact</p>
+                  <div className="hero-showcase-overlay" aria-hidden="true" />
+
+                  {/* Top Floating Field Badge */}
+                  <div className="hero-showcase-badge">
+                    <span className="hero-showcase-badge-dot" />
+                    <span>Citizen Action & Verifiable Impact</span>
+                  </div>
+
+                  {/* Bottom Integrated Photographic Caption with Staggered Upward Glide */}
+                  <div className="hero-showcase-caption hero-caption-animated">
+                    <p className="hero-caption-title">Citizen Action & Community Stewardship</p>
+                    <p className="hero-caption-sub">Field-tested models built alongside teachers, parents, and village committees</p>
                   </div>
                 </div>
               </div>
-
-              {/* 8 Continuously Orbiting Stage Cards */}
-              <div className="orbit-cards-container">
-                {methodologySteps.map((step, idx) => {
-                  const IconComp = step.icon;
-                  const isCardActive = activeStageIdx === idx;
-                  const isCardHovered = hoveredStep === step.num;
-                  const isOtherCardHovered = hoveredStep !== null && !isCardHovered;
-                  
-                  return (
-                    <div
-                      key={step.num}
-                      className={`orbit-card-node orbit-card-pos-${idx} ${
-                        isCardActive ? 'is-active-orbit-stage' : ''
-                      } ${isCardHovered ? 'is-hovered-orbit-stage' : ''} ${
-                        isOtherCardHovered ? 'is-dimmed-orbit-stage' : ''
-                      }`}
-                      onMouseEnter={() => {
-                        setHoveredStep(step.num);
-                        setIsHoveringCard(true);
-                      }}
-                      onMouseLeave={() => {
-                        setHoveredStep(null);
-                        setIsHoveringCard(false);
-                      }}
-                      onClick={() => setActiveStageIdx(idx)}
-                    >
-                      <div className="orbit-card-inner">
-                        {/* Card Image Frame */}
-                        <div className="orbit-card-img-wrap">
-                          <img
-                            src={step.image}
-                            alt={step.title}
-                            className="orbit-card-img"
-                            loading="lazy"
-                          />
-                          <div className="orbit-card-img-overlay" />
-
-                          {/* Stage Number Tag */}
-                          <div className="orbit-card-num-badge">
-                            <span>{step.num}</span>
-                          </div>
-
-                          {/* Stage Icon Badge */}
-                          <div className="orbit-card-icon-badge">
-                            <IconComp size={13} />
-                          </div>
-                        </div>
-
-                        {/* Title Box */}
-                        <div className="orbit-card-label-box">
-                          <span className="orbit-card-title">{step.title}</span>
-                        </div>
-
-                        {/* Hover Description Tooltip */}
-                        <div className="orbit-card-tooltip">
-                          <span className="tooltip-step-num">STAGE {step.num}</span>
-                          <p className="orbit-card-tooltip-desc">{step.desc}</p>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Orbit Active Stage Controller / Step Indicator Bar */}
-            <div className="orbit-timeline-nav">
-              <div className="orbit-timeline-pills">
-                {methodologySteps.map((step, idx) => (
-                  <button
-                    key={step.num}
-                    type="button"
-                    className={`orbit-nav-pill ${activeStageIdx === idx ? 'is-active-pill' : ''}`}
-                    onClick={() => setActiveStageIdx(idx)}
-                    aria-label={`Jump to stage ${step.num}: ${step.title}`}
-                  >
-                    <span className="pill-num">{step.num}</span>
-                    <span className="pill-title">{step.title}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
+            </motion.div>
           </div>
 
-          {/* Mobile Vertical Flowing Impact Journey (<768px) */}
-          <div className="orbit-mobile-journey">
-            {/* Mobile Impact Hub Banner */}
-            <div className="mobile-hub-banner">
-              <div className="mobile-hub-img-wrap">
-                <img 
-                  src="https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=800&q=80" 
-                  alt="Rural School Impact Hub" 
-                  className="mobile-hub-img"
+          {/* 6. Redesigned Bottom Organisational Identity Strip (Education, Environment, Community) */}
+          <motion.div
+            className="hero-rebuilt-identity-strip"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.65, delay: 0.45, ease: [0.16, 1, 0.3, 1] }}
+          >
+            <div className="hero-identity-card hero-identity-card-1">
+              <div className="hero-identity-icon-box education">
+                <BookOpen size={18} />
+              </div>
+              <div className="hero-identity-text">
+                <span className="hero-identity-category">Education</span>
+                <span className="hero-identity-desc">Smart digital classrooms and STEM mentorship</span>
+              </div>
+            </div>
+
+            <div className="hero-identity-divider" aria-hidden="true" />
+
+            <div className="hero-identity-card hero-identity-card-2">
+              <div className="hero-identity-icon-box environment">
+                <TreePine size={18} />
+              </div>
+              <div className="hero-identity-text">
+                <span className="hero-identity-category">Environmental Responsibility</span>
+                <span className="hero-identity-desc">Catchment revival and open hydrological telemetry</span>
+              </div>
+            </div>
+
+            <div className="hero-identity-divider" aria-hidden="true" />
+
+            <div className="hero-identity-card hero-identity-card-3">
+              <div className="hero-identity-icon-box community">
+                <Users size={18} />
+              </div>
+              <div className="hero-identity-text">
+                <span className="hero-identity-category">Community Participation</span>
+                <span className="hero-identity-desc">Grassroots leadership and local institutional ownership</span>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Interactive Scroll Indicator with Downward Story Transition Tendril */}
+          <div className="hero-rebuilt-scroll-anchor">
+            <motion.a
+              href="#story"
+              className="hero-scroll-indicator"
+              aria-label="Scroll down to explore our story"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.6, delay: 0.55 }}
+            >
+              <span className="scroll-indicator-mouse">
+                <span className="scroll-indicator-dot" />
+              </span>
+              <span className="scroll-indicator-text">Scroll to explore</span>
+            </motion.a>
+            {/* Scroll-Triggered Story Transition Tendril Extending Toward #story */}
+            <div className="hero-story-transition-tendril" aria-hidden="true">
+              <svg viewBox="0 0 40 80" fill="none">
+                <path
+                  d="M20,0 C20,30 26,50 20,80"
+                  stroke="rgba(255, 255, 255, 0.4)"
+                  strokeWidth="1.5"
+                  strokeDasharray="4 3"
+                />
+              </svg>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ====================================================================
+          B. OUR STORY — ASYMMETRIC PHOTOGRAPHIC SPREAD & FLOATING ACCENT
+          ==================================================================== */}
+      <section id="story" className="about-story-editorial">
+        <div className="about-editorial-container">
+          <div className="story-editorial-layout">
+            {/* Photographic Composition Side with Parallax Offset */}
+            <motion.div
+              className="story-visual-side"
+              variants={fadeUpVariant}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.2 }}
+            >
+              <div className="story-lead-frame">
+                <img
+                  src="/images/Group_selfie.jpeg"
+                  alt="Responsible Individuals volunteer community gathered together during field operations"
+                  className="story-lead-image"
                   loading="lazy"
                 />
-                <div className="mobile-hub-overlay" />
-                <div className="mobile-hub-text">
-                  <span className="mobile-hub-badge">IMPACT HUB</span>
-                  <h3>Rural School Education</h3>
-                  <p>Sustained Community Transformation</p>
+                <div className="story-lead-tag">
+                  <span className="story-tag-dot" />
+                  <span>Volunteer Community &bull; Grassroots Movement</span>
                 </div>
               </div>
-            </div>
 
-            {/* Vertical Connected Timeline Track */}
-            <div className="mobile-journey-track">
-              <div className="mobile-journey-line" />
-              <div className="mobile-journey-list">
-                {methodologySteps.map((step, idx) => {
-                  const IconComp = step.icon;
-                  const isItemActive = activeStageIdx === idx;
-                  return (
-                    <div 
-                      key={step.num} 
-                      className={`mobile-journey-item mobile-item-${idx} ${
-                        isItemActive ? 'mobile-item-active' : ''
-                      }`}
-                      onClick={() => setActiveStageIdx(idx)}
-                    >
-                      <div className="mobile-node-dot">
-                        <span className="mobile-node-num">{step.num}</span>
-                      </div>
-                      <div className="mobile-card-box">
-                        <div className="mobile-card-img-wrap">
-                          <img src={step.image} alt={step.title} className="mobile-card-img" loading="lazy" />
-                          <div className="mobile-card-icon">
-                            <IconComp size={16} />
-                          </div>
-                        </div>
-                        <div className="mobile-card-content">
-                          <h4 className="mobile-card-title">{step.title}</h4>
-                          <p className="mobile-card-desc">{step.desc}</p>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
+              {/* Offset Image with Scroll-Driven Subtle Parallax */}
+              <div
+                className="story-offset-frame"
+                style={{
+                  transform: `translate3d(0, ${storyParallax}px, 0)`,
+                }}
+              >
+                <img
+                  src="/images/volunteer_interaction.jpeg"
+                  alt="Volunteers interacting and mentoring young students during a community program"
+                  className="story-offset-image"
+                  loading="lazy"
+                />
+                <div className="story-offset-caption">
+                  <span className="offset-caption-title">Community Engagement</span>
+                  <span className="offset-caption-desc">Volunteer mentorship &amp; youth outreach</span>
+                </div>
               </div>
+
+              {/* Floating Decorative SVG Contour in Saffron Tone */}
+              <svg className="story-botanical-vector" viewBox="0 0 160 160" fill="none" aria-hidden="true">
+                <path
+                  d="M80 0 C100 40, 140 60, 160 80 C120 100, 100 140, 80 160 C60 120, 20 100, 0 80 C40 60, 60 20, 80 0 Z"
+                  stroke="rgba(217, 119, 6, 0.2)"
+                  strokeWidth="1.5"
+                />
+              </svg>
+            </motion.div>
+
+            {/* Typography & Concise Narrative Side */}
+            <motion.div
+              className="story-content-side"
+              variants={fadeUpVariant}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.2 }}
+            >
+              <div className="editorial-eyebrow">
+                <span className="eyebrow-number">01</span>
+                <motion.span
+                  className="eyebrow-divider"
+                  initial={{ width: 0 }}
+                  whileInView={{ width: 28 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: 0.15 }}
+                />
+                <span className="eyebrow-text">ORIGIN &amp; PURPOSE</span>
+              </div>
+
+              <h2 className="story-editorial-heading">
+                Small, Deliberate Acts Spark Generational Change
+              </h2>
+
+              <p className="story-lead-paragraph">
+                Enduring social progress does not arrive through distant mandates, but through dedicated citizens taking direct ownership of their local ecology, schools, and community health.
+              </p>
+
+              <p className="story-body-paragraph">
+                Founded in 2014, Responsible Individuals unites scientists, educators, and grassroots volunteers to deliver science-backed watershed revival, digital classroom upgrades, and preventive wellness across southern India.
+              </p>
+
+              <blockquote className="story-editorial-quote">
+                <p className="quote-text">
+                  &ldquo;Change begins the moment an individual stops waiting for solutions and takes responsibility.&rdquo;
+                </p>
+                <cite className="quote-cite">&mdash; Responsible Individuals Founding Charter</cite>
+              </blockquote>
+
+              <div className="story-action-line">
+                <a href="#focus-areas" className="editorial-arrow-link">
+                  <span>Explore our three focus areas</span>
+                  <ArrowRight size={15} />
+                </a>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* ====================================================================
+          C. VISION, MISSION & VALUES — SPLIT CONTRAST COMPOSITION
+          ==================================================================== */}
+      <section id="vision" className="about-vmp-editorial">
+        <div className="about-editorial-container">
+          <div className="vmp-header-block">
+            <div className="editorial-eyebrow">
+              <span className="eyebrow-number">02</span>
+              <motion.span
+                className="eyebrow-divider"
+                initial={{ width: 0 }}
+                whileInView={{ width: 28 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: 0.15 }}
+              />
+              <span className="eyebrow-text">OUR FOUNDATION</span>
             </div>
+            <h2 className="editorial-section-title">Vision, Mission &amp; Guiding Pillars</h2>
           </div>
 
-          {/* Subtle Bottom Sequence Summary */}
-          <div className="journey-footer-badge-wrap">
-            <div className="journey-footer-badge">
-              <span className="footer-badge-dot" />
-              <span>Continuous 8-Stage Orbit • Need → Trust → Plan → Partners → Support → Measurement → Sustainability → Scale</span>
+          {/* Split Vision & Mission Spread */}
+          <div className="vmp-split-spread">
+            {/* The Vision Block (Refined Charcoal Contrast Panel) */}
+            <motion.div
+              className="vmp-vision-panel"
+              variants={fadeUpVariant}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.2 }}
+            >
+              <div className="vmp-panel-badge vision-badge">
+                <BookOpen size={14} />
+                <span>THE VISION</span>
+              </div>
+              <h3 className="vmp-statement-text">
+                &ldquo;To create a world where every life we touch is empowered, nurtured, and inspired to thrive.&rdquo;
+              </h3>
+              <p className="vmp-support-text">
+                We believe enduring change starts with compassion and sustained accountability, empowering rural communities to shape their own ecological and educational destiny.
+              </p>
+              <div className="vmp-watermark" aria-hidden="true">VISION</div>
+            </motion.div>
+
+            {/* The Mission Block (Warm White Panel with Saffron Accent) */}
+            <motion.div
+              className="vmp-mission-panel"
+              variants={fadeUpVariant}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.2 }}
+            >
+              <div className="vmp-panel-badge mission-badge">
+                <Users size={14} />
+                <span>THE MISSION</span>
+              </div>
+              <h3 className="vmp-statement-text">
+                &ldquo;Transforming every individual into a Responsible Individual.&rdquo;
+              </h3>
+              <p className="vmp-support-text">
+                Building an open, verifiable platform uniting citizen volunteers, CSR partners, and rural committees in disciplined execution toward lasting community transformation.
+              </p>
+              <div className="vmp-watermark" aria-hidden="true">MISSION</div>
+            </motion.div>
+          </div>
+
+          {/* Three Pillars Horizontal Strip */}
+          <div className="values-editorial-strip">
+            <div className="values-strip-header">
+              <span className="strip-header-tag">THE THREE PILLARS WE LIVE BY</span>
+            </div>
+
+            <div className="values-three-columns">
+              <motion.div
+                className="value-editorial-column"
+                variants={fadeUpVariant}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, amount: 0.2 }}
+              >
+                <div className="value-num-heading">
+                  <span className="value-num">01</span>
+                  <span className="value-name">Integrity</span>
+                </div>
+                <p className="value-description">
+                  Uncompromising transparency, open ecological data, and unvarnished public accounting in every partnership.
+                </p>
+              </motion.div>
+
+              <motion.div
+                className="value-editorial-column"
+                variants={fadeUpVariant}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, amount: 0.2 }}
+              >
+                <div className="value-num-heading">
+                  <span className="value-num">02</span>
+                  <span className="value-name">Empathy</span>
+                </div>
+                <p className="value-description">
+                  Listening deeply and co-designing every intervention alongside local teachers, parents, and village committees.
+                </p>
+              </motion.div>
+
+              <motion.div
+                className="value-editorial-column"
+                variants={fadeUpVariant}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, amount: 0.2 }}
+              >
+                <div className="value-num-heading">
+                  <span className="value-num">03</span>
+                  <span className="value-name">Action</span>
+                </div>
+                <p className="value-description">
+                  Translating good intentions into disciplined, verifiable boots-on-the-ground execution that creates lasting change.
+                </p>
+              </motion.div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Leadership & Practitioners with Visual Profile Cards & Centered Modal */}
-      <section id="leadership" className="section leadership-section bg-white">
-        <div className="container">
-          <Reveal animation="fade-up" className="section-header">
-            <span className="section-badge">Leadership</span>
-            <h2 className="section-title">Guiding Minds &amp; Practitioners</h2>
-            <p className="section-subtitle">
-              Our multidisciplinary team brings together grassroots activists, environmental engineers, and public policy practitioners.
-            </p>
-          </Reveal>
+      {/* ====================================================================
+          D. IMPACT SECTION — EDITORIAL PANELS & ORGANIC ANIMATION SYSTEM
+          Warm Ivory Canvas, Deep Charcoal Typography, Muted Saffron Accents
+          ==================================================================== */}
+      <section id="impact" className="about-impact-editorial" ref={impactRef}>
+        {/* Animation B: Expanding Water Ripples near/behind the heading */}
+        <div className="impact-water-ripples" aria-hidden="true">
+          <div className={`impact-ripple-ring ring-1 ${isImpactVisible ? 'is-animated' : ''}`} />
+          <div className={`impact-ripple-ring ring-2 ${isImpactVisible ? 'is-animated' : ''}`} />
+          <div className={`impact-ripple-ring ring-3 ${isImpactVisible ? 'is-animated' : ''}`} />
+        </div>
 
-          <StaggerContainer staggerDelay={120} initialDelay={100} className="leadership-grid">
-            {team.map((member, idx) => (
-              <StaggerItem key={member.id || idx} index={idx} className="leadership-grid-item">
+        {/* Animation D: Floating Organic Elements (leaves/petals) */}
+        <div className="impact-floating-elements" aria-hidden="true">
+          <div className="impact-floating-leaf leaf-pos-1" />
+          <div className="impact-floating-leaf leaf-pos-2" />
+          <div className="impact-floating-leaf leaf-pos-3" />
+        </div>
+
+        <div className="about-editorial-container">
+          <div className="impact-editorial-header">
+            <div className="editorial-eyebrow">
+              <span className="eyebrow-number">03</span>
+              <motion.span
+                className="eyebrow-divider"
+                initial={{ width: 0 }}
+                whileInView={{ width: 28 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: 0.15 }}
+              />
+              <span className="eyebrow-text">VERIFIED FIELD REACH</span>
+            </div>
+            <h2 className="impact-headline">Measurable Impact, Grounded in Field Data</h2>
+            <p className="impact-subheading">
+              Verifiable milestones achieved through citizen mobilization and disciplined grassroots stewardship.
+            </p>
+          </div>
+
+          <div className="impact-ribbon-wrapper">
+            {/* Animation A: Organic Growth Line with branching leaves */}
+            <div className="impact-growth-line-container" aria-hidden="true">
+              <svg className="impact-growth-svg" viewBox="0 0 1200 120" fill="none" preserveAspectRatio="none">
+                <path
+                  className={`impact-growth-path ${isImpactVisible ? 'is-animated' : ''}`}
+                  d="M 0,60 C 200,25 400,95 600,60 C 800,25 1000,95 1200,60"
+                  stroke="#D99A2B"
+                  strokeWidth="1.5"
+                />
+                <path
+                  className={`impact-growth-leaf leaf-1 ${isImpactVisible ? 'is-animated' : ''}`}
+                  d="M 300,50 C 310,35 325,40 320,55 C 315,65 300,50 300,50 Z"
+                  fill="rgba(217, 154, 43, 0.45)"
+                />
+                <path
+                  className={`impact-growth-leaf leaf-2 ${isImpactVisible ? 'is-animated' : ''}`}
+                  d="M 600,60 C 612,45 628,50 622,65 C 615,75 600,60 600,60 Z"
+                  fill="rgba(217, 154, 43, 0.45)"
+                />
+                <path
+                  className={`impact-growth-leaf leaf-3 ${isImpactVisible ? 'is-animated' : ''}`}
+                  d="M 900,50 C 910,35 925,40 920,55 C 915,65 900,50 900,50 Z"
+                  fill="rgba(217, 154, 43, 0.45)"
+                />
+              </svg>
+            </div>
+
+            {/* Animation E, C, F: 4 White Statistic Panels with Sequential Counters & Milestone Connectors */}
+            <motion.div
+              className={`impact-panels-grid ${isImpactVisible ? 'is-visible' : ''}`}
+              variants={staggerContainerVariant}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.15 }}
+            >
+              <EditorialImpactMetric
+                targetValue="50,000+"
+                label="LIVES TRANSFORMED"
+                note="Direct Field Beneficiaries"
+                isVisible={metricSeqActive[0]}
+                icon={HeartPulse}
+                showConnector={true}
+                custom={0}
+              />
+              <EditorialImpactMetric
+                targetValue="120+"
+                label="COMMUNITIES REACHED"
+                note="Gram Panchayats &amp; Clusters"
+                isVisible={metricSeqActive[1]}
+                icon={TreePine}
+                showConnector={true}
+                custom={1}
+              />
+              <EditorialImpactMetric
+                targetValue="50+"
+                label="PROJECTS COMPLETED"
+                note="Classroom &amp; Wetland Units"
+                isVisible={metricSeqActive[2]}
+                icon={CheckCircle2}
+                showConnector={true}
+                custom={2}
+              />
+              <EditorialImpactMetric
+                targetValue="2,500+"
+                label="ACTIVE VOLUNTEERS"
+                note="Citizen Stewards Mobilized"
+                isVisible={metricSeqActive[3]}
+                icon={HeartHandshake}
+                showConnector={false}
+                custom={3}
+              />
+            </motion.div>
+          </div>
+
+          {/* Animated Saffron Progress Underline Beneath Metrics */}
+          <motion.div
+            className="impact-saffron-progress-line"
+            initial={{ scaleX: 0 }}
+            whileInView={{ scaleX: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, delay: 0.25, ease: [0.16, 1, 0.3, 1] }}
+          />
+
+          <div className="impact-audit-footnote">
+            <CheckCircle2 size={16} className="audit-check-icon" />
+            <span>All figures reconciled against quarterly field operational ledgers and audited project records.</span>
+          </div>
+        </div>
+      </section>
+
+      {/* ====================================================================
+          E. FOCUS AREAS — MASK REVEAL & SAFFRON ACCENTS
+          ==================================================================== */}
+      <section id="focus-areas" className="about-focus-editorial">
+        <div className="about-editorial-container">
+          <div className="focus-editorial-header">
+            <div className="editorial-eyebrow">
+              <span className="eyebrow-number">04</span>
+              <motion.span
+                className="eyebrow-divider"
+                initial={{ width: 0 }}
+                whileInView={{ width: 28 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: 0.15 }}
+              />
+              <span className="eyebrow-text">PILLARS OF INTERVENTION</span>
+            </div>
+            <h2 className="editorial-section-title">Our Three Focus Areas</h2>
+            <p className="editorial-section-lead">
+              Targeted, community-led initiatives focused on lifelong educational opportunity, ecological health, and community wellness.
+            </p>
+          </div>
+
+          {/* Differentiated Editorial Composition */}
+          <div className="focus-editorial-composition">
+            {/* 1. Hero Spotlight: Education Spread with Reveal Mask */}
+            <motion.div
+              className="focus-spotlight-item"
+              variants={fadeUpVariant}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.2 }}
+            >
+              <div className="spotlight-media-frame">
+                <img
+                  src="/images/students_art.jpeg"
+                  alt="Children showcasing creative artwork and participating in classroom learning activities"
+                  className="spotlight-image"
+                  loading="lazy"
+                />
+                <div className="spotlight-badge">
+                  <GraduationCap size={15} />
+                  <span>EDUCATION &amp; SKILL DEVELOPMENT</span>
+                </div>
+              </div>
+
+              <div className="spotlight-content-frame">
+                <span className="focus-kicker-tag">PILLAR 01 &bull; LIFELONG OPPORTUNITY</span>
+                <h3 className="spotlight-title">Education, Youth Empowerment &amp; Skill Development</h3>
+                <p className="spotlight-description">
+                  Bridging rural learning gaps through smart digital classrooms, hands-on STEM education, and continuous teacher mentorship.
+                </p>
+                <div className="spotlight-key-bullets">
+                  <div className="bullet-row">
+                    <span className="bullet-dash">&mdash;</span>
+                    <span>Interactive digital classrooms and library upgrades</span>
+                  </div>
+                  <div className="bullet-row">
+                    <span className="bullet-dash">&mdash;</span>
+                    <span>Experiential STEM and environmental sensor kits</span>
+                  </div>
+                  <div className="bullet-row">
+                    <span className="bullet-dash">&mdash;</span>
+                    <span>Continuous teacher training for foundational literacy</span>
+                  </div>
+                </div>
+                <Link to="/projects" className="spotlight-action-link">
+                  <span>Explore Education Initiatives</span>
+                  <ArrowRight size={15} className="action-arrow-icon" />
+                </Link>
+              </div>
+            </motion.div>
+
+            {/* 2 & 3. Dual Panels (Environment & Health) */}
+            <div className="focus-dual-panels">
+              {/* Environment Panel */}
+              <motion.div
+                className="focus-half-panel"
+                variants={fadeUpVariant}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, amount: 0.2 }}
+              >
+                <div className="half-panel-media">
+                  <img
+                    src="/images/environment_image.jpeg"
+                    alt="Volunteers and community members participating in a tree-planting and environmental conservation drive"
+                    className="half-panel-image"
+                    loading="lazy"
+                  />
+                  <div className="half-panel-tag">
+                    <TreePine size={14} />
+                    <span>ECOLOGICAL STEWARDSHIP</span>
+                  </div>
+                </div>
+                <div className="half-panel-content">
+                  <span className="focus-kicker-tag">PILLAR 02 &bull; SUSTAINABILITY</span>
+                  <h3 className="half-panel-title">Environment &amp; Watershed Sustainability</h3>
+                  <p className="half-panel-description">
+                    Reviving local catchments and ecosystems through rainwater harvesting, lake desilting, and participatory water telemetry.
+                  </p>
+                  <div className="focus-outcomes-list">
+                    <div className="bullet-row">
+                      <span className="bullet-dash">&mdash;</span>
+                      <span>Community-led lake restoration and bioswale filtration</span>
+                    </div>
+                    <div className="bullet-row">
+                      <span className="bullet-dash">&mdash;</span>
+                      <span>Open hydrological data and groundwater monitoring</span>
+                    </div>
+                    <div className="bullet-row">
+                      <span className="bullet-dash">&mdash;</span>
+                      <span>Native afforestation and soil conservation drives</span>
+                    </div>
+                  </div>
+                  <Link to="/projects" className="spotlight-action-link">
+                    <span>Explore Environmental Action</span>
+                    <ArrowRight size={15} className="action-arrow-icon" />
+                  </Link>
+                </div>
+              </motion.div>
+
+              {/* Health Panel */}
+              <motion.div
+                className="focus-half-panel"
+                variants={fadeUpVariant}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, amount: 0.2 }}
+              >
+                <div className="half-panel-media">
+                  <img
+                    src={areaHealthcareImg}
+                    alt="Community health and hygiene initiative"
+                    className="half-panel-image"
+                    loading="lazy"
+                  />
+                  <div className="half-panel-tag">
+                    <HeartPulse size={14} />
+                    <span>COMMUNITY WELLNESS</span>
+                  </div>
+                </div>
+                <div className="half-panel-content">
+                  <span className="focus-kicker-tag">PILLAR 03 &bull; HEALTHCARE</span>
+                  <h3 className="half-panel-title">Health &amp; Holistic Well-Being</h3>
+                  <p className="half-panel-description">
+                    Securing foundational community health through safe drinking water access, clean sanitation units, and wellness awareness.
+                  </p>
+                  <div className="focus-outcomes-list">
+                    <div className="bullet-row">
+                      <span className="bullet-dash">&mdash;</span>
+                      <span>School drinking water purification amenities</span>
+                    </div>
+                    <div className="bullet-row">
+                      <span className="bullet-dash">&mdash;</span>
+                      <span>Clean sanitation units and menstrual hygiene programs</span>
+                    </div>
+                    <div className="bullet-row">
+                      <span className="bullet-dash">&mdash;</span>
+                      <span>Preventive rural wellness and nutrition workshops</span>
+                    </div>
+                  </div>
+                  <Link to="/projects" className="spotlight-action-link">
+                    <span>Explore Health Initiatives</span>
+                    <ArrowRight size={15} className="action-arrow-icon" />
+                  </Link>
+                </div>
+              </motion.div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ====================================================================
+          F. METHODOLOGY — INTERACTIVE PROGRESS NARRATIVE WITH CROSSFADE
+          ==================================================================== */}
+      <section id="approach" className="about-methodology-editorial">
+        <div className="about-editorial-container">
+          <div className="methodology-header-block">
+            <div className="editorial-eyebrow">
+              <span className="eyebrow-number">05</span>
+              <motion.span
+                className="eyebrow-divider"
+                initial={{ width: 0 }}
+                whileInView={{ width: 28 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: 0.15 }}
+              />
+              <span className="eyebrow-text">TRANSFORMATION METHODOLOGY</span>
+            </div>
+            <h2 className="editorial-section-title">Eight Steps from Need to Lasting Impact</h2>
+            <p className="editorial-section-lead">
+              A disciplined, interconnected transformation cycle designed to nurture self-sustaining community ownership.
+            </p>
+          </div>
+
+          {/* Interactive Stepper Navigation Rail (Desktop & Tablet) */}
+          <div className="methodology-stepper-rail" role="tablist" aria-label="Methodology Steps">
+            <div
+              className="stepper-progress-fill"
+              style={{ width: `${((activeStep + 1) / 8) * 100}%` }}
+              aria-hidden="true"
+            />
+            {methodologySteps.map((step, idx) => {
+              const isActive = activeStep === idx;
+              return (
+                <button
+                  key={step.num}
+                  type="button"
+                  role="tab"
+                  aria-selected={isActive}
+                  aria-controls={`step-panel-${step.num}`}
+                  id={`step-tab-${step.num}`}
+                  tabIndex={isActive ? 0 : -1}
+                  className={`stepper-node-btn ${isActive ? 'is-active-step' : ''}`}
+                  onClick={() => setActiveStep(idx)}
+                  onKeyDown={(e) => handleStepperKeyDown(e, idx)}
+                >
+                  <span className="node-num-pill">{step.num}</span>
+                  <span className="node-label-text">{step.title}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Active Stage Editorial Spotlight Showcase with AnimatePresence Crossfade & Animated Numeral */}
+          <div
+            className="methodology-showcase-panel"
+            id={`step-panel-${methodologySteps[activeStep].num}`}
+            role="tabpanel"
+            aria-labelledby={`step-tab-${methodologySteps[activeStep].num}`}
+          >
+            {/* Subtle animated background numeral transition */}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={`watermark-${activeStep}`}
+                className="showcase-watermark-num"
+                initial={{ opacity: 0, scale: 0.94, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 1.04 }}
+                transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                aria-hidden="true"
+              >
+                {methodologySteps[activeStep].num}
+              </motion.div>
+            </AnimatePresence>
+
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeStep}
+                className="showcase-content-grid"
+                variants={stageCrossfadeVariant}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+              >
+                <div className="showcase-badge-col">
+                  <div className="showcase-icon-halo">
+                    <CurrentStepIcon size={28} />
+                  </div>
+                  <div className="showcase-stage-pill">
+                    STAGE {methodologySteps[activeStep].num} OF 08
+                  </div>
+                </div>
+
+                <div className="showcase-text-col">
+                  <h3 className="showcase-title">{methodologySteps[activeStep].title}</h3>
+                  <p className="showcase-description">{methodologySteps[activeStep].desc}</p>
+                  <div className="showcase-deliverable-line">
+                    <span className="deliverable-label">Key Operational Milestone:</span>
+                    <span className="deliverable-text">{methodologySteps[activeStep].deliverable}</span>
+                  </div>
+                </div>
+
+                <div className="showcase-controls-col">
+                  <div className="showcase-arrow-buttons">
+                    <button
+                      type="button"
+                      className="btn-stepper-nav"
+                      onClick={handlePrevStep}
+                      aria-label="Previous methodology step"
+                    >
+                      <ChevronLeft size={20} />
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-stepper-nav"
+                      onClick={handleNextStep}
+                      aria-label="Next methodology step"
+                    >
+                      <ChevronRight size={20} />
+                    </button>
+                  </div>
+                  <div className="stepper-counter-indicator">
+                    Step {activeStep + 1} of 8
+                  </div>
+                </div>
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
+          {/* Mobile Vertical Milestone Flow (<768px) */}
+          <div className="methodology-mobile-vertical-flow">
+            {methodologySteps.map((step, idx) => {
+              const StepIcon = step.icon;
+              const isActive = activeStep === idx;
+              return (
                 <div
-                  ref={(el) => { cardRefs.current[idx] = el; }}
-                  className="leadership-card"
+                  key={step.num}
+                  className={`mobile-step-row ${isActive ? 'is-active-mobile-step' : ''}`}
+                  onClick={() => setActiveStep(idx)}
                   role="button"
                   tabIndex={0}
-                  aria-haspopup="dialog"
-                  aria-label={`View full profile of ${member.name}, ${member.role}`}
-                  onClick={() => openLeaderModal(member, idx)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
                       e.preventDefault();
-                      openLeaderModal(member, idx);
+                      setActiveStep(idx);
                     }
                   }}
+                  aria-label={`Step ${step.num}: ${step.title}`}
                 >
-                  {/* Card Photo Frame */}
-                  <div className="leadership-photo-frame">
+                  <div className="mobile-step-indicator">
+                    <span className="mobile-step-num">{step.num}</span>
+                    <span className="mobile-step-line" />
+                  </div>
+                  <div className="mobile-step-details">
+                    <div className="mobile-step-top">
+                      <StepIcon size={16} className="mobile-step-icon" />
+                      <h4>{step.title}</h4>
+                    </div>
+                    <p>{step.desc}</p>
+                    <div className="mobile-step-deliverable">
+                      <strong>Milestone:</strong> {step.deliverable}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* ====================================================================
+          G. LEADERSHIP — REFINED PORTRAIT EDITORIAL GALLERY
+          ==================================================================== */}
+      <section id="leadership" className="about-leadership-editorial">
+        <div className="about-editorial-container">
+          <div className="leadership-header-block">
+            <div className="editorial-eyebrow">
+              <span className="eyebrow-number">06</span>
+              <motion.span
+                className="eyebrow-divider"
+                initial={{ width: 0 }}
+                whileInView={{ width: 28 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: 0.15 }}
+              />
+              <span className="eyebrow-text">LEADERSHIP &amp; GOVERNANCE</span>
+            </div>
+            <h2 className="editorial-section-title">Guiding Minds &amp; Leadership</h2>
+            <p className="editorial-section-lead">
+              Dedicated stewards guiding our grassroots initiatives, environmental action, and community development.
+            </p>
+          </div>
+
+          {/* Refined Portrait Editorial Grid */}
+          <motion.div
+            className="leadership-portrait-grid"
+            variants={staggerContainerVariant}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.15 }}
+          >
+            {leadershipTeam.map((member, idx) => {
+              const hasProfileInfo = Boolean(member.bio || member.role || member.profileUrl);
+
+              return (
+                <motion.div
+                  key={member.id}
+                  variants={fadeUpVariant}
+                  custom={idx}
+                  className={`leadership-portrait-card ${hasProfileInfo ? 'has-profile' : ''}`}
+                  {...(hasProfileInfo
+                    ? {
+                        role: 'button',
+                        tabIndex: 0,
+                        'aria-haspopup': 'dialog',
+                        'aria-label': `View full profile of ${member.name}`,
+                        onClick: () => openLeaderModal(member, idx),
+                        onKeyDown: (e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            openLeaderModal(member, idx);
+                          }
+                        },
+                        ref: (el) => {
+                          cardRefs.current[idx] = el;
+                        },
+                      }
+                    : {})}
+                >
+                  <div className="portrait-image-frame">
                     <img
                       src={member.image}
                       alt={member.name}
-                      className="leadership-photo-img"
+                      className={`portrait-image leader-${member.id}`}
+                      style={{ objectPosition: member.objectPosition || 'center 20%' }}
                       loading="lazy"
                     />
-                    <div className="leadership-photo-overlay" />
-                    <div className="leadership-photo-badge">
-                      <span className="photo-badge-dot" />
-                      <span>Practitioner</span>
-                    </div>
+                    <div className="portrait-overlay" />
                   </div>
 
-                  {/* Card Content Details */}
-                  <div className="leadership-card-body">
-                    <div className="leadership-role-wrap">
-                      <span className="leadership-role-tag">{member.role}</span>
-                    </div>
-                    <h3 className="leadership-member-name">{member.name}</h3>
-                    <p className="leadership-member-desc">{member.shortDesc || member.bio}</p>
-
-                    {/* View Profile Affordance */}
-                    <div className="leadership-card-footer">
-                      <span className="leadership-view-btn">
+                  <div className="portrait-caption-wrap">
+                    <h3 className="portrait-name">{member.name}</h3>
+                    {member.role && <div className="portrait-role-tag">{member.role}</div>}
+                    {hasProfileInfo && (
+                      <div className="portrait-view-action">
                         <span>View Profile</span>
-                        <ArrowRight size={15} className="view-btn-arrow" />
-                      </span>
-                    </div>
+                        <ArrowRight size={14} className="action-arrow-icon" />
+                      </div>
+                    )}
                   </div>
-                </div>
-              </StaggerItem>
-            ))}
-          </StaggerContainer>
+                </motion.div>
+              );
+            })}
+          </motion.div>
         </div>
 
-        {/* Centered Profile Modal with Fullpage Blur & Dimming */}
-        {selectedLeader && (
-          <div
-            className={`leadership-modal-overlay ${isModalClosing ? 'is-closing' : 'is-open'}`}
-            onClick={(e) => {
-              if (e.target === e.currentTarget) {
-                closeLeaderModal();
-              }
-            }}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="leader-modal-title"
-            aria-describedby="leader-modal-desc"
-          >
-            <div
-              className={`leadership-modal-dialog ${isModalClosing ? 'dialog-exit' : 'dialog-enter'}`}
-              onClick={(e) => e.stopPropagation()}
+        {/* Accessible Profile Modal Dialog */}
+        <AnimatePresence>
+          {selectedLeader && (
+            <motion.div
+              className="leadership-modal-backdrop"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={(e) => {
+                if (e.target === e.currentTarget) {
+                  closeLeaderModal();
+                }
+              }}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="leader-modal-name"
+              aria-describedby="leader-modal-desc"
             >
-              {/* Top-Right Close Button */}
-              <button
-                ref={modalCloseBtnRef}
-                type="button"
-                className="leadership-modal-close"
-                onClick={closeLeaderModal}
-                aria-label="Close profile modal"
+              <motion.div
+                className={`leadership-modal-card ${isModalClosing ? 'is-closing' : ''}`}
+                initial={{ opacity: 0, scale: 0.96, y: 14 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.96, y: 14 }}
+                transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+                onClick={(e) => e.stopPropagation()}
               >
-                <X size={20} />
-              </button>
+                <button
+                  ref={modalCloseBtnRef}
+                  type="button"
+                  className="modal-close-button"
+                  onClick={closeLeaderModal}
+                  aria-label="Close profile modal"
+                >
+                  <X size={20} />
+                </button>
 
-              {/* Two-Column Responsive Grid */}
-              <div className="leadership-modal-grid">
-                {/* Left Column: Large Photo & Summary */}
-                <div className="modal-left-col">
-                  <div className="modal-photo-wrapper">
-                    <img
-                      src={selectedLeader.image}
-                      alt={selectedLeader.name}
-                      className="modal-photo-img"
-                    />
-                    <div className="modal-photo-glow" />
+                <div className="modal-inner-grid">
+                  <div className="modal-photo-col">
+                    <div className="modal-photo-frame">
+                      <img
+                        src={selectedLeader.image}
+                        alt={selectedLeader.name}
+                        className={`modal-photo-img leader-${selectedLeader.id}`}
+                        style={{ objectPosition: selectedLeader.objectPosition || 'center 15%' }}
+                      />
+                    </div>
                   </div>
 
-                  <div className="modal-left-info">
-                    <h3 id="leader-modal-title" className="modal-member-name">
+                  <div className="modal-info-col">
+                    <div className="modal-role-badge">
+                      {selectedLeader.role || 'Role to be updated'}
+                    </div>
+
+                    <h3 id="leader-modal-name" className="modal-name">
                       {selectedLeader.name}
                     </h3>
-                    <span className="modal-role-badge">{selectedLeader.role}</span>
-                    {selectedLeader.location && (
-                      <div className="modal-location-line">
-                        <MapPin size={14} className="modal-loc-icon" />
-                        <span>{selectedLeader.location}</span>
-                      </div>
-                    )}
-                    {selectedLeader.focusAreas && (
-                      <div className="modal-focus-pills">
-                        {selectedLeader.focusAreas.map((focus, fIdx) => (
-                          <span key={fIdx} className="modal-focus-pill">
-                            {focus}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
 
-                {/* Right Column: About, Bio & Contact Information */}
-                <div className="modal-right-col">
-                  <div className="modal-section-block">
-                    <div className="modal-section-label">
-                      <span>ABOUT</span>
-                    </div>
-                    <p id="leader-modal-desc" className="modal-bio-text">
-                      {selectedLeader.bio}
-                    </p>
-                  </div>
+                    <div className="modal-divider" />
 
-                  <div className="modal-divider" />
-
-                  <div className="modal-section-block">
-                    <div className="modal-section-label">
-                      <span>CONTACT INFORMATION</span>
-                    </div>
-                    <div className="modal-contacts-list">
-                      {selectedLeader.email && (
-                        <a
-                          href={`mailto:${selectedLeader.email}`}
-                          className="modal-contact-item"
-                          aria-label={`Send email to ${selectedLeader.name}`}
-                        >
-                          <div className="contact-icon-box">
-                            <Mail size={16} />
-                          </div>
-                          <div className="contact-text-wrap">
-                            <span className="contact-label">Email</span>
-                            <span className="contact-value">{selectedLeader.email}</span>
-                          </div>
-                        </a>
-                      )}
-
-                      {selectedLeader.phone && (
-                        <a
-                          href={`tel:${selectedLeader.phone}`}
-                          className="modal-contact-item"
-                          aria-label={`Call ${selectedLeader.name}`}
-                        >
-                          <div className="contact-icon-box">
-                            <Phone size={16} />
-                          </div>
-                          <div className="contact-text-wrap">
-                            <span className="contact-label">Phone</span>
-                            <span className="contact-value">{selectedLeader.phone}</span>
-                          </div>
-                        </a>
-                      )}
-
-                      {selectedLeader.linkedin && (
-                        <a
-                          href={selectedLeader.linkedin}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="modal-contact-item"
-                          aria-label={`Visit LinkedIn profile of ${selectedLeader.name}`}
-                        >
-                          <div className="contact-icon-box contact-icon-linkedin">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                              <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
-                              <rect x="2" y="9" width="4" height="12" />
-                              <circle cx="4" cy="4" r="2" />
-                            </svg>
-                          </div>
-                          <div className="contact-text-wrap">
-                            <span className="contact-label">LinkedIn</span>
-                            <span className="contact-value">Connect on LinkedIn</span>
-                          </div>
-                          <ExternalLink size={13} className="contact-ext-icon" />
-                        </a>
-                      )}
+                    <div className="modal-desc-section">
+                      <span className="modal-section-label">ABOUT</span>
+                      <p id="leader-modal-desc" className="modal-desc-text">
+                        {selectedLeader.bio || 'Profile description will be updated soon.'}
+                      </p>
                     </div>
                   </div>
                 </div>
-              </div>
-            </div>
-          </div>
-        )}
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </section>
 
-      <style>{`
-        .about-page-root {
-          position: relative;
-          overflow-x: hidden;
-        }
-        #vision,
-        #approach,
-        #leadership,
-        #impact-in-action,
-        .sticky-notes-section,
-        .living-flow-section,
-        .methodology-section,
-        .leadership-section {
-          scroll-margin-top: 84px;
-        }
-        .about-hero {
-          position: relative;
-          overflow: hidden;
-          min-height: 640px;
-          height: 75vh;
-          max-height: 780px;
-          display: flex;
-          align-items: center;
-          justify-content: flex-start;
-          background-color: #0F172A;
-          background-image: url('/images/about-hero.jpg');
-          background-size: cover;
-          background-position: center;
-          color: white;
-          padding: 6.5rem 0 5.5rem 0;
-        }
-        .hero-background-video {
-          position: absolute;
-          inset: 0;
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          object-position: center;
-          z-index: 0;
-          pointer-events: none;
-        }
-        .hero-dark-overlay {
-          position: absolute;
-          inset: 0;
-          background: linear-gradient(
-            180deg, 
-            rgba(15, 23, 42, 0.72) 0%, 
-            rgba(15, 23, 42, 0.65) 50%, 
-            rgba(15, 23, 42, 0.82) 100%
-          );
-          z-index: 1;
-          pointer-events: none;
-        }
-        .hero-ambient-glow {
-          position: absolute;
-          top: -20%;
-          left: 30%;
-          width: 900px;
-          height: 550px;
-          background: radial-gradient(circle, rgba(125, 211, 252, 0.18) 0%, rgba(245, 158, 11, 0.08) 55%, transparent 80%);
-          pointer-events: none;
-          z-index: 1;
-        }
-        .hero-content-relative {
-          position: relative;
-          z-index: 2;
-          width: 100%;
-        }
-        .about-hero-content-box {
-          max-width: 780px;
-          text-align: left;
-          display: flex;
-          flex-direction: column;
-          align-items: flex-start;
-        }
-        .about-hero .section-badge {
-          background: rgba(125, 211, 252, 0.15);
-          color: #7DD3FC;
-          border: 1px solid rgba(125, 211, 252, 0.35);
-          backdrop-filter: blur(8px);
-          -webkit-backdrop-filter: blur(8px);
-          display: inline-flex;
-          align-items: center;
-          gap: 0.5rem;
-          padding: 0.4rem 1.15rem;
-          border-radius: var(--radius-pill);
-          font-size: 0.85rem;
-          font-weight: 600;
-          text-transform: uppercase;
-          letter-spacing: 0.06em;
-          margin-bottom: 1.5rem;
-          box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
-        }
-        .badge-sparkle-icon {
-          color: #7DD3FC;
-        }
-        .about-hero-title {
-          color: #FFFFFF;
-          font-size: 2.75rem;
-          font-weight: 800;
-          margin-bottom: 1.35rem;
-          letter-spacing: -0.025em;
-          line-height: 1.16;
-          text-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
-          font-family: var(--font-heading);
-          display: flex;
-          flex-direction: column;
-          align-items: flex-start;
-          width: 100%;
-        }
-        @media (min-width: 768px) {
-          .about-hero-title {
-            font-size: 3.35rem;
-          }
-        }
-        @media (min-width: 1200px) {
-          .about-hero-title {
-            font-size: 3.75rem;
-          }
-        }
-        .about-hero-line {
-          display: block;
-          position: relative;
-          width: 100%;
-          line-height: inherit;
-          font-size: inherit;
-          font-weight: inherit;
-          letter-spacing: inherit;
-          font-family: inherit;
-        }
-        .about-hero-text-static {
-          display: inline-block;
-          visibility: hidden;
-          user-select: none;
-          pointer-events: none;
-          line-height: inherit;
-          font-size: inherit;
-          font-weight: inherit;
-          letter-spacing: inherit;
-          font-family: inherit;
-          white-space: nowrap;
-        }
-        .about-hero-warp-layer.warp-text {
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          min-height: 0;
-          margin: 0;
-          padding: 0;
-          overflow: visible;
-          filter: drop-shadow(0 2px 14px rgba(0, 0, 0, 0.45));
-        }
-        .about-hero-line-2 .about-hero-warp-layer.warp-text {
-          filter: drop-shadow(0 2px 14px rgba(245, 158, 11, 0.35));
-        }
-        .warp-text-fallback {
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          display: inline-block;
-          white-space: nowrap;
-          line-height: inherit;
-          font-size: inherit;
-          font-weight: inherit;
-          letter-spacing: inherit;
-          font-family: inherit;
-        }
-        .sr-only {
-          position: absolute;
-          width: 1px;
-          height: 1px;
-          padding: 0;
-          margin: -1px;
-          overflow: hidden;
-          clip: rect(0, 0, 0, 0);
-          white-space: nowrap;
-          border-width: 0;
-        }
-        .hero-highlight-text {
-          color: #F59E0B;
-          background: linear-gradient(135deg, #FDE68A 0%, #F59E0B 50%, #D97706 100%);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          display: inline-block;
-          filter: drop-shadow(0 2px 12px rgba(245, 158, 11, 0.35));
-        }
-        .about-hero-subtitle {
-          font-size: 1.18rem;
-          color: #E2E8F0;
-          max-width: 650px;
-          line-height: 1.7;
-          font-weight: 400;
-          margin-bottom: 2rem;
-          text-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
-        }
-        .hero-meta-pills {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 1rem;
-        }
-        .hero-meta-pill {
-          display: inline-flex;
-          align-items: center;
-          gap: 0.6rem;
-          background: rgba(15, 23, 42, 0.65);
-          backdrop-filter: blur(12px);
-          -webkit-backdrop-filter: blur(12px);
-          border: 1px solid rgba(255, 255, 255, 0.18);
-          border-radius: var(--radius-pill);
-          padding: 0.5rem 1.15rem;
-          font-size: 0.84rem;
-          font-weight: 600;
-          color: #F8FAFC;
-          box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
-        }
-        .meta-pill-dot {
-          width: 8px;
-          height: 8px;
-          border-radius: 50%;
-          background: #F59E0B;
-          box-shadow: 0 0 8px #F59E0B;
-        }
-        @media (max-width: 768px) {
-          .about-hero {
-            min-height: 520px;
-            height: auto;
-            padding: 5.5rem 0 4.5rem 0;
-          }
-          .about-hero-title {
-            font-size: 2.25rem;
-          }
-          .about-hero-subtitle {
-            font-size: 1.05rem;
-          }
-          .hero-meta-pills {
-            gap: 0.65rem;
-          }
-          .hero-meta-pill {
-            font-size: 0.78rem;
-            padding: 0.4rem 0.9rem;
-          }
-        }
-        .sticky-notes-section {
-          background-color: #FAFCFB;
-          position: relative;
-          overflow: hidden;
-          padding: 5.5rem 0 6.5rem 0;
-        }
-        .sticky-section-container {
-          max-width: 1520px;
-          width: 100%;
-          margin: 0 auto;
-          padding: 0 1.25rem;
-        }
-        .sticky-section-header {
-          margin-bottom: 3.5rem;
-        }
+      {/* ====================================================================
+          H. CLOSING CTA SECTION — POLISHED FINISH TO SHARED FOOTER
+          ==================================================================== */}
+      <section className="about-closing-editorial">
+        <div className="closing-editorial-bg" aria-hidden="true" />
+        <div className="closing-editorial-overlay" aria-hidden="true" />
 
-        /* Large Editorial Visual Storytelling Composition Stage */
-        .vision-mission-stage {
-          position: relative;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 2.25rem;
-          width: 100%;
-          max-width: 1520px;
-          margin: 0 auto;
-        }
+        <div className="about-editorial-container closing-editorial-inner">
+          <motion.div
+            className="closing-editorial-content"
+            variants={fadeUpVariant}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.2 }}
+          >
+            <div className="editorial-eyebrow eyebrow-light center-eyebrow">
+              <span className="eyebrow-accent-dot" />
+              <span className="eyebrow-text">BE THE CHANGE</span>
+            </div>
 
-        /* Large Editorial Flank Photography Panels (Desktop target: 240-300px width, 280-360px height) */
-        .editorial-visual-flank {
-          flex: 0 0 270px;
-          width: 270px;
-          position: relative;
-          z-index: 2;
-          opacity: 0;
-          transition: opacity 0.8s var(--ease-out-expo);
-          will-change: transform, opacity;
-        }
-        .flank-left {
-          align-self: center;
-          margin-top: -1.5rem;
-          transform: translateY(28px);
-        }
-        .flank-right {
-          align-self: center;
-          margin-top: 1.5rem;
-          transform: translateY(28px);
-        }
-        .flank-left.flank-revealed {
-          opacity: 1;
-          transform: translateY(0);
-          transition: transform 0.85s var(--ease-out-expo) 120ms, opacity 0.75s ease 120ms;
-        }
-        .flank-right.flank-revealed {
-          opacity: 1;
-          transform: translateY(0);
-          transition: transform 0.85s var(--ease-out-expo) 260ms, opacity 0.75s ease 260ms;
-        }
+            <h2 className="closing-editorial-headline">
+              Individual responsibility is the quiet catalyst behind every transformed village.
+            </h2>
 
-        /* Continuous Slow Floating Layer (7-10s duration, subtle rotation, ease-in-out) */
-        .editorial-float-layer {
-          width: 100%;
-          will-change: transform;
-        }
-        .flank-left .editorial-float-layer {
-          animation: editorialFloatLeft 8.5s ease-in-out infinite;
-        }
-        .flank-right .editorial-float-layer {
-          animation: editorialFloatRight 9.5s ease-in-out infinite;
-        }
+            <p className="closing-editorial-sub">
+              Join citizen volunteers, mentors, and partners working on the frontlines of rural education and watershed conservation.
+            </p>
 
-        @keyframes editorialFloatLeft {
-          0%, 100% {
-            transform: translateY(-6px) rotate(-3.3deg);
-          }
-          50% {
-            transform: translateY(6px) rotate(-2.7deg);
-          }
-        }
+            <div className="closing-editorial-actions">
+              <Link to="/volunteer" className="btn-editorial-saffron">
+                <span>Volunteer With Us</span>
+                <ArrowRight size={16} className="btn-arrow-icon" />
+              </Link>
+              <Link to="/donate" className="btn-editorial-outline">
+                <Heart size={16} />
+                <span>Support Our Work</span>
+              </Link>
+            </div>
 
-        @keyframes editorialFloatRight {
-          0%, 100% {
-            transform: translateY(6px) rotate(3.3deg);
-          }
-          50% {
-            transform: translateY(-6px) rotate(2.7deg);
-          }
-        }
-
-        /* Editorial Photo Card (Inner Parallax & Hover State) */
-        .editorial-photo-card {
-          position: relative;
-          width: 100%;
-          background: #FFFFFF;
-          border-radius: 20px;
-          padding: 8px 8px 14px 8px;
-          box-shadow: 0 10px 30px -5px rgba(15, 23, 42, 0.08), 
-                      0 2px 8px -1px rgba(0, 0, 0, 0.03),
-                      0 0 0 1px rgba(226, 232, 240, 0.85);
-          transform: translate3d(var(--flank-x, 0px), var(--flank-y, 0px), 0) scale(var(--flank-scale, 1));
-          transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), 
-                      box-shadow 0.35s ease, 
-                      border-color 0.35s ease;
-          cursor: default;
-        }
-        .editorial-photo-left {
-          border: 1px solid rgba(245, 158, 11, 0.22);
-        }
-        .editorial-photo-left:hover {
-          box-shadow: 0 16px 36px -6px rgba(15, 23, 42, 0.12),
-                      0 0 24px rgba(245, 158, 11, 0.16);
-          border-color: rgba(245, 158, 11, 0.45);
-        }
-        .editorial-photo-right {
-          border: 1px solid rgba(56, 189, 248, 0.25);
-        }
-        .editorial-photo-right:hover {
-          box-shadow: 0 16px 36px -6px rgba(15, 23, 42, 0.12),
-                      0 0 24px rgba(56, 189, 248, 0.16);
-          border-color: rgba(56, 189, 248, 0.45);
-        }
-
-        /* Photo Frame — Dominant Editorial Portrait Photography Panel (~3:4 Aspect Ratio) */
-        .editorial-photo-frame {
-          position: relative;
-          width: 100%;
-          height: 295px;
-          border-radius: 14px;
-          overflow: hidden;
-          background: #E2E8F0;
-        }
-        .editorial-img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          display: block;
-          transition: transform 0.6s var(--ease-out-expo);
-        }
-        .editorial-photo-card:hover .editorial-img {
-          transform: scale(1.035);
-        }
-        .editorial-img-gloss {
-          position: absolute;
-          inset: 0;
-          border-radius: 14px;
-          box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
-          pointer-events: none;
-        }
-
-        /* Corner Pin Accent */
-        .editorial-pin-badge {
-          position: absolute;
-          top: 8px;
-          right: 8px;
-          width: 8px;
-          height: 8px;
-          border-radius: 50%;
-          pointer-events: none;
-        }
-        .pin-emerald {
-          background: #F59E0B;
-          box-shadow: 0 0 8px rgba(245, 158, 11, 0.7);
-        }
-        .pin-blue {
-          background: #38BDF8;
-          box-shadow: 0 0 8px rgba(56, 189, 248, 0.7);
-        }
-
-        /* Text Meta under Image */
-        .editorial-meta {
-          margin-top: 0.8rem;
-          padding: 0 0.35rem 0.2rem 0.35rem;
-          display: flex;
-          flex-direction: column;
-          align-items: flex-start;
-        }
-        .editorial-badge {
-          display: inline-flex;
-          align-items: center;
-          padding: 0.22rem 0.65rem;
-          border-radius: var(--radius-pill);
-          font-size: 0.72rem;
-          font-weight: 800;
-          letter-spacing: 0.08em;
-          text-transform: uppercase;
-        }
-        .badge-emerald {
-          background: rgba(245, 158, 11, 0.14);
-          color: #B45309;
-          border: 1px solid rgba(245, 158, 11, 0.28);
-        }
-        .badge-blue {
-          background: rgba(56, 189, 248, 0.12);
-          color: #0369A1;
-          border: 1px solid rgba(56, 189, 248, 0.25);
-        }
-        .editorial-subline {
-          font-size: 0.72rem;
-          font-weight: 500;
-          color: #64748B;
-          margin-top: 0.35rem;
-          line-height: 1.35;
-          letter-spacing: 0.015em;
-          white-space: nowrap;
-        }
-
-        /* Central Sticky Notes Container — Unchanged Layout & Proportions */
-        .sticky-notes-container {
-          display: grid;
-          grid-template-columns: 1fr;
-          gap: 3.5rem;
-          max-width: 960px;
-          flex: 1 1 auto;
-          margin: 0 auto;
-          padding: 0 0.5rem;
-        }
-        @media (min-width: 860px) {
-          .sticky-notes-container {
-            grid-template-columns: 1fr 1fr;
-            gap: 3.25rem;
-          }
-        }
-        .sticky-note-wrapper {
-          position: relative;
-          opacity: 0;
-          transition: opacity 0.35s ease, filter 0.35s ease;
-          will-change: transform, opacity;
-        }
-        /* Entrance animation states */
-        .sticky-vision-wrapper {
-          transform: translateY(40px) rotate(-4deg);
-        }
-        .sticky-mission-wrapper {
-          transform: translateY(40px) rotate(4deg);
-        }
-        .sticky-vision-wrapper.sticky-revealed {
-          opacity: 1;
-          transform: translateY(0) rotate(0deg);
-          transition: transform 0.8s var(--ease-out-expo) 100ms, opacity 0.75s var(--ease-out-expo) 100ms;
-        }
-        .sticky-mission-wrapper.sticky-revealed {
-          opacity: 1;
-          transform: translateY(0) rotate(0deg);
-          transition: transform 0.8s var(--ease-out-expo) 250ms, opacity 0.75s var(--ease-out-expo) 250ms;
-        }
-        /* Card focus / dimming interaction */
-        .sticky-note-wrapper.is-dimmed {
-          opacity: 0.92;
-          filter: contrast(0.98);
-        }
-        .sticky-note-wrapper.is-focused {
-          opacity: 1;
-          z-index: 10;
-        }
-        /* Sticky Note Card Base */
-        .sticky-note-card {
-          position: relative;
-          height: 100%;
-          display: flex;
-          flex-direction: column;
-          padding: 1.65rem 1.65rem 1.85rem 1.65rem;
-          border-radius: 18px 24px 18px 22px;
-          box-shadow: 0 4px 6px -1px rgba(15, 23, 42, 0.04), 
-                      0 16px 36px -8px rgba(15, 23, 42, 0.09), 
-                      0 1px 3px rgba(0, 0, 0, 0.02);
-          transition: transform 0.45s var(--ease-out-expo), 
-                      box-shadow 0.45s var(--ease-out-expo), 
-                      border-color 0.45s var(--ease-out-expo),
-                      background-color 0.45s ease;
-          cursor: pointer;
-          will-change: transform, box-shadow;
-        }
-        /* Vision Card specifics */
-        .sticky-card-vision {
-          background: linear-gradient(175deg, #FEFDFB 0%, #FFFBF5 48%, #FFF7ED 100%);
-          border: 1px solid rgba(245, 158, 11, 0.25);
-          transform: rotate(-1.5deg);
-        }
-        .sticky-vision-wrapper:hover .sticky-card-vision {
-          box-shadow: 0 12px 24px -4px rgba(15, 23, 42, 0.08), 
-                      0 32px 64px -12px rgba(15, 23, 42, 0.18), 
-                      0 0 35px rgba(245, 158, 11, 0.18);
-          border-color: rgba(245, 158, 11, 0.5);
-        }
-        /* Mission Card specifics */
-        .sticky-card-blue {
-          background: linear-gradient(175deg, #FEFDFB 0%, #F0F9FF 48%, #E0F2FE 100%);
-          border: 1px solid rgba(56, 189, 248, 0.25);
-          transform: rotate(1.5deg);
-          border-radius: 24px 18px 22px 18px;
-        }
-        .sticky-mission-wrapper:hover .sticky-card-blue {
-          box-shadow: 0 12px 24px -4px rgba(15, 23, 42, 0.08), 
-                      0 32px 64px -12px rgba(15, 23, 42, 0.18), 
-                      0 0 35px rgba(56, 189, 248, 0.2);
-          border-color: rgba(56, 189, 248, 0.5);
-        }
-        /* Washi Tape Accent */
-        .washi-tape {
-          position: absolute;
-          top: -14px;
-          left: 50%;
-          width: 130px;
-          height: 30px;
-          backdrop-filter: blur(4px);
-          -webkit-backdrop-filter: blur(4px);
-          border-radius: 2px;
-          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.07);
-          pointer-events: none;
-          z-index: 5;
-        }
-        .washi-tape-emerald {
-          transform: translateX(-50%) rotate(-1.5deg);
-          background: rgba(245, 158, 11, 0.3);
-          border-left: 2px dashed rgba(217, 119, 6, 0.45);
-          border-right: 2px dashed rgba(217, 119, 6, 0.45);
-        }
-        .washi-tape-blue {
-          transform: translateX(-50%) rotate(2deg);
-          background: rgba(56, 189, 248, 0.28);
-          border-left: 2px dashed rgba(14, 165, 233, 0.45);
-          border-right: 2px dashed rgba(14, 165, 233, 0.45);
-        }
-        /* Subtle corner fold accent */
-        .sticky-corner-fold {
-          position: absolute;
-          bottom: 0;
-          right: 0;
-          width: 24px;
-          height: 24px;
-          background: linear-gradient(135deg, transparent 50%, rgba(15, 23, 42, 0.05) 50%, rgba(15, 23, 42, 0.02) 100%);
-          border-bottom-right-radius: 18px;
-          pointer-events: none;
-        }
-        /* Sticky Image Frame */
-        .sticky-image-frame {
-          position: relative;
-          width: 100%;
-          height: 215px;
-          border-radius: 13px;
-          overflow: hidden;
-          margin-bottom: 1.4rem;
-          background: #E2E8F0;
-        }
-        .sticky-card-img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          display: block;
-          transition: transform 0.5s var(--ease-out-expo), filter 0.5s ease;
-        }
-        .sticky-note-wrapper:hover .sticky-card-img {
-          transform: scale(1.04);
-          filter: brightness(1.03);
-        }
-        .sticky-image-overlay {
-          position: absolute;
-          inset: 0;
-          border-radius: 13px;
-          box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
-          pointer-events: none;
-        }
-        /* Sticky Content */
-        .sticky-content-body {
-          display: flex;
-          flex-direction: column;
-          flex: 1;
-        }
-        .sticky-tag-wrapper {
-          margin-bottom: 0.85rem;
-        }
-        .sticky-tag {
-          display: inline-flex;
-          align-items: center;
-          gap: 0.4rem;
-          padding: 0.3rem 0.8rem;
-          border-radius: var(--radius-pill);
-          font-size: 0.74rem;
-          font-weight: 800;
-          letter-spacing: 0.07em;
-          text-transform: uppercase;
-        }
-        .tag-emerald {
-          background: rgba(245, 158, 11, 0.14);
-          color: #B45309;
-          border: 1px solid rgba(245, 158, 11, 0.28);
-        }
-        .tag-blue {
-          background: rgba(56, 189, 248, 0.14);
-          color: #0369A1;
-          border: 1px solid rgba(56, 189, 248, 0.3);
-        }
-        .sticky-tag-icon {
-          flex-shrink: 0;
-        }
-        .sticky-statement {
-          font-size: 1.32rem;
-          font-weight: 800;
-          color: var(--slate-900);
-          line-height: 1.38;
-          margin-bottom: 0.75rem;
-          letter-spacing: -0.015em;
-          font-family: var(--font-heading);
-        }
-        .sticky-desc {
-          font-size: 0.94rem;
-          color: #475569;
-          line-height: 1.65;
-          margin-bottom: 1.35rem;
-          flex: 1;
-        }
-        .sticky-footer {
-          padding-top: 1rem;
-          border-top: 1px dashed rgba(203, 213, 225, 0.75);
-          display: flex;
-          align-items: center;
-          justify-content: flex-start;
-        }
-        .sticky-pillar-tag {
-          font-size: 0.76rem;
-          font-weight: 700;
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-          padding: 0.25rem 0.7rem;
-          border-radius: var(--radius-pill);
-        }
-        .pillar-emerald {
-          background: rgba(245, 158, 11, 0.12);
-          color: #B45309;
-        }
-        .pillar-blue {
-          background: rgba(56, 189, 248, 0.12);
-          color: #0369A1;
-        }
-        @media (max-width: 1360px) and (min-width: 1080px) {
-          .vision-mission-stage {
-            gap: 1.5rem;
-          }
-          .editorial-visual-flank {
-            flex: 0 0 220px;
-            width: 220px;
-          }
-          .editorial-photo-frame {
-            height: 250px;
-          }
-          .sticky-notes-container {
-            max-width: 820px;
-            gap: 2.25rem;
-          }
-        }
-        @media (max-width: 1079px) and (min-width: 768px) {
-          .vision-mission-stage {
-            flex-direction: column;
-            align-items: center;
-            gap: 2.5rem;
-          }
-          .editorial-visual-flank {
-            flex: 0 0 auto;
-            width: 260px;
-          }
-          .editorial-photo-frame {
-            height: 280px;
-          }
-          .flank-left {
-            align-self: flex-start;
-            margin: 0 0 0 1.5rem;
-          }
-          .flank-right {
-            align-self: flex-end;
-            margin: 0 1.5rem 0 0;
-          }
-          .sticky-notes-container {
-            width: 100%;
-            max-width: 760px;
-            grid-template-columns: 1fr 1fr;
-            gap: 2rem;
-          }
-        }
-        @media (max-width: 767px) {
-          .vision-mission-stage {
-            flex-direction: column;
-            align-items: center;
-            gap: 2.25rem;
-          }
-          .editorial-visual-flank {
-            flex: 0 0 auto;
-            width: 100%;
-            max-width: 280px;
-            align-self: center;
-            margin: 0 auto;
-          }
-          .editorial-photo-frame {
-            height: 280px;
-          }
-          .flank-left {
-            margin-bottom: 0.25rem;
-          }
-          .flank-right {
-            margin-top: 0.25rem;
-          }
-          .sticky-notes-container {
-            width: 100%;
-            grid-template-columns: 1fr;
-            gap: 3rem;
-          }
-          .sticky-card-vision {
-            transform: rotate(-0.75deg);
-          }
-          .sticky-card-blue {
-            transform: rotate(0.75deg);
-          }
-          .sticky-image-frame {
-            height: 200px;
-          }
-        }
-
-        /* ================================================================ */
-        /* LIVING IMPACT FLOW — Continuous Dynamic Transition Section       */
-        /* ================================================================ */
-        .living-flow-section {
-          padding: 4.5rem 0 3.5rem 0;
-          position: relative;
-          background: #FFFFFF;
-          overflow: hidden;
-        }
-        .living-flow-header {
-          margin-bottom: 3.25rem;
-        }
-
-        /* Desktop Living Flow Stage Viewport (85-90% width of desktop screen) */
-        .living-flow-viewport {
-          position: relative;
-          width: 100%;
-          max-width: 1200px;
-          margin: 0 auto;
-          --flow-cpx: 0px;
-          --flow-cpy: 0px;
-          --flow-crotx: 0deg;
-          --flow-croty: 0deg;
-        }
-        .living-flow-stage {
-          position: relative;
-          width: 1160px;
-          height: 1040px;
-          margin: 0 auto;
-        }
-
-        /* 4 Large Flow Cards (Matching Vision & Mission Dimensions: ~465px wide × ~435px high) */
-        .flow-card-node {
-          position: absolute;
-          width: 465px;
-          height: 435px;
-          z-index: 5;
-          cursor: pointer;
-          will-change: transform;
-        }
-        .flow-pos-0 {
-          left: 25px;
-          top: 15px;
-        }
-        .flow-pos-1 {
-          left: 670px;
-          top: 105px;
-        }
-        .flow-pos-2 {
-          left: 25px;
-          top: 520px;
-        }
-        .flow-pos-3 {
-          left: 670px;
-          top: 610px;
-        }
-
-        /* Independent Continuous Floating Motion Keyframes (Unsynchronized) */
-        .flow-float-0 {
-          animation: floatFlow0 6.0s ease-in-out infinite;
-        }
-        .flow-float-1 {
-          animation: floatFlow1 7.0s ease-in-out infinite 0.7s;
-        }
-        .flow-float-2 {
-          animation: floatFlow2 7.5s ease-in-out infinite 1.4s;
-        }
-        .flow-float-3 {
-          animation: floatFlow3 6.5s ease-in-out infinite 0.5s;
-        }
-
-        @keyframes floatFlow0 {
-          0%, 100% {
-            transform: translateY(0px);
-          }
-          50% {
-            transform: translateY(-6px);
-          }
-        }
-        @keyframes floatFlow1 {
-          0%, 100% {
-            transform: translateY(0px);
-          }
-          50% {
-            transform: translateY(7px);
-          }
-        }
-        @keyframes floatFlow2 {
-          0%, 100% {
-            transform: translateY(0px);
-          }
-          50% {
-            transform: translateY(-6px);
-          }
-        }
-        @keyframes floatFlow3 {
-          0%, 100% {
-            transform: translateY(0px);
-          }
-          50% {
-            transform: translateY(7px);
-          }
-        }
-
-        /* Parallax Layer (Receives cursor transform via CSS variables) */
-        .flow-card-parallax-wrap {
-          width: 100%;
-          height: 100%;
-          transform: translate3d(var(--flow-cpx, 0px), var(--flow-cpy, 0px), 0)
-                     rotateX(var(--flow-crotx, 0deg))
-                     rotateY(var(--flow-croty, 0deg));
-          transition: transform 0.2s ease-out;
-          will-change: transform;
-        }
-
-        /* Card Inner Component (Matching Vision/Mission Card Styling & Proportions) */
-        .flow-card-inner {
-          position: relative;
-          width: 100%;
-          height: 100%;
-          background: linear-gradient(175deg, #FEFDFB 0%, #FFFBF5 48%, #FFF7ED 100%);
-          border: 1px solid rgba(245, 158, 11, 0.25);
-          border-radius: 18px 24px 18px 22px;
-          box-shadow: 0 4px 6px -1px rgba(15, 23, 42, 0.04), 
-                      0 16px 36px -8px rgba(15, 23, 42, 0.09), 
-                      0 1px 3px rgba(0, 0, 0, 0.02);
-          padding: 1.5rem 1.5rem 1.65rem 1.5rem;
-          display: flex;
-          flex-direction: column;
-          overflow: visible;
-          transform: translateY(0) scale(1);
-          transition: transform 0.4s var(--ease-out-expo),
-                      box-shadow 0.4s var(--ease-out-expo),
-                      border-color 0.4s var(--ease-out-expo);
-          will-change: transform, box-shadow;
-        }
-
-        /* Automatic Active Stage Emphasis */
-        .flow-card-inner.is-active-flow-card {
-          border-color: rgba(245, 158, 11, 0.65);
-          box-shadow: 0 12px 28px -4px rgba(245, 158, 11, 0.22), 
-                      0 24px 50px -10px rgba(15, 23, 42, 0.12), 
-                      0 0 25px rgba(245, 158, 11, 0.15);
-          transform: translateY(-4px) scale(1.03);
-        }
-        .flow-card-inner.is-active-flow-card .flow-card-num-badge {
-          background: #F59E0B;
-          color: white;
-          transform: scale(1.06);
-        }
-        .flow-card-inner.is-active-flow-card .flow-card-icon-badge {
-          background: #F59E0B;
-          color: white;
-          transform: scale(1.08) rotate(4deg);
-        }
-
-        /* Hover Interaction */
-        .flow-card-node:hover .flow-card-inner,
-        .flow-card-inner.is-hovered-flow-card {
-          transform: translateY(-6px) scale(1.035);
-          border-color: rgba(245, 158, 11, 0.65);
-          box-shadow: 0 16px 32px -4px rgba(15, 23, 42, 0.12), 
-                      0 32px 64px -12px rgba(15, 23, 42, 0.18), 
-                      0 0 30px rgba(245, 158, 11, 0.2);
-          z-index: 10;
-        }
-
-        /* Prominent Large Image Frame */
-        .flow-card-img-wrap {
-          position: relative;
-          width: 100%;
-          height: 215px;
-          border-radius: 13px;
-          overflow: hidden;
-          margin-bottom: 1.2rem;
-          background: #E2E8F0;
-        }
-        .flow-card-img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          object-position: center;
-          display: block;
-          animation: flowImgBreathe 8s ease-in-out infinite alternate;
-          transition: transform 0.5s var(--ease-out-expo), filter 0.5s ease;
-        }
-        @keyframes flowImgBreathe {
-          0% {
-            transform: scale(1);
-          }
-          100% {
-            transform: scale(1.03);
-          }
-        }
-        .flow-card-node:hover .flow-card-img {
-          transform: scale(1.04);
-          filter: brightness(1.04);
-        }
-        .flow-card-img-overlay {
-          position: absolute;
-          inset: 0;
-          border-radius: 13px;
-          box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
-          pointer-events: none;
-        }
-        .flow-card-num-badge {
-          position: absolute;
-          top: 10px;
-          left: 10px;
-          background: rgba(15, 23, 42, 0.88);
-          color: #7DD3FC;
-          font-family: var(--font-heading);
-          font-size: 0.78rem;
-          font-weight: 800;
-          padding: 0.22rem 0.6rem;
-          border-radius: 7px;
-          border: 1px solid rgba(125, 211, 252, 0.4);
-          backdrop-filter: blur(4px);
-          transition: all 0.3s ease;
-          z-index: 2;
-        }
-        .flow-card-icon-badge {
-          position: absolute;
-          bottom: 10px;
-          right: 10px;
-          width: 32px;
-          height: 32px;
-          border-radius: 50%;
-          background: #0F172A;
-          color: #7DD3FC;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          border: 1.5px solid #FFFFFF;
-          box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
-          transition: all 0.3s ease;
-          z-index: 2;
-        }
-
-        /* Card Content Body (Matching Vision/Mission typography) */
-        .flow-card-content-body {
-          display: flex;
-          flex-direction: column;
-          flex: 1;
-        }
-        .flow-card-tag-wrapper {
-          margin-bottom: 0.65rem;
-        }
-        .flow-card-tag {
-          display: inline-flex;
-          align-items: center;
-          gap: 0.4rem;
-          padding: 0.28rem 0.75rem;
-          border-radius: var(--radius-pill);
-          font-size: 0.74rem;
-          font-weight: 800;
-          letter-spacing: 0.07em;
-          text-transform: uppercase;
-          background: rgba(245, 158, 11, 0.14);
-          color: #B45309;
-          border: 1px solid rgba(245, 158, 11, 0.28);
-          font-family: var(--font-heading);
-        }
-        .flow-tag-icon {
-          flex-shrink: 0;
-        }
-        .flow-card-title {
-          font-size: 1.25rem;
-          font-weight: 800;
-          color: var(--slate-900);
-          line-height: 1.35;
-          margin-bottom: 0.45rem;
-          letter-spacing: -0.015em;
-          font-family: var(--font-heading);
-        }
-        .flow-card-desc {
-          font-size: 0.92rem;
-          color: #475569;
-          line-height: 1.6;
-          margin: 0;
-        }
-
-        /* Mobile Living Flow (<768px) */
-        .living-flow-mobile {
-          display: none;
-        }
-
-        @media (max-width: 1240px) and (min-width: 1024px) {
-          .living-flow-stage {
-            width: 980px;
-            height: 980px;
-          }
-          .flow-card-node {
-            width: 415px;
-            height: 405px;
-          }
-          .flow-card-img-wrap {
-            height: 195px;
-          }
-          .flow-card-title {
-            font-size: 1.15rem;
-          }
-          .flow-card-desc {
-            font-size: 0.88rem;
-          }
-          .flow-pos-0 { left: 15px; top: 15px; }
-          .flow-pos-1 { left: 550px; top: 95px; }
-          .flow-pos-2 { left: 15px; top: 485px; }
-          .flow-pos-3 { left: 550px; top: 565px; }
-        }
-
-        @media (max-width: 1023px) and (min-width: 768px) {
-          .living-flow-stage {
-            width: 720px;
-            height: 900px;
-          }
-          .flow-card-node {
-            width: 325px;
-            height: 375px;
-          }
-          .flow-card-inner {
-            padding: 1.2rem 1.2rem 1.35rem 1.2rem;
-          }
-          .flow-card-img-wrap {
-            height: 170px;
-            margin-bottom: 0.9rem;
-          }
-          .flow-card-title {
-            font-size: 1.05rem;
-          }
-          .flow-card-desc {
-            font-size: 0.82rem;
-            line-height: 1.5;
-          }
-          .flow-pos-0 {
-            left: 10px;
-            top: 10px;
-          }
-          .flow-pos-1 {
-            left: 385px;
-            top: 80px;
-          }
-          .flow-pos-2 {
-            left: 10px;
-            top: 445px;
-          }
-          .flow-pos-3 {
-            left: 385px;
-            top: 515px;
-          }
-        }
-
-        @media (max-width: 767px) {
-          .living-flow-viewport {
-            display: none;
-          }
-          .living-flow-mobile {
-            display: block;
-            width: 100%;
-          }
-          .flow-mobile-track {
-            position: relative;
-            padding-left: 2.25rem;
-          }
-          .flow-mobile-line {
-            position: absolute;
-            top: 15px;
-            bottom: 15px;
-            left: 15px;
-            width: 2px;
-            background: rgba(16, 185, 129, 0.25);
-            border-radius: 2px;
-          }
-          .flow-mobile-pulse {
-            position: absolute;
-            top: 15px;
-            left: 14px;
-            width: 4px;
-            height: 24px;
-            border-radius: 4px;
-            background: #10B981;
-            box-shadow: 0 0 10px #10B981;
-            animation: flowMobileLineTravel 4s ease-in-out infinite;
-          }
-          @keyframes flowMobileLineTravel {
-            0% {
-              top: 15px;
-              opacity: 0.3;
-            }
-            50% {
-              opacity: 1;
-            }
-            100% {
-              top: calc(100% - 39px);
-              opacity: 0.3;
-            }
-          }
-          .flow-mobile-list {
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-          }
-          .flow-mobile-item {
-            position: relative;
-            display: flex;
-            align-items: flex-start;
-            cursor: pointer;
-          }
-          .flow-mobile-float-0 { animation: floatFlow0 5.5s ease-in-out infinite; }
-          .flow-mobile-float-1 { animation: floatFlow1 6.5s ease-in-out infinite; }
-          .flow-mobile-float-2 { animation: floatFlow2 7.0s ease-in-out infinite; }
-          .flow-mobile-float-3 { animation: floatFlow3 6.0s ease-in-out infinite; }
-          
-          .flow-mobile-dot {
-            position: absolute;
-            left: -2.25rem;
-            top: 14px;
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            background: #FFFFFF;
-            border: 2px solid #10B981;
-            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 2;
-            transition: all 0.3s ease;
-          }
-          .flow-mobile-dot span {
-            font-size: 0.72rem;
-            font-weight: 800;
-            color: #047857;
-            font-family: var(--font-heading);
-          }
-          .flow-mobile-item-active .flow-mobile-dot {
-            background: #10B981;
-            transform: scale(1.15);
-            box-shadow: 0 0 0 5px rgba(16, 185, 129, 0.35);
-          }
-          .flow-mobile-item-active .flow-mobile-dot span {
-            color: white;
-          }
-          .flow-mobile-card {
-            flex: 1;
-            background: linear-gradient(175deg, #FEFDFB 0%, #F5FBF7 48%, #ECF6F0 100%);
-            border-radius: 18px;
-            border: 1px solid rgba(16, 185, 129, 0.22);
-            box-shadow: var(--shadow-sm);
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            transition: all 0.3s ease;
-          }
-          .flow-mobile-item-active .flow-mobile-card {
-            border-color: rgba(16, 185, 129, 0.7);
-            box-shadow: 0 8px 24px rgba(16, 185, 129, 0.2);
-          }
-          .flow-mobile-img-wrap {
-            position: relative;
-            width: 100%;
-            height: 180px;
-            background: #E2E8F0;
-          }
-          .flow-mobile-img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-          }
-          .flow-mobile-icon-badge {
-            position: absolute;
-            bottom: 8px;
-            right: 8px;
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            background: #0F172A;
-            color: #7DD3FC;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 1.5px solid #FFFFFF;
-          }
-          .flow-mobile-card-body {
-            padding: 1.1rem 1.15rem 1.25rem 1.15rem;
-            display: flex;
-            flex-direction: column;
-          }
-          .flow-mobile-tag-wrap {
-            margin-bottom: 0.5rem;
-          }
-          .flow-mobile-category {
-            display: inline-flex;
-            font-size: 0.68rem;
-            color: #B45309;
-            font-weight: 800;
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
-            background: rgba(245, 158, 11, 0.12);
-            padding: 0.2rem 0.6rem;
-            border-radius: var(--radius-pill);
-            border: 1px solid rgba(245, 158, 11, 0.25);
-            font-family: var(--font-heading);
-          }
-          .flow-mobile-title {
-            font-size: 1.15rem;
-            font-weight: 800;
-            color: var(--slate-900);
-            margin: 0 0 0.35rem 0;
-            font-family: var(--font-heading);
-          }
-          .flow-mobile-desc {
-            font-size: 0.85rem;
-            color: #475569;
-            margin: 0;
-            line-height: 1.55;
-          }
-        }
-
-        .methodology-section {
-          padding: 5.5rem 0 6.5rem 0;
-          position: relative;
-          overflow: hidden;
-          background: #FAFCFB;
-        }
-        .methodology-ambient-aura {
-          position: absolute;
-          border-radius: 50%;
-          filter: blur(60px);
-          pointer-events: none;
-          z-index: 0;
-          opacity: 0.75;
-          will-change: transform;
-        }
-        .methodology-ambient-aura-1 {
-          top: 10%;
-          left: 2%;
-          width: 500px;
-          height: 500px;
-          background: radial-gradient(circle, rgba(245, 158, 11, 0.08) 0%, rgba(217, 119, 6, 0.01) 70%, transparent 100%);
-          animation: auraDrift1 14s ease-in-out infinite alternate;
-        }
-        .methodology-ambient-aura-2 {
-          bottom: 8%;
-          right: 2%;
-          width: 540px;
-          height: 540px;
-          background: radial-gradient(circle, rgba(125, 211, 252, 0.1) 0%, rgba(56, 189, 248, 0.02) 70%, transparent 100%);
-          animation: auraDrift2 18s ease-in-out infinite alternate;
-        }
-        @keyframes auraDrift1 {
-          0% {
-            transform: translate(0, 0) scale(1);
-          }
-          100% {
-            transform: translate(35px, 25px) scale(1.08);
-          }
-        }
-        @keyframes auraDrift2 {
-          0% {
-            transform: translate(0, 0) scale(1);
-          }
-          100% {
-            transform: translate(-30px, -25px) scale(1.1);
-          }
-        }
-        .relative-z-2 {
-          position: relative;
-          z-index: 2;
-        }
-        .methodology-header {
-          margin-bottom: 3.5rem;
-        }
-
-        /* 3D Orbit Viewport & Stage */
-        .orbit-system-viewport {
-          position: relative;
-          width: 100%;
-          max-width: 1120px;
-          margin: 0 auto;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-        }
-        .orbit-3d-stage {
-          position: relative;
-          width: 1040px;
-          height: 580px;
-          transform-style: preserve-3d;
-          will-change: transform;
-          transition: transform 0.15s ease-out;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        /* SVG Elliptical Track */
-        .orbit-svg-track {
-          position: absolute;
-          inset: 0;
-          width: 100%;
-          height: 100%;
-          pointer-events: none;
-          z-index: 1;
-          overflow: visible;
-        }
-        .orbit-ellipse-line {
-          fill: none;
-          stroke: rgba(245, 158, 11, 0.2);
-          stroke-width: 2px;
-        }
-        .orbit-ellipse-dashed {
-          fill: none;
-          stroke: rgba(245, 158, 11, 0.45);
-          stroke-width: 2px;
-          stroke-dasharray: 8 12;
-          stroke-linecap: round;
-          animation: orbitDashMove 30s linear infinite;
-        }
-        @keyframes orbitDashMove {
-          0% {
-            stroke-dashoffset: 0;
-          }
-          100% {
-            stroke-dashoffset: -400;
-          }
-        }
-
-        /* Central Impact Hub Focal Point */
-        .impact-hub-center {
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          width: 180px;
-          height: 180px;
-          z-index: 10;
-          transform-style: preserve-3d;
-          pointer-events: auto;
-          will-change: transform;
-        }
-        .hub-outer-ring {
-          border-radius: 50%;
-          pointer-events: none;
-        }
-        .hub-outer-ring-1 {
-          position: absolute;
-          inset: -24px;
-          border: 1.5px dashed rgba(245, 158, 11, 0.38);
-          animation: hubRingRotateCW 35s linear infinite;
-        }
-        .hub-outer-ring-2 {
-          position: absolute;
-          inset: -48px;
-          border: 1px dotted rgba(125, 211, 252, 0.35);
-          animation: hubRingRotateCCW 45s linear infinite;
-        }
-        @keyframes hubRingRotateCW {
-          0% {
-            transform: rotate(0deg);
-          }
-          100% {
-            transform: rotate(360deg);
-          }
-        }
-        @keyframes hubRingRotateCCW {
-          0% {
-            transform: rotate(360deg);
-          }
-          100% {
-            transform: rotate(0deg);
-          }
-        }
-
-        .hub-core-card {
-          position: relative;
-          width: 100%;
-          height: 100%;
-          border-radius: 50%;
-          overflow: hidden;
-          border: 3px solid #F59E0B;
-          box-shadow: 0 0 32px rgba(245, 158, 11, 0.32), 0 16px 36px rgba(0, 0, 0, 0.22);
-          animation: hubBreathe 6s ease-in-out infinite alternate;
-          background: #0F172A;
-        }
-        @keyframes hubBreathe {
-          0% {
-            transform: scale(1);
-            box-shadow: 0 0 24px rgba(245, 158, 11, 0.25), 0 14px 28px rgba(0, 0, 0, 0.18);
-          }
-          100% {
-            transform: scale(1.02);
-            box-shadow: 0 0 40px rgba(245, 158, 11, 0.42), 0 20px 40px rgba(0, 0, 0, 0.26);
-          }
-        }
-        .hub-core-img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          display: block;
-        }
-        .hub-core-overlay {
-          position: absolute;
-          inset: 0;
-          background: radial-gradient(circle at center, rgba(15, 23, 42, 0.45) 0%, rgba(15, 23, 42, 0.88) 100%);
-        }
-        .hub-core-content {
-          position: absolute;
-          inset: 0;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          text-align: center;
-          padding: 0.9rem;
-          color: white;
-          z-index: 2;
-        }
-        .hub-core-badge {
-          display: inline-flex;
-          align-items: center;
-          gap: 0.3rem;
-          background: rgba(245, 158, 11, 0.25);
-          border: 1px solid rgba(245, 158, 11, 0.5);
-          padding: 0.18rem 0.55rem;
-          border-radius: var(--radius-pill);
-          font-size: 0.66rem;
-          font-weight: 800;
-          letter-spacing: 0.08em;
-          color: #F59E0B;
-          margin-bottom: 0.25rem;
-        }
-        .hub-sparkle-icon {
-          color: #F59E0B;
-        }
-        .hub-core-title {
-          font-size: 1.1rem;
-          font-weight: 800;
-          color: #FFFFFF;
-          line-height: 1.15;
-          margin: 0 0 0.15rem 0;
-          font-family: var(--font-heading);
-          letter-spacing: -0.01em;
-        }
-        .hub-core-subtitle {
-          font-size: 0.68rem;
-          color: #CBD5E1;
-          line-height: 1.25;
-          max-width: 130px;
-          font-weight: 500;
-          margin: 0;
-        }
-
-        /* 8 Orbiting Stage Cards System */
-        .orbit-cards-container {
-          position: absolute;
-          inset: 0;
-          pointer-events: none;
-        }
-        .orbit-card-node {
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          width: 160px;
-          height: 132px;
-          margin-top: -66px;
-          margin-left: -80px;
-          transform-style: preserve-3d;
-          will-change: transform, opacity;
-          pointer-events: auto;
-          cursor: pointer;
-          transition: opacity 0.35s ease;
-        }
-
-        /* 8 Continuous 3D Elliptical Orbit Keyframes (28s loop, Rx=400px, Ry=215px) */
-        @keyframes orbitLoop_0 {
-          0%    { transform: translate3d(400px, 0px, 0px) scale(0.98); z-index: 8; opacity: 0.96; }
-          12.5% { transform: translate3d(283px, 152px, 18px) scale(1.02); z-index: 12; opacity: 1; }
-          25%   { transform: translate3d(0px, 215px, 28px) scale(1.04); z-index: 16; opacity: 1; }
-          37.5% { transform: translate3d(-283px, 152px, 18px) scale(1.02); z-index: 12; opacity: 1; }
-          50%   { transform: translate3d(-400px, 0px, 0px) scale(0.98); z-index: 8; opacity: 0.96; }
-          62.5% { transform: translate3d(-283px, -152px, -18px) scale(0.92); z-index: 4; opacity: 0.88; }
-          75%   { transform: translate3d(0px, -215px, -26px) scale(0.90); z-index: 2; opacity: 0.84; }
-          87.5% { transform: translate3d(283px, -152px, -18px) scale(0.92); z-index: 4; opacity: 0.88; }
-          100%  { transform: translate3d(400px, 0px, 0px) scale(0.98); z-index: 8; opacity: 0.96; }
-        }
-        @keyframes orbitLoop_1 {
-          0%    { transform: translate3d(283px, 152px, 18px) scale(1.02); z-index: 12; opacity: 1; }
-          12.5% { transform: translate3d(0px, 215px, 28px) scale(1.04); z-index: 16; opacity: 1; }
-          25%   { transform: translate3d(-283px, 152px, 18px) scale(1.02); z-index: 12; opacity: 1; }
-          37.5% { transform: translate3d(-400px, 0px, 0px) scale(0.98); z-index: 8; opacity: 0.96; }
-          50%   { transform: translate3d(-283px, -152px, -18px) scale(0.92); z-index: 4; opacity: 0.88; }
-          62.5% { transform: translate3d(0px, -215px, -26px) scale(0.90); z-index: 2; opacity: 0.84; }
-          75%   { transform: translate3d(283px, -152px, -18px) scale(0.92); z-index: 4; opacity: 0.88; }
-          87.5% { transform: translate3d(400px, 0px, 0px) scale(0.98); z-index: 8; opacity: 0.96; }
-          100%  { transform: translate3d(283px, 152px, 18px) scale(1.02); z-index: 12; opacity: 1; }
-        }
-        @keyframes orbitLoop_2 {
-          0%    { transform: translate3d(0px, 215px, 28px) scale(1.04); z-index: 16; opacity: 1; }
-          12.5% { transform: translate3d(-283px, 152px, 18px) scale(1.02); z-index: 12; opacity: 1; }
-          25%   { transform: translate3d(-400px, 0px, 0px) scale(0.98); z-index: 8; opacity: 0.96; }
-          37.5% { transform: translate3d(-283px, -152px, -18px) scale(0.92); z-index: 4; opacity: 0.88; }
-          50%   { transform: translate3d(0px, -215px, -26px) scale(0.90); z-index: 2; opacity: 0.84; }
-          62.5% { transform: translate3d(283px, -152px, -18px) scale(0.92); z-index: 4; opacity: 0.88; }
-          75%   { transform: translate3d(400px, 0px, 0px) scale(0.98); z-index: 8; opacity: 0.96; }
-          87.5% { transform: translate3d(283px, 152px, 18px) scale(1.02); z-index: 12; opacity: 1; }
-          100%  { transform: translate3d(0px, 215px, 28px) scale(1.04); z-index: 16; opacity: 1; }
-        }
-        @keyframes orbitLoop_3 {
-          0%    { transform: translate3d(-283px, 152px, 18px) scale(1.02); z-index: 12; opacity: 1; }
-          12.5% { transform: translate3d(-400px, 0px, 0px) scale(0.98); z-index: 8; opacity: 0.96; }
-          25%   { transform: translate3d(-283px, -152px, -18px) scale(0.92); z-index: 4; opacity: 0.88; }
-          37.5% { transform: translate3d(0px, -215px, -26px) scale(0.90); z-index: 2; opacity: 0.84; }
-          50%   { transform: translate3d(283px, -152px, -18px) scale(0.92); z-index: 4; opacity: 0.88; }
-          62.5% { transform: translate3d(400px, 0px, 0px) scale(0.98); z-index: 8; opacity: 0.96; }
-          75%   { transform: translate3d(283px, 152px, 18px) scale(1.02); z-index: 12; opacity: 1; }
-          87.5% { transform: translate3d(0px, 215px, 28px) scale(1.04); z-index: 16; opacity: 1; }
-          100%  { transform: translate3d(-283px, 152px, 18px) scale(1.02); z-index: 12; opacity: 1; }
-        }
-        @keyframes orbitLoop_4 {
-          0%    { transform: translate3d(-400px, 0px, 0px) scale(0.98); z-index: 8; opacity: 0.96; }
-          12.5% { transform: translate3d(-283px, -152px, -18px) scale(0.92); z-index: 4; opacity: 0.88; }
-          25%   { transform: translate3d(0px, -215px, -26px) scale(0.90); z-index: 2; opacity: 0.84; }
-          37.5% { transform: translate3d(283px, -152px, -18px) scale(0.92); z-index: 4; opacity: 0.88; }
-          50%   { transform: translate3d(400px, 0px, 0px) scale(0.98); z-index: 8; opacity: 0.96; }
-          62.5% { transform: translate3d(283px, 152px, 18px) scale(1.02); z-index: 12; opacity: 1; }
-          75%   { transform: translate3d(0px, 215px, 28px) scale(1.04); z-index: 16; opacity: 1; }
-          87.5% { transform: translate3d(-283px, 152px, 18px) scale(1.02); z-index: 12; opacity: 1; }
-          100%  { transform: translate3d(-400px, 0px, 0px) scale(0.98); z-index: 8; opacity: 0.96; }
-        }
-        @keyframes orbitLoop_5 {
-          0%    { transform: translate3d(-283px, -152px, -18px) scale(0.92); z-index: 4; opacity: 0.88; }
-          12.5% { transform: translate3d(0px, -215px, -26px) scale(0.90); z-index: 2; opacity: 0.84; }
-          25%   { transform: translate3d(283px, -152px, -18px) scale(0.92); z-index: 4; opacity: 0.88; }
-          37.5% { transform: translate3d(400px, 0px, 0px) scale(0.98); z-index: 8; opacity: 0.96; }
-          50%   { transform: translate3d(283px, 152px, 18px) scale(1.02); z-index: 12; opacity: 1; }
-          62.5% { transform: translate3d(0px, 215px, 28px) scale(1.04); z-index: 16; opacity: 1; }
-          75%   { transform: translate3d(-283px, 152px, 18px) scale(1.02); z-index: 12; opacity: 1; }
-          87.5% { transform: translate3d(-400px, 0px, 0px) scale(0.98); z-index: 8; opacity: 0.96; }
-          100%  { transform: translate3d(-283px, -152px, -18px) scale(0.92); z-index: 4; opacity: 0.88; }
-        }
-        @keyframes orbitLoop_6 {
-          0%    { transform: translate3d(0px, -215px, -26px) scale(0.90); z-index: 2; opacity: 0.84; }
-          12.5% { transform: translate3d(283px, -152px, -18px) scale(0.92); z-index: 4; opacity: 0.88; }
-          25%   { transform: translate3d(400px, 0px, 0px) scale(0.98); z-index: 8; opacity: 0.96; }
-          37.5% { transform: translate3d(283px, 152px, 18px) scale(1.02); z-index: 12; opacity: 1; }
-          50%   { transform: translate3d(0px, 215px, 28px) scale(1.04); z-index: 16; opacity: 1; }
-          62.5% { transform: translate3d(-283px, 152px, 18px) scale(1.02); z-index: 12; opacity: 1; }
-          75%   { transform: translate3d(-400px, 0px, 0px) scale(0.98); z-index: 8; opacity: 0.96; }
-          87.5% { transform: translate3d(-283px, -152px, -18px) scale(0.92); z-index: 4; opacity: 0.88; }
-          100%  { transform: translate3d(0px, -215px, -26px) scale(0.90); z-index: 2; opacity: 0.84; }
-        }
-        @keyframes orbitLoop_7 {
-          0%    { transform: translate3d(283px, -152px, -18px) scale(0.92); z-index: 4; opacity: 0.88; }
-          12.5% { transform: translate3d(400px, 0px, 0px) scale(0.98); z-index: 8; opacity: 0.96; }
-          25%   { transform: translate3d(283px, 152px, 18px) scale(1.02); z-index: 12; opacity: 1; }
-          37.5% { transform: translate3d(0px, 215px, 28px) scale(1.04); z-index: 16; opacity: 1; }
-          50%   { transform: translate3d(-283px, 152px, 18px) scale(1.02); z-index: 12; opacity: 1; }
-          62.5% { transform: translate3d(-400px, 0px, 0px) scale(0.98); z-index: 8; opacity: 0.96; }
-          75%   { transform: translate3d(-283px, -152px, -18px) scale(0.92); z-index: 4; opacity: 0.88; }
-          87.5% { transform: translate3d(0px, -215px, -26px) scale(0.90); z-index: 2; opacity: 0.84; }
-          100%  { transform: translate3d(283px, -152px, -18px) scale(0.92); z-index: 4; opacity: 0.88; }
-        }
-
-        .orbit-card-pos-0 { animation: orbitLoop_0 28s linear infinite; }
-        .orbit-card-pos-1 { animation: orbitLoop_1 28s linear infinite; }
-        .orbit-card-pos-2 { animation: orbitLoop_2 28s linear infinite; }
-        .orbit-card-pos-3 { animation: orbitLoop_3 28s linear infinite; }
-        .orbit-card-pos-4 { animation: orbitLoop_4 28s linear infinite; }
-        .orbit-card-pos-5 { animation: orbitLoop_5 28s linear infinite; }
-        .orbit-card-pos-6 { animation: orbitLoop_6 28s linear infinite; }
-        .orbit-card-pos-7 { animation: orbitLoop_7 28s linear infinite; }
-
-        /* Orbit Pause on Hover */
-        .orbit-3d-stage.orbit-is-paused .orbit-card-node {
-          animation-play-state: paused !important;
-        }
-
-        /* Layered Hover and Active State Architecture (NO transform overrides on .orbit-card-node) */
-        .orbit-card-node:hover,
-        .orbit-card-node.is-hovered-orbit-stage {
-          z-index: 50 !important;
-        }
-        .orbit-card-node.is-dimmed-orbit-stage {
-          opacity: 0.72;
-        }
-
-        /* Card Inner Elements (All hover/active transforms applied HERE exclusively) */
-        .orbit-card-inner {
-          width: 100%;
-          height: 100%;
-          border-radius: 15px;
-          background: #FFFFFF;
-          border: 1.5px solid rgba(226, 232, 240, 0.95);
-          box-shadow: 0 8px 22px rgba(15, 23, 42, 0.09);
-          overflow: visible;
-          display: flex;
-          flex-direction: column;
-          transform: translateY(0) scale(1);
-          transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), 
-                      box-shadow 0.3s ease, 
-                      border-color 0.3s ease;
-          will-change: transform, box-shadow;
-        }
-
-        /* Active stage styling on inner card (subtle scale ~1.05 max) */
-        .orbit-card-node.is-active-orbit-stage .orbit-card-inner {
-          border-color: rgba(245, 158, 11, 0.95);
-          box-shadow: 0 12px 28px -4px rgba(245, 158, 11, 0.3), 0 0 20px rgba(245, 158, 11, 0.2);
-          transform: scale(1.05);
-        }
-        .orbit-card-node.is-active-orbit-stage .orbit-card-num-badge {
-          background: #F59E0B;
-          color: white;
-          transform: scale(1.04);
-        }
-        .orbit-card-node.is-active-orbit-stage .orbit-card-icon-badge {
-          background: #F59E0B;
-          color: white;
-          transform: scale(1.08) rotate(4deg);
-        }
-
-        /* Hover elevation on inner card (subtle lift + max scale 1.04) */
-        .orbit-card-node:hover .orbit-card-inner,
-        .orbit-card-node.is-hovered-orbit-stage .orbit-card-inner {
-          transform: translateY(-4px) scale(1.04);
-          box-shadow: 0 18px 36px -6px rgba(245, 158, 11, 0.35), 0 0 22px rgba(245, 158, 11, 0.25);
-          border-color: #F59E0B;
-        }
-        .orbit-card-node.is-active-orbit-stage:hover .orbit-card-inner {
-          transform: translateY(-4px) scale(1.05);
-        }
-
-        .orbit-card-img-wrap {
-          position: relative;
-          width: 100%;
-          height: 98px;
-          border-radius: 13px 13px 0 0;
-          overflow: hidden;
-          background: #0F172A;
-        }
-        .orbit-card-img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          display: block;
-          transition: transform 0.4s ease, filter 0.3s ease;
-        }
-        .orbit-card-node:hover .orbit-card-img {
-          filter: brightness(1.06);
-        }
-        .orbit-card-img-overlay {
-          position: absolute;
-          inset: 0;
-          background: linear-gradient(180deg, transparent 40%, rgba(15, 23, 42, 0.45) 100%);
-        }
-        .orbit-card-num-badge {
-          position: absolute;
-          top: 6px;
-          left: 6px;
-          background: rgba(15, 23, 42, 0.85);
-          color: #7DD3FC;
-          font-family: var(--font-heading);
-          font-size: 0.68rem;
-          font-weight: 800;
-          padding: 0.15rem 0.45rem;
-          border-radius: 6px;
-          border: 1px solid rgba(125, 211, 252, 0.3);
-          backdrop-filter: blur(4px);
-          transition: all 0.3s ease;
-          z-index: 2;
-        }
-        .orbit-card-icon-badge {
-          position: absolute;
-          bottom: -7px;
-          right: 7px;
-          width: 24px;
-          height: 24px;
-          border-radius: 50%;
-          background: #0F172A;
-          color: #7DD3FC;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          border: 1.5px solid #FFFFFF;
-          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-          transition: all 0.3s ease;
-          z-index: 3;
-        }
-        .orbit-card-label-box {
-          padding: 0.45rem 0.6rem;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          text-align: center;
-          background: #FFFFFF;
-          border-radius: 0 0 13px 13px;
-        }
-        .orbit-card-title {
-          font-size: 0.8rem;
-          font-weight: 700;
-          color: var(--slate-900);
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          line-height: 1.2;
-        }
-
-        /* Hover Tooltip Popover */
-        .orbit-card-tooltip {
-          position: absolute;
-          top: calc(100% + 8px);
-          left: 50%;
-          transform: translateX(-50%) translateY(4px);
-          opacity: 0;
-          pointer-events: none;
-          width: 210px;
-          background: rgba(15, 23, 42, 0.95);
-          color: white;
-          padding: 0.55rem 0.8rem;
-          border-radius: 10px;
-          font-size: 0.74rem;
-          line-height: 1.35;
-          text-align: center;
-          box-shadow: 0 10px 24px rgba(0, 0, 0, 0.32);
-          border: 1px solid rgba(245, 158, 11, 0.5);
-          backdrop-filter: blur(8px);
-          transition: opacity 0.25s ease, transform 0.25s ease;
-          z-index: 100;
-        }
-        .tooltip-step-num {
-          display: block;
-          font-size: 0.64rem;
-          font-weight: 800;
-          color: #7DD3FC;
-          letter-spacing: 0.08em;
-          margin-bottom: 0.15rem;
-        }
-        .orbit-card-tooltip-desc {
-          margin: 0;
-          color: #E2E8F0;
-        }
-        .orbit-card-node:hover .orbit-card-tooltip,
-        .orbit-card-node.is-hovered-orbit-stage .orbit-card-tooltip {
-          opacity: 1;
-          transform: translateX(-50%) translateY(0);
-          pointer-events: auto;
-        }
-
-        /* Active Timeline Navigation Pills */
-        .orbit-timeline-nav {
-          width: 100%;
-          margin-top: 2rem;
-          display: flex;
-          justify-content: center;
-        }
-        .orbit-timeline-pills {
-          display: flex;
-          flex-wrap: wrap;
-          justify-content: center;
-          gap: 0.5rem;
-        }
-        .orbit-nav-pill {
-          display: inline-flex;
-          align-items: center;
-          gap: 0.45rem;
-          padding: 0.4rem 0.9rem;
-          border-radius: var(--radius-pill);
-          background: #FFFFFF;
-          border: 1px solid var(--border-subtle);
-          font-size: 0.78rem;
-          font-weight: 600;
-          color: var(--slate-700);
-          cursor: pointer;
-          transition: all 0.25s ease;
-          box-shadow: var(--shadow-sm);
-        }
-        .orbit-nav-pill:hover,
-        .orbit-nav-pill.is-active-pill {
-          background: #0F172A;
-          color: #FFFFFF;
-          border-color: #F59E0B;
-          transform: translateY(-2px);
-          box-shadow: 0 6px 14px rgba(245, 158, 11, 0.25);
-        }
-        .pill-num {
-          font-family: var(--font-heading);
-          font-size: 0.72rem;
-          font-weight: 800;
-          background: rgba(245, 158, 11, 0.15);
-          color: #B45309;
-          padding: 0.1rem 0.35rem;
-          border-radius: 4px;
-        }
-        .orbit-nav-pill.is-active-pill .pill-num {
-          background: #F59E0B;
-          color: white;
-        }
-        .pill-title {
-          font-weight: 600;
-        }
-
-        /* Bottom Journey Summary Badge */
-        .journey-footer-badge-wrap {
-          display: flex;
-          justify-content: center;
-          margin-top: 3rem;
-        }
-        .journey-footer-badge {
-          display: inline-flex;
-          align-items: center;
-          gap: 0.65rem;
-          padding: 0.55rem 1.35rem;
-          background: #FFFFFF;
-          border: 1px solid var(--border-subtle);
-          border-radius: var(--radius-pill);
-          font-size: 0.82rem;
-          font-weight: 600;
-          color: var(--slate-700);
-          box-shadow: var(--shadow-sm);
-        }
-        .footer-badge-dot {
-          width: 8px;
-          height: 8px;
-          border-radius: var(--radius-pill);
-          background: #F59E0B;
-        }
-
-        /* Mobile Flowing Journey (<768px) */
-        .orbit-mobile-journey {
-          display: none;
-        }
-
-        @media (max-width: 1023px) and (min-width: 768px) {
-          .orbit-3d-stage {
-            width: 760px;
-            height: 460px;
-          }
-          .orbit-card-node {
-            width: 130px;
-            height: 108px;
-            margin-top: -54px;
-            margin-left: -65px;
-          }
-          .orbit-card-img-wrap {
-            height: 78px;
-          }
-          .orbit-card-title {
-            font-size: 0.74rem;
-          }
-          .impact-hub-center {
-            width: 155px;
-            height: 155px;
-          }
-          .hub-core-title {
-            font-size: 0.98rem;
-          }
-          .hub-core-subtitle {
-            font-size: 0.64rem;
-            max-width: 115px;
-          }
-
-          /* Tablet Keyframe scaling (Rx=300px, Ry=160px) */
-          @keyframes orbitLoop_0 {
-            0%    { transform: translate3d(300px, 0px, 0px) scale(0.98); z-index: 8; opacity: 0.96; }
-            12.5% { transform: translate3d(212px, 113px, 14px) scale(1.02); z-index: 12; opacity: 1; }
-            25%   { transform: translate3d(0px, 160px, 22px) scale(1.04); z-index: 16; opacity: 1; }
-            37.5% { transform: translate3d(-212px, 113px, 14px) scale(1.02); z-index: 12; opacity: 1; }
-            50%   { transform: translate3d(-300px, 0px, 0px) scale(0.98); z-index: 8; opacity: 0.96; }
-            62.5% { transform: translate3d(-212px, -113px, -14px) scale(0.92); z-index: 4; opacity: 0.88; }
-            75%   { transform: translate3d(0px, -160px, -20px) scale(0.90); z-index: 2; opacity: 0.84; }
-            87.5% { transform: translate3d(212px, -113px, -14px) scale(0.92); z-index: 4; opacity: 0.88; }
-            100%  { transform: translate3d(300px, 0px, 0px) scale(0.98); z-index: 8; opacity: 0.96; }
-          }
-          @keyframes orbitLoop_1 {
-            0%    { transform: translate3d(212px, 113px, 14px) scale(1.02); z-index: 12; opacity: 1; }
-            12.5% { transform: translate3d(0px, 160px, 22px) scale(1.04); z-index: 16; opacity: 1; }
-            25%   { transform: translate3d(-212px, 113px, 14px) scale(1.02); z-index: 12; opacity: 1; }
-            37.5% { transform: translate3d(-300px, 0px, 0px) scale(0.98); z-index: 8; opacity: 0.96; }
-            50%   { transform: translate3d(-212px, -113px, -14px) scale(0.92); z-index: 4; opacity: 0.88; }
-            62.5% { transform: translate3d(0px, -160px, -20px) scale(0.90); z-index: 2; opacity: 0.84; }
-            75%   { transform: translate3d(212px, -113px, -14px) scale(0.92); z-index: 4; opacity: 0.88; }
-            87.5% { transform: translate3d(300px, 0px, 0px) scale(0.98); z-index: 8; opacity: 0.96; }
-            100%  { transform: translate3d(212px, 113px, 14px) scale(1.02); z-index: 12; opacity: 1; }
-          }
-          @keyframes orbitLoop_2 {
-            0%    { transform: translate3d(0px, 160px, 22px) scale(1.04); z-index: 16; opacity: 1; }
-            12.5% { transform: translate3d(-212px, 113px, 14px) scale(1.02); z-index: 12; opacity: 1; }
-            25%   { transform: translate3d(-300px, 0px, 0px) scale(0.98); z-index: 8; opacity: 0.96; }
-            37.5% { transform: translate3d(-212px, -113px, -14px) scale(0.92); z-index: 4; opacity: 0.88; }
-            50%   { transform: translate3d(0px, -160px, -20px) scale(0.90); z-index: 2; opacity: 0.84; }
-            62.5% { transform: translate3d(212px, -113px, -14px) scale(0.92); z-index: 4; opacity: 0.88; }
-            75%   { transform: translate3d(300px, 0px, 0px) scale(0.98); z-index: 8; opacity: 0.96; }
-            87.5% { transform: translate3d(212px, 113px, 14px) scale(1.02); z-index: 12; opacity: 1; }
-            100%  { transform: translate3d(0px, 160px, 22px) scale(1.04); z-index: 16; opacity: 1; }
-          }
-          @keyframes orbitLoop_3 {
-            0%    { transform: translate3d(-212px, 113px, 14px) scale(1.02); z-index: 12; opacity: 1; }
-            12.5% { transform: translate3d(-300px, 0px, 0px) scale(0.98); z-index: 8; opacity: 0.96; }
-            25%   { transform: translate3d(-212px, -113px, -14px) scale(0.92); z-index: 4; opacity: 0.88; }
-            37.5% { transform: translate3d(0px, -160px, -20px) scale(0.90); z-index: 2; opacity: 0.84; }
-            50%   { transform: translate3d(212px, -113px, -14px) scale(0.92); z-index: 4; opacity: 0.88; }
-            62.5% { transform: translate3d(300px, 0px, 0px) scale(0.98); z-index: 8; opacity: 0.96; }
-            75%   { transform: translate3d(212px, 113px, 14px) scale(1.02); z-index: 12; opacity: 1; }
-            87.5% { transform: translate3d(0px, 160px, 22px) scale(1.04); z-index: 16; opacity: 1; }
-            100%  { transform: translate3d(-212px, 113px, 14px) scale(1.02); z-index: 12; opacity: 1; }
-          }
-          @keyframes orbitLoop_4 {
-            0%    { transform: translate3d(-300px, 0px, 0px) scale(0.98); z-index: 8; opacity: 0.96; }
-            12.5% { transform: translate3d(-212px, -113px, -14px) scale(0.92); z-index: 4; opacity: 0.88; }
-            25%   { transform: translate3d(0px, -160px, -20px) scale(0.90); z-index: 2; opacity: 0.84; }
-            37.5% { transform: translate3d(212px, -113px, -14px) scale(0.92); z-index: 4; opacity: 0.88; }
-            50%   { transform: translate3d(300px, 0px, 0px) scale(0.98); z-index: 8; opacity: 0.96; }
-            62.5% { transform: translate3d(212px, 113px, 14px) scale(1.02); z-index: 12; opacity: 1; }
-            75%   { transform: translate3d(0px, 160px, 22px) scale(1.04); z-index: 16; opacity: 1; }
-            87.5% { transform: translate3d(-212px, 113px, 14px) scale(1.02); z-index: 12; opacity: 1; }
-            100%  { transform: translate3d(-300px, 0px, 0px) scale(0.98); z-index: 8; opacity: 0.96; }
-          }
-          @keyframes orbitLoop_5 {
-            0%    { transform: translate3d(-212px, -113px, -14px) scale(0.92); z-index: 4; opacity: 0.88; }
-            12.5% { transform: translate3d(0px, -160px, -20px) scale(0.90); z-index: 2; opacity: 0.84; }
-            25%   { transform: translate3d(212px, -113px, -14px) scale(0.92); z-index: 4; opacity: 0.88; }
-            37.5% { transform: translate3d(300px, 0px, 0px) scale(0.98); z-index: 8; opacity: 0.96; }
-            50%   { transform: translate3d(212px, 113px, 14px) scale(1.02); z-index: 12; opacity: 1; }
-            62.5% { transform: translate3d(0px, 160px, 22px) scale(1.04); z-index: 16; opacity: 1; }
-            75%   { transform: translate3d(-212px, 113px, 14px) scale(1.02); z-index: 12; opacity: 1; }
-            87.5% { transform: translate3d(-300px, 0px, 0px) scale(0.98); z-index: 8; opacity: 0.96; }
-            100%  { transform: translate3d(-212px, -113px, -14px) scale(0.92); z-index: 4; opacity: 0.88; }
-          }
-          @keyframes orbitLoop_6 {
-            0%    { transform: translate3d(0px, -160px, -20px) scale(0.90); z-index: 2; opacity: 0.84; }
-            12.5% { transform: translate3d(212px, -113px, -14px) scale(0.92); z-index: 4; opacity: 0.88; }
-            25%   { transform: translate3d(300px, 0px, 0px) scale(0.98); z-index: 8; opacity: 0.96; }
-            37.5% { transform: translate3d(212px, 113px, 14px) scale(1.02); z-index: 12; opacity: 1; }
-            50%   { transform: translate3d(0px, 160px, 22px) scale(1.04); z-index: 16; opacity: 1; }
-            62.5% { transform: translate3d(-212px, 113px, 14px) scale(1.02); z-index: 12; opacity: 1; }
-            75%   { transform: translate3d(-300px, 0px, 0px) scale(0.98); z-index: 8; opacity: 0.96; }
-            87.5% { transform: translate3d(-212px, -113px, -14px) scale(0.92); z-index: 4; opacity: 0.88; }
-            100%  { transform: translate3d(0px, -160px, -20px) scale(0.90); z-index: 2; opacity: 0.84; }
-          }
-          @keyframes orbitLoop_7 {
-            0%    { transform: translate3d(212px, -113px, -14px) scale(0.92); z-index: 4; opacity: 0.88; }
-            12.5% { transform: translate3d(300px, 0px, 0px) scale(0.98); z-index: 8; opacity: 0.96; }
-            25%   { transform: translate3d(212px, 113px, 14px) scale(1.02); z-index: 12; opacity: 1; }
-            37.5% { transform: translate3d(0px, 160px, 22px) scale(1.04); z-index: 16; opacity: 1; }
-            50%   { transform: translate3d(-212px, 113px, 14px) scale(1.02); z-index: 12; opacity: 1; }
-            62.5% { transform: translate3d(-300px, 0px, 0px) scale(0.98); z-index: 8; opacity: 0.96; }
-            75%   { transform: translate3d(-212px, -113px, -14px) scale(0.92); z-index: 4; opacity: 0.88; }
-            87.5% { transform: translate3d(0px, -160px, -20px) scale(0.90); z-index: 2; opacity: 0.84; }
-            100%  { transform: translate3d(212px, -113px, -14px) scale(0.92); z-index: 4; opacity: 0.88; }
-          }
-        }
-
-        @media (max-width: 767px) {
-          .orbit-system-viewport {
-            display: none;
-          }
-          .orbit-mobile-journey {
-            display: flex;
-            flex-direction: column;
-            gap: 2rem;
-            width: 100%;
-          }
-          .mobile-hub-banner {
-            width: 100%;
-            border-radius: var(--radius-lg);
-            overflow: hidden;
-            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
-            border: 1px solid rgba(245, 158, 11, 0.3);
-          }
-          .mobile-hub-img-wrap {
-            position: relative;
-            width: 100%;
-            height: 180px;
-            background: #0F172A;
-          }
-          .mobile-hub-img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-          }
-          .mobile-hub-overlay {
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(180deg, rgba(15, 23, 42, 0.4) 0%, rgba(15, 23, 42, 0.9) 100%);
-          }
-          .mobile-hub-text {
-            position: absolute;
-            inset: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 1rem;
-            color: white;
-          }
-          .mobile-hub-badge {
-            background: rgba(16, 185, 129, 0.3);
-            border: 1px solid rgba(52, 211, 153, 0.5);
-            padding: 0.2rem 0.65rem;
-            border-radius: var(--radius-pill);
-            font-size: 0.7rem;
-            font-weight: 800;
-            color: #34D399;
-            margin-bottom: 0.4rem;
-          }
-          .mobile-hub-text h3 {
-            font-size: 1.35rem;
-            font-weight: 800;
-            color: #FFFFFF;
-            margin: 0 0 0.25rem 0;
-          }
-          .mobile-hub-text p {
-            font-size: 0.8rem;
-            color: #CBD5E1;
-            margin: 0;
-          }
-
-          /* Mobile Connected Track */
-          .mobile-journey-track {
-            position: relative;
-            padding-left: 2.25rem;
-          }
-          .mobile-journey-line {
-            position: absolute;
-            top: 20px;
-            bottom: 20px;
-            left: 17px;
-            width: 3px;
-            background: linear-gradient(180deg, #10B981 0%, #059669 100%);
-            border-radius: 4px;
-          }
-          .mobile-journey-list {
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-          }
-          .mobile-journey-item {
-            position: relative;
-            display: flex;
-            align-items: flex-start;
-            cursor: pointer;
-          }
-          .mobile-node-dot {
-            position: absolute;
-            left: -2.25rem;
-            top: 12px;
-            width: 26px;
-            height: 26px;
-            border-radius: 50%;
-            background: #FFFFFF;
-            border: 2px solid #10B981;
-            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 2;
-            transition: all 0.3s ease;
-          }
-          .mobile-node-num {
-            font-size: 0.68rem;
-            font-weight: 800;
-            color: #047857;
-            font-family: var(--font-heading);
-          }
-          .mobile-item-active .mobile-node-dot {
-            background: #10B981;
-            transform: scale(1.15);
-            box-shadow: 0 0 0 5px rgba(16, 185, 129, 0.35);
-          }
-          .mobile-item-active .mobile-node-num {
-            color: white;
-          }
-          .mobile-card-box {
-            flex: 1;
-            background: #FFFFFF;
-            border-radius: 14px;
-            border: 1px solid var(--border-subtle);
-            box-shadow: var(--shadow-sm);
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            transition: all 0.3s ease;
-          }
-          .mobile-item-active .mobile-card-box {
-            border-color: rgba(16, 185, 129, 0.5);
-            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.15);
-          }
-          .mobile-card-img-wrap {
-            position: relative;
-            width: 100%;
-            height: 120px;
-            overflow: hidden;
-          }
-          .mobile-card-img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-          }
-          .mobile-card-icon {
-            position: absolute;
-            bottom: 8px;
-            right: 8px;
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            background: #0F172A;
-            color: #7DD3FC;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 2px solid #FFFFFF;
-          }
-          .mobile-card-content {
-            padding: 0.85rem;
-          }
-          .mobile-card-title {
-            font-size: 0.95rem;
-            font-weight: 700;
-            color: var(--slate-900);
-            margin: 0 0 0.3rem 0;
-          }
-          .mobile-card-desc {
-            font-size: 0.82rem;
-            color: #64748B;
-            line-height: 1.45;
-            margin: 0;
-          }
-          .journey-footer-badge-wrap {
-            display: none;
-          }
-        }
-
-        /* LEADERSHIP REDESIGN STYLES */
-        .leadership-section {
-          position: relative;
-        }
-        .leadership-grid {
-          display: grid;
-          grid-template-columns: 1fr;
-          gap: 2rem;
-        }
-        @media (min-width: 640px) {
-          .leadership-grid {
-            grid-template-columns: repeat(2, 1fr);
-          }
-        }
-        @media (min-width: 1024px) {
-          .leadership-grid {
-            grid-template-columns: repeat(4, 1fr);
-          }
-        }
-        .leadership-grid-item {
-          display: flex;
-          height: 100%;
-        }
-        .leadership-card {
-          width: 100%;
-          background: #FFFFFF;
-          border: 1px solid var(--border-subtle);
-          border-radius: 20px;
-          overflow: hidden;
-          display: flex;
-          flex-direction: column;
-          box-shadow: 0 4px 18px -2px rgba(15, 23, 42, 0.05), 0 2px 6px -1px rgba(15, 23, 42, 0.03);
-          cursor: pointer;
-          transition: transform 0.38s cubic-bezier(0.16, 1, 0.3, 1),
-                      box-shadow 0.38s cubic-bezier(0.16, 1, 0.3, 1),
-                      border-color 0.38s cubic-bezier(0.16, 1, 0.3, 1);
-          outline: none;
-          position: relative;
-        }
-        .leadership-card:focus-visible {
-          box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.4), 0 16px 36px -6px rgba(15, 23, 42, 0.12);
-          border-color: #F59E0B;
-        }
-        .leadership-card:hover {
-          transform: translateY(-5px) scale(1.02);
-          border-color: rgba(245, 158, 11, 0.38);
-          box-shadow: 0 18px 40px -8px rgba(15, 23, 42, 0.12), 0 0 25px rgba(245, 158, 11, 0.15);
-        }
-        .leadership-photo-frame {
-          position: relative;
-          width: 100%;
-          aspect-ratio: 4 / 3.4;
-          overflow: hidden;
-          background: #0F172A;
-        }
-        .leadership-photo-img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          display: block;
-          transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .leadership-card:hover .leadership-photo-img {
-          transform: scale(1.04);
-        }
-        .leadership-photo-overlay {
-          position: absolute;
-          inset: 0;
-          background: linear-gradient(180deg, rgba(15, 23, 42, 0) 40%, rgba(15, 23, 42, 0.55) 100%);
-          pointer-events: none;
-        }
-        .leadership-photo-badge {
-          position: absolute;
-          top: 12px;
-          right: 12px;
-          background: rgba(15, 23, 42, 0.72);
-          backdrop-filter: blur(8px);
-          -webkit-backdrop-filter: blur(8px);
-          border: 1px solid rgba(255, 255, 255, 0.18);
-          border-radius: var(--radius-pill);
-          padding: 0.22rem 0.65rem;
-          display: flex;
-          align-items: center;
-          gap: 0.35rem;
-          font-size: 0.68rem;
-          font-weight: 700;
-          color: #7DD3FC;
-          letter-spacing: 0.03em;
-        }
-        .photo-badge-dot {
-          width: 6px;
-          height: 6px;
-          border-radius: 50%;
-          background: #F59E0B;
-          box-shadow: 0 0 6px #F59E0B;
-        }
-        .leadership-card-body {
-          padding: 1.35rem 1.25rem 1.25rem 1.25rem;
-          display: flex;
-          flex-direction: column;
-          flex: 1;
-          text-align: left;
-        }
-        .leadership-role-wrap {
-          margin-bottom: 0.5rem;
-        }
-        .leadership-role-tag {
-          display: inline-block;
-          font-size: 0.72rem;
-          font-weight: 700;
-          color: var(--primary-saffron-dark, #B45309);
-          background: var(--surface-saffron, #FFF7ED);
-          border: 1px solid rgba(245, 158, 11, 0.25);
-          padding: 0.2rem 0.65rem;
-          border-radius: var(--radius-pill);
-          letter-spacing: 0.02em;
-          transition: background 0.25s ease, border-color 0.25s ease;
-        }
-        .leadership-card:hover .leadership-role-tag {
-          background: #FED7AA;
-          border-color: rgba(245, 158, 11, 0.45);
-        }
-        .leadership-member-name {
-          font-size: 1.15rem;
-          font-weight: 700;
-          color: var(--slate-900);
-          margin-bottom: 0.45rem;
-          line-height: 1.3;
-          font-family: var(--font-heading);
-          letter-spacing: -0.01em;
-        }
-        .leadership-member-desc {
-          font-size: 0.835rem;
-          color: var(--text-muted);
-          line-height: 1.55;
-          margin-bottom: 1.15rem;
-          flex: 1;
-        }
-        .leadership-card-footer {
-          margin-top: auto;
-          padding-top: 0.85rem;
-          border-top: 1px solid var(--border-subtle);
-        }
-        .leadership-view-btn {
-          display: inline-flex;
-          align-items: center;
-          gap: 0.45rem;
-          font-size: 0.835rem;
-          font-weight: 700;
-          color: var(--primary-saffron, #F59E0B);
-          transition: color 0.2s ease;
-        }
-        .view-btn-arrow {
-          transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .leadership-card:hover .leadership-view-btn {
-          color: var(--primary-saffron-hover, #D97706);
-        }
-        .leadership-card:hover .view-btn-arrow {
-          transform: translateX(4px);
-        }
-
-        /* FULLSCREEN MODAL BACKDROP & DIALOG */
-        .leadership-modal-overlay {
-          position: fixed;
-          inset: 0;
-          z-index: 9999;
-          background: rgba(15, 23, 42, 0.72);
-          backdrop-filter: blur(12px);
-          -webkit-backdrop-filter: blur(12px);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 1.5rem;
-          transition: opacity 0.32s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .leadership-modal-overlay.is-open {
-          opacity: 1;
-          animation: modalOverlayFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-        .leadership-modal-overlay.is-closing {
-          opacity: 0;
-          animation: modalOverlayFadeOut 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-        @keyframes modalOverlayFadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        @keyframes modalOverlayFadeOut {
-          from { opacity: 1; }
-          to { opacity: 0; }
-        }
-
-        .leadership-modal-dialog {
-          position: relative;
-          width: 100%;
-          max-width: 820px;
-          background: #FFFFFF;
-          border-radius: 24px;
-          box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.35), 0 0 40px rgba(245, 158, 11, 0.15);
-          border: 1px solid rgba(245, 158, 11, 0.2);
-          max-height: 90vh;
-          overflow-y: auto;
-          scrollbar-width: thin;
-          scrollbar-color: rgba(245, 158, 11, 0.3) transparent;
-        }
-        .leadership-modal-dialog.dialog-enter {
-          animation: modalDialogZoomIn 0.38s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-        .leadership-modal-dialog.dialog-exit {
-          animation: modalDialogZoomOut 0.26s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-        @keyframes modalDialogZoomIn {
-          0% {
-            opacity: 0;
-            transform: scale(0.94) translateY(20px);
-          }
-          100% {
-            opacity: 1;
-            transform: scale(1) translateY(0);
-          }
-        }
-        @keyframes modalDialogZoomOut {
-          0% {
-            opacity: 1;
-            transform: scale(1) translateY(0);
-          }
-          100% {
-            opacity: 0;
-            transform: scale(0.95) translateY(15px);
-          }
-        }
-
-        .leadership-modal-close {
-          position: absolute;
-          top: 1.25rem;
-          right: 1.25rem;
-          width: 38px;
-          height: 38px;
-          border-radius: 50%;
-          background: var(--slate-100);
-          border: 1px solid var(--border-subtle);
-          color: var(--slate-600);
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          transition: all 0.2s ease;
-          z-index: 10;
-        }
-        .leadership-modal-close:hover {
-          background: var(--surface-saffron, #FFF7ED);
-          color: var(--primary-saffron-dark, #B45309);
-          border-color: rgba(245, 158, 11, 0.45);
-          transform: rotate(90deg);
-        }
-        .leadership-modal-close:focus-visible {
-          outline: none;
-          box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.4);
-        }
-
-        .leadership-modal-grid {
-          display: grid;
-          grid-template-columns: 1fr;
-          padding: 2.25rem;
-          gap: 2rem;
-        }
-        @media (min-width: 768px) {
-          .leadership-modal-grid {
-            grid-template-columns: 300px 1fr;
-            padding: 2.5rem;
-            gap: 2.5rem;
-            align-items: start;
-          }
-        }
-
-        .modal-left-col {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          text-align: center;
-        }
-        @media (min-width: 768px) {
-          .modal-left-col {
-            align-items: flex-start;
-            text-align: left;
-          }
-        }
-
-        .modal-photo-wrapper {
-          position: relative;
-          width: 100%;
-          max-width: 260px;
-          aspect-ratio: 1 / 1.08;
-          border-radius: 20px;
-          overflow: hidden;
-          margin-bottom: 1.25rem;
-          box-shadow: 0 12px 30px -6px rgba(15, 23, 42, 0.18), 0 0 20px rgba(245, 158, 11, 0.15);
-          border: 1px solid rgba(245, 158, 11, 0.25);
-          background: #0F172A;
-        }
-        .modal-photo-img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          display: block;
-        }
-        .modal-left-info {
-          width: 100%;
-        }
-        .modal-member-name {
-          font-size: 1.45rem;
-          font-weight: 800;
-          color: var(--slate-900);
-          margin-bottom: 0.35rem;
-          line-height: 1.25;
-          font-family: var(--font-heading);
-        }
-        .modal-role-badge {
-          display: inline-block;
-          font-size: 0.78rem;
-          font-weight: 700;
-          color: var(--primary-saffron-dark, #B45309);
-          background: var(--surface-saffron, #FFF7ED);
-          border: 1px solid rgba(245, 158, 11, 0.25);
-          padding: 0.25rem 0.75rem;
-          border-radius: var(--radius-pill);
-          margin-bottom: 0.85rem;
-        }
-        .modal-location-line {
-          display: flex;
-          align-items: center;
-          gap: 0.4rem;
-          font-size: 0.82rem;
-          color: var(--slate-500);
-          margin-bottom: 1rem;
-        }
-        @media (max-width: 767px) {
-          .modal-location-line {
-            justify-content: center;
-          }
-        }
-        .modal-loc-icon {
-          color: var(--primary-saffron, #F59E0B);
-        }
-        .modal-focus-pills {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 0.4rem;
-          margin-top: 0.25rem;
-        }
-        @media (max-width: 767px) {
-          .modal-focus-pills {
-            justify-content: center;
-          }
-        }
-        .modal-focus-pill {
-          font-size: 0.72rem;
-          font-weight: 600;
-          color: var(--primary-saffron-dark, #B45309);
-          background: var(--surface-saffron, #FFF7ED);
-          border: 1px solid #FED7AA;
-          padding: 0.2rem 0.55rem;
-          border-radius: 6px;
-        }
-
-        .modal-right-col {
-          display: flex;
-          flex-direction: column;
-          text-align: left;
-        }
-        .modal-section-block {
-          width: 100%;
-        }
-        .modal-section-label {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          font-size: 0.72rem;
-          font-weight: 800;
-          letter-spacing: 0.08em;
-          color: var(--primary-700);
-          text-transform: uppercase;
-          margin-bottom: 0.75rem;
-        }
-        .modal-bio-text {
-          font-size: 0.95rem;
-          color: var(--slate-700);
-          line-height: 1.7;
-          margin: 0;
-        }
-        .modal-divider {
-          width: 100%;
-          height: 1px;
-          background: var(--border-subtle);
-          margin: 1.75rem 0;
-        }
-        .modal-contacts-list {
-          display: flex;
-          flex-direction: column;
-          gap: 0.85rem;
-        }
-        .modal-contact-item {
-          display: flex;
-          align-items: center;
-          gap: 0.85rem;
-          padding: 0.75rem 1rem;
-          background: var(--slate-50);
-          border: 1px solid var(--border-subtle);
-          border-radius: 12px;
-          text-decoration: none;
-          transition: all 0.22s ease;
-        }
-        .modal-contact-item:hover {
-          background: var(--surface-saffron, #FFF7ED);
-          border-color: rgba(245, 158, 11, 0.35);
-          transform: translateX(4px);
-        }
-        .contact-icon-box {
-          width: 36px;
-          height: 36px;
-          border-radius: 8px;
-          background: #FEF3C7;
-          color: #B45309;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          flex-shrink: 0;
-          transition: background 0.2s ease;
-        }
-        .modal-contact-item:hover .contact-icon-box {
-          background: #F59E0B;
-          color: white;
-        }
-        .contact-icon-linkedin {
-          background: #E0F2FE;
-          color: #0369A1;
-        }
-        .modal-contact-item:hover .contact-icon-linkedin {
-          background: #0284C7;
-          color: white;
-        }
-        .contact-text-wrap {
-          display: flex;
-          flex-direction: column;
-          flex: 1;
-        }
-        .contact-label {
-          font-size: 0.7rem;
-          font-weight: 700;
-          color: var(--slate-400);
-          text-transform: uppercase;
-          letter-spacing: 0.04em;
-        }
-        .contact-value {
-          font-size: 0.88rem;
-          font-weight: 600;
-          color: var(--slate-800);
-          word-break: break-all;
-        }
-        .modal-contact-item:hover .contact-value {
-          color: var(--primary-saffron-dark, #B45309);
-        }
-        .contact-ext-icon {
-          color: var(--slate-400);
-          margin-left: auto;
-          flex-shrink: 0;
-        }
-        .modal-contact-item:hover .contact-ext-icon {
-          color: var(--primary-saffron, #F59E0B);
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-          .sticky-note-wrapper,
-          .sticky-vision-wrapper,
-          .sticky-mission-wrapper,
-          .editorial-visual-flank,
-          .editorial-float-layer,
-          .editorial-photo-card,
-          .sticky-note-card,
-          .sticky-card-vision,
-          .sticky-card-blue {
-            opacity: 1 !important;
-            animation: none !important;
-            transform: none !important;
-            transition: none !important;
-          }
-          .orbit-3d-stage,
-          .impact-hub-center,
-          .hub-core-card,
-          .hub-outer-ring-1,
-          .hub-outer-ring-2,
-          .orbit-ellipse-dashed,
-          .orbit-card-node,
-          .orbit-card-pos-0,
-          .orbit-card-pos-1,
-          .orbit-card-pos-2,
-          .orbit-card-pos-3,
-          .orbit-card-pos-4,
-          .orbit-card-pos-5,
-          .orbit-card-pos-6,
-          .orbit-card-pos-7,
-          .methodology-ambient-aura,
-          .hero-background-video {
-            display: none !important;
-          }
-          .about-hero {
-            background-image: url('/images/about-hero.jpg') !important;
-            background-size: cover !important;
-            background-position: center !important;
-          }
-          .leadership-card,
-          .leadership-card:hover,
-          .leadership-photo-img,
-          .view-btn-arrow,
-          .modal-contact-item,
-          .leadership-modal-dialog,
-          .leadership-modal-dialog.dialog-enter,
-          .leadership-modal-dialog.dialog-exit,
-          .leadership-modal-overlay.is-open,
-          .leadership-modal-overlay.is-closing {
-            animation: none !important;
-            transform: none !important;
-            transition: none !important;
-          }
-          .sticky-note-wrapper:hover .sticky-card-img,
-          .editorial-photo-card:hover .editorial-img {
-            transform: none !important;
-          }
-          .flow-float-0,
-          .flow-float-1,
-          .flow-float-2,
-          .flow-float-3,
-          .flow-mobile-float-0,
-          .flow-mobile-float-1,
-          .flow-mobile-float-2,
-          .flow-mobile-float-3,
-          .flow-card-img,
-          .flow-mobile-pulse {
-            animation: none !important;
-            transform: none !important;
-            transition: none !important;
-          }
-        }
-      `}</style>
+            <div className="closing-tax-badge">
+              <ShieldCheck size={16} className="tax-shield-icon" />
+              <span>All donations eligible for 50% deduction under Section 80G of the Indian Income Tax Act.</span>
+            </div>
+          </motion.div>
+        </div>
+      </section>
     </div>
   );
 }

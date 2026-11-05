@@ -1,0 +1,320 @@
+.volunteer-portal-root {
+  min-height: calc(100vh - 80px);
+  background-color: var(--background, #090D16);
+  color: var(--text-primary, #F8FAFC);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 1.5rem;
+  position: relative;
+  overflow: hidden;
+  font-family: var(--font-body, system-ui, sans-serif);
+}
+
+.portal-backdrop-glow {
+  position: absolute;
+  top: -15%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 700px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(249, 115, 22, 0.12) 0%, rgba(14, 165, 233, 0.05) 50%, transparent 70%);
+  filter: blur(80px);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.portal-card-container {
+  width: 100%;
+  max-width: 520px;
+  position: relative;
+  z-index: 2;
+}
+
+.portal-header-box {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.portal-brand-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(249, 115, 22, 0.1);
+  border: 1px solid rgba(249, 115, 22, 0.25);
+  color: var(--primary-saffron, #F97316);
+  padding: 0.35rem 0.85rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 1rem;
+}
+
+.portal-title {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #FFFFFF;
+  margin: 0 0 0.5rem 0;
+  font-family: var(--font-heading, inherit);
+  letter-spacing: -0.02em;
+}
+
+.portal-subtitle {
+  color: #94A3B8;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Target Opportunity Ribbon */
+.portal-target-opp-ribbon {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(249, 115, 22, 0.35);
+  border-radius: 12px;
+  padding: 0.85rem 1.15rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.portal-target-opp-ribbon.closed {
+  border-color: rgba(239, 68, 68, 0.35);
+  background: rgba(239, 68, 68, 0.08);
+}
+
+.target-opp-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(249, 115, 22, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary-saffron, #F97316);
+  flex-shrink: 0;
+}
+
+.target-opp-info {
+  flex: 1;
+  font-size: 0.85rem;
+}
+
+.target-opp-tag {
+  font-size: 0.7rem;
+  color: var(--primary-saffron, #F97316);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: block;
+}
+
+.target-opp-name {
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
+/* Card Body & Tabs */
+.portal-card {
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+  padding: 2rem;
+  overflow: hidden;
+}
+
+.portal-nav-tabs {
+  display: flex;
+  background: rgba(0, 0, 0, 0.25);
+  padding: 0.35rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  margin-bottom: 1.75rem;
+  gap: 0.25rem;
+}
+
+.portal-tab-btn {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #94A3B8;
+  padding: 0.65rem 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.portal-tab-btn:hover {
+  color: #FFFFFF;
+}
+
+.portal-tab-btn.active {
+  background: var(--primary-saffron, #F97316);
+  color: #FFFFFF;
+  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.25);
+}
+
+/* Form Controls */
+.portal-form-group {
+  margin-bottom: 1.25rem;
+}
+
+.portal-form-label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #CBD5E1;
+  margin-bottom: 0.4rem;
+}
+
+.portal-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.portal-input-icon {
+  position: absolute;
+  left: 1rem;
+  color: #64748B;
+  pointer-events: none;
+}
+
+.portal-input {
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 2.75rem;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  color: #FFFFFF;
+  font-size: 0.95rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  box-sizing: border-box;
+}
+
+.portal-input:focus {
+  outline: none;
+  border-color: var(--primary-saffron, #F97316);
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.2);
+}
+
+.portal-input::placeholder {
+  color: #64748B;
+}
+
+.portal-error-banner {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #FCA5A5;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  margin-bottom: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.portal-success-banner {
+  background: rgba(52, 211, 153, 0.15);
+  border: 1px solid rgba(52, 211, 153, 0.3);
+  color: #6EE7B7;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  margin-bottom: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.portal-btn-submit {
+  width: 100%;
+  padding: 0.85rem;
+  background: var(--primary-saffron, #F97316);
+  color: #FFFFFF;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  box-shadow: 0 6px 20px rgba(249, 115, 22, 0.3);
+}
+
+.portal-btn-submit:hover:not(:disabled) {
+  background: #EA580C;
+  transform: translateY(-1px);
+}
+
+.portal-btn-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.portal-pw-reqs {
+  margin: 0.75rem 0 1.25rem;
+  padding: 0.85rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.4rem;
+}
+
+.portal-pw-req-item {
+  font-size: 0.75rem;
+  color: #94A3B8;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.portal-pw-req-item.met {
+  color: #34D399;
+}
+
+/* Already Authenticated View */
+.portal-auth-signedin {
+  text-align: center;
+  padding: 1.5rem 0;
+}
+
+.signedin-avatar-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 20px;
+  background: rgba(52, 211, 153, 0.15);
+  color: #34D399;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.25rem;
+}
+
+.signedin-heading {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #FFFFFF;
+  margin: 0 0 0.5rem 0;
+}
+
+.signedin-desc {
+  color: #94A3B8;
+  font-size: 0.9rem;
+  margin-bottom: 1.75rem;
+}
