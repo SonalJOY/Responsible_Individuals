@@ -146,6 +146,7 @@ export default function Navbar() {
             {dropdownOpen === 'involved' && (
               <div className="dropdown-menu">
                 <Link to="/volunteer" className="dropdown-item" onClick={closeMenus}>Volunteer With Us</Link>
+                <Link to="/volunteer-portal" className="dropdown-item" onClick={closeMenus}>Volunteer Portal</Link>
                 <Link to="/donate" className="dropdown-item" onClick={closeMenus}>Make a Donation</Link>
                 <Link to="/partners" className="dropdown-item" onClick={closeMenus}>Corporate / CSR Partnerships</Link>
                 <Link to="/events" className="dropdown-item" onClick={closeMenus}>Events & Drives</Link>
@@ -177,7 +178,9 @@ export default function Navbar() {
 
           {user ? (
             <div className="user-profile-menu">
-              <span className="user-greeting">Hi, {user.first_name || 'User'}</span>
+              <Link to="/volunteer/dashboard" className="user-greeting" title="Volunteer Portal">
+                Hi, {user.first_name || 'User'}
+              </Link>
               <button onClick={logout} className="logout-icon-btn" title="Sign Out">
                 <LogOut size={16} />
               </button>
@@ -211,6 +214,7 @@ export default function Navbar() {
             <Link to="/projects" className="mobile-nav-link" onClick={closeMenus}>Our Work & Projects</Link>
             <Link to="/impact" className="mobile-nav-link" onClick={closeMenus}>Impact Dashboard</Link>
             <Link to="/volunteer" className="mobile-nav-link" onClick={closeMenus}>Volunteer Opportunities</Link>
+            <Link to="/volunteer-portal" className="mobile-nav-link" onClick={closeMenus}>Volunteer Portal</Link>
             <Link to="/events" className="mobile-nav-link" onClick={closeMenus}>Events & Drives</Link>
             <Link to="/stories" className="mobile-nav-link" onClick={closeMenus}>Stories of Change</Link>
             <Link to="/gallery" className="mobile-nav-link" onClick={closeMenus}>Photo Gallery</Link>
@@ -457,6 +461,10 @@ export default function Navbar() {
           font-size: 0.875rem;
           font-weight: 600;
           color: var(--charcoal-800);
+          text-decoration: none;
+        }
+        .user-greeting:hover {
+          color: var(--primary-saffron, #F59E0B);
         }
         .logout-icon-btn {
           background: none;

@@ -1,3 +1,13 @@
+import csv
+import io
+import re
+import secrets
+import hashlib
+from django.db import IntegrityError
+from datetime import timedelta
+from django.core.validators import validate_email as django_validate_email
+from django.core.exceptions import ValidationError as DjangoValidationError
+from django.contrib.auth.password_validation import validate_password
 import uuid
 from decimal import Decimal
 from django.db import models, transaction
@@ -7,6 +17,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from apps.accounts.models import UserProfile
+from apps.core.models import AuditLog
 from .models import (
     VolunteerInterest,
     VolunteerOpportunity,
@@ -14,26 +25,37 @@ from .models import (
     VolunteerApplication,
     VolunteerParticipation,
     Certificate,
+    VolunteerOnboardingApplication,
 )
 from .tasks import (
     send_volunteer_registration_email,
     send_admin_registration_email,
     send_application_confirmation_email,
     send_application_status_email,
+    send_onboarding_submitted_admin_email,
+    send_onboarding_decision_email,
 )
 
 User = get_user_model()
 
 
-def register_volunteer(validated_data):
+def register_volunteer(
+    validated_data,
+    is_verified=False,
+    is_active=False,
+    issue_tokens=False,
+    approval_status=VolunteerProfile.ApprovalStatus.PENDING,
+    send_otp=False,
+):
     """
     Registers a new volunteer atomically:
-    1. Creates a User with role=VOLUNTEER
+    1. Creates a User with role=PUBLIC (or VOLUNTEER only if explicitly verified)
     2. Creates a linked UserProfile
-    3. Creates or links the VolunteerProfile
+    3. Creates or links the VolunteerProfile with specified approval_status (default: PENDING)
     4. Attaches VolunteerInterests
-    5. Dispatches volunteer confirmation and admin notification emails on successful commit.
-    6. Returns user, profile, and SimpleJWT tokens.
+    5. If send_otp=True (public registration path), creates an email OTP and queues verification email
+    6. Dispatches volunteer confirmation and admin notification emails on successful commit
+    7. SimpleJWT tokens are issued ONLY when issue_tokens=True (never during unverified public registration)
     """
     email = validated_data.get('email', '').strip().lower()
     password = validated_data.get('password')
@@ -57,15 +79,16 @@ def register_volunteer(validated_data):
         if User.objects.filter(email=email).exists():
             raise ValidationError({'email': 'A user account with this email already exists. Please sign in.'})
 
-        # 1. Create User
+        # 1. Create User (starts as PUBLIC and unverified/inactive until OTP verification)
         user = User.objects.create_user(
             email=email,
             password=password,
             first_name=first_name,
             last_name=last_name,
             phone=phone,
-            role=User.Role.VOLUNTEER,
-            is_verified=True,
+            role=User.Role.PUBLIC if not is_verified else User.Role.VOLUNTEER,
+            is_verified=is_verified,
+            is_active=is_active,
         )
 
         # 2. Create UserProfile
@@ -78,7 +101,7 @@ def register_volunteer(validated_data):
             }
         )
 
-        # 3. Create or link VolunteerProfile
+        # 3. Create or link VolunteerProfile (starts PENDING by default)
         existing_profile = VolunteerProfile.objects.filter(email=email).first()
         full_name = f"{first_name} {last_name}".strip() or email
 
@@ -106,27 +129,45 @@ def register_volunteer(validated_data):
                 skills=skills or 'Community Volunteering',
                 availability=availability or 'Weekends',
                 bio=bio,
-                approval_status=VolunteerProfile.ApprovalStatus.APPROVED,
+                approval_status=approval_status,
             )
 
         # 4. Attach Interests
         if interests:
             v_profile.interests.set(_resolve_interests(interests))
 
-        # 5. Queue transactional confirmation emails on successful commit
+        # 5. Create OTP for email verification if send_otp=True
+        if send_otp:
+            from apps.accounts.models import OTP
+            from apps.accounts.utils import send_email_otp
+
+            otp = OTP.objects.create(
+                user=user,
+                purpose='email',
+            )
+            transaction.on_commit(lambda: send_email_otp(user, otp.code))
+
+        # 6. Queue transactional confirmation emails on successful commit
         v_profile_id = str(v_profile.id)
         transaction.on_commit(lambda: send_volunteer_registration_email.delay(v_profile_id))
         transaction.on_commit(lambda: send_admin_registration_email.delay(v_profile_id))
 
-        # 6. Generate JWT tokens
-        refresh = RefreshToken.for_user(user)
+        # 7. Generate SimpleJWT tokens only when issue_tokens=True
+        access_token = None
+        refresh_token = None
+        if issue_tokens:
+            refresh = RefreshToken.for_user(user)
+            access_token = str(refresh.access_token)
+            refresh_token = str(refresh)
 
         return {
             'user': user,
             'volunteer_profile': v_profile,
-            'access': str(refresh.access_token),
-            'refresh': str(refresh),
-            'message': 'Volunteer registered successfully.'
+            'access': access_token,
+            'refresh': refresh_token,
+            'identifier': user.email,
+            'requires_otp': not is_verified,
+            'message': 'Registration initiated. Please verify your OTP.' if not is_verified else 'Volunteer registered successfully.'
         }
 
 
@@ -180,7 +221,7 @@ def get_or_create_volunteer_profile_for_user(user, profile_data=None):
                     city='Bengaluru',
                     skills='Community Volunteering',
                     availability='Weekends',
-                    approval_status=VolunteerProfile.ApprovalStatus.APPROVED,
+                    approval_status=VolunteerProfile.ApprovalStatus.PENDING,
                 )
 
         if profile_data:
@@ -193,6 +234,13 @@ def get_or_create_volunteer_profile_for_user(user, profile_data=None):
             if update_fields:
                 update_fields.append('updated_at')
                 profile.save(update_fields=update_fields)
+
+            if 'full_name' in profile_data and profile_data['full_name'] and profile.user:
+                name_str = str(profile_data['full_name']).strip()
+                parts = name_str.split(' ', 1)
+                profile.user.first_name = parts[0]
+                profile.user.last_name = parts[1] if len(parts) > 1 else ''
+                profile.user.save(update_fields=['first_name', 'last_name', 'updated_at'])
 
             if 'interests' in profile_data:
                 profile.interests.set(_resolve_interests(profile_data['interests']))
@@ -351,3 +399,177 @@ def create_certificate(volunteer_profile, title=None, description='', issue_date
             issued_by=issued_by or "Responsible Individuals Foundation",
         )
         return certificate
+
+
+def submit_onboarding_application(volunteer_profile, validated_data):
+    """
+    Submits a one-time volunteer onboarding application.
+    Enforces that:
+    - User is not already APPROVED.
+    - User does not have a concurrent SUBMITTED application pending review.
+    - Preserves audit trail: rejected prior applications remain intact in database.
+    - Updates profile demographic fields if supplied.
+    - Dispatches transactional notification to administrators after commit.
+    """
+    if volunteer_profile.approval_status == VolunteerProfile.ApprovalStatus.APPROVED:
+        raise ValidationError({'detail': 'Your volunteer profile is already verified and approved.'})
+
+    with transaction.atomic():
+        # Prevent multiple concurrent pending submissions
+        has_pending = VolunteerOnboardingApplication.objects.filter(
+            volunteer_profile=volunteer_profile,
+            status=VolunteerOnboardingApplication.Status.SUBMITTED
+        ).exists()
+        if has_pending:
+            raise ValidationError({
+                'detail': 'You already have an onboarding application under review by our administration. Please await a decision.'
+            })
+
+        # Update profile demographic fields if supplied
+        profile_updates = []
+        for field in ['phone', 'city', 'skills', 'availability']:
+            val = validated_data.get(field)
+            if val and hasattr(volunteer_profile, field):
+                setattr(volunteer_profile, field, val)
+                profile_updates.append(field)
+        if profile_updates:
+            profile_updates.append('updated_at')
+            volunteer_profile.save(update_fields=profile_updates)
+
+        # Create new onboarding application record (preserving audit trail of any previous rejected records)
+        application = VolunteerOnboardingApplication.objects.create(
+            volunteer_profile=volunteer_profile,
+            statement_of_intent=validated_data['statement_of_intent'],
+            skills_summary=validated_data.get('skills_summary', volunteer_profile.skills) or '',
+            experience_summary=validated_data.get('experience_summary', '') or '',
+            availability=validated_data.get('availability', volunteer_profile.availability) or '',
+            status=VolunteerOnboardingApplication.Status.SUBMITTED,
+            submitted_at=timezone.now(),
+        )
+
+        app_id_str = str(application.id)
+        # Transactional notification with fail-safe: Celery task dispatches after commit
+        transaction.on_commit(lambda: send_onboarding_submitted_admin_email.delay(app_id_str))
+
+        return application
+
+
+def review_onboarding_application(application_id, decision, review_notes='', admin_user=None):
+    """
+    Admin review of a volunteer onboarding application.
+    Transitions status to APPROVED or REJECTED.
+    When APPROVED:
+      - Sets VolunteerProfile.approval_status = APPROVED
+      - Updates User.role = VOLUNTEER (preserving staff/admin privileges)
+    When REJECTED:
+      - Sets VolunteerProfile.approval_status = REJECTED
+      - Preserves review notes for applicant feedback
+      - Audit record remains in DB so history is never lost
+    Transactional, with fail-safe notification on commit.
+    """
+    valid_decisions = [
+        VolunteerOnboardingApplication.Status.APPROVED,
+        VolunteerOnboardingApplication.Status.REJECTED,
+    ]
+    if decision not in valid_decisions:
+        raise ValidationError({'status': f"Invalid decision: '{decision}'. Allowed choices: {valid_decisions}"})
+
+    with transaction.atomic():
+        application = VolunteerOnboardingApplication.objects.select_for_update().select_related(
+            'volunteer_profile', 'volunteer_profile__user'
+        ).get(id=getattr(application_id, 'id', application_id))
+
+        previous_status = application.status
+
+        application.status = decision
+        application.reviewed_at = timezone.now()
+        application.reviewed_by = admin_user
+        application.admin_review_notes = review_notes
+        application.save(update_fields=['status', 'reviewed_at', 'reviewed_by', 'admin_review_notes', 'updated_at'])
+
+        profile = application.volunteer_profile
+
+        if decision == VolunteerOnboardingApplication.Status.APPROVED:
+            profile.approval_status = VolunteerProfile.ApprovalStatus.APPROVED
+            profile.save(update_fields=['approval_status', 'updated_at'])
+
+            if profile.user and not profile.user.is_admin_or_staff:
+                if profile.user.role != User.Role.VOLUNTEER:
+                    profile.user.role = User.Role.VOLUNTEER
+                    profile.user.save(update_fields=['role', 'updated_at'])
+
+        elif decision == VolunteerOnboardingApplication.Status.REJECTED:
+            profile.approval_status = VolunteerProfile.ApprovalStatus.REJECTED
+            profile.save(update_fields=['approval_status', 'updated_at'])
+
+            if profile.user and not profile.user.is_admin_or_staff:
+                if profile.user.role != User.Role.PUBLIC:
+                    profile.user.role = User.Role.PUBLIC
+                    profile.user.save(update_fields=['role', 'updated_at'])
+
+        if previous_status != decision:
+            app_id_str = str(application.id)
+            decision_str = str(decision)
+            transaction.on_commit(lambda: send_onboarding_decision_email.delay(app_id_str, decision_str))
+
+        return application
+
+def update_volunteer_active_status(profile_or_id, is_active, reason, admin_user=None, ip_address=None):
+    """
+    Controlled administrative active-status transition for VolunteerProfile.
+    - Validates transition and reason.
+    - Updates VolunteerProfile.is_active without altering User.is_active, role, or approval_status.
+    - Creates an AuditLog entry ONLY if an actual transition occurs (prevents duplicate transition logs).
+    - Preserves all associated history, applications, participations, certificates, and hours.
+    Returns tuple: (profile, status_changed: bool).
+    """
+    if not isinstance(is_active, bool):
+        raise ValidationError({'is_active': 'Must be a valid boolean.'})
+
+    cleaned_reason = (reason or '').strip()
+    if len(cleaned_reason) < 5:
+        raise ValidationError({'reason': 'Reason must contain at least 5 characters of meaningful text.'})
+
+    with transaction.atomic():
+        if isinstance(profile_or_id, VolunteerProfile):
+            profile = VolunteerProfile.objects.select_for_update().get(id=profile_or_id.id)
+        else:
+            profile = VolunteerProfile.objects.select_for_update().get(id=profile_or_id)
+
+        previous_is_active = profile.is_active
+
+        # Repeated requests that do not change current status return idempotent response without logging duplicate audit records
+        if previous_is_active == is_active:
+            return profile, False
+
+        profile.is_active = is_active
+        profile.save(update_fields=['is_active', 'updated_at'])
+
+        action_verb = 'activated' if is_active else 'deactivated'
+        admin_identifier = admin_user.email if (admin_user and admin_user.is_authenticated) else 'Administrator'
+
+        AuditLog.objects.create(
+            user=admin_user if (admin_user and admin_user.is_authenticated) else None,
+            action='UPDATE',
+            entity_type='VolunteerProfile',
+            entity_id=str(profile.id),
+            description=f"Volunteer profile {action_verb} by {admin_identifier}. Reason: {cleaned_reason}",
+            ip_address=ip_address,
+            metadata={
+                'previous_is_active': previous_is_active,
+                'new_is_active': is_active,
+                'reason': cleaned_reason,
+                'volunteer_email': profile.email,
+                'volunteer_name': profile.full_name,
+            }
+        )
+
+        return profile, True
+
+
+
+MAX_CSV_FILE_SIZE = 2 * 1024 * 1024  # 2MB
+MAX_CSV_ROW_COUNT = 500
+INVITATION_EXPIRY_DAYS = 7
+
+

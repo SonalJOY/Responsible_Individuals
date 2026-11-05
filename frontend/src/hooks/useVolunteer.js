@@ -215,10 +215,20 @@ export function useVolunteerApplication() {
     setSubmitting(true);
     setError(null);
     try {
-      // 1. Register and authenticate user atomically
-      await registerFn(registrationPayload);
+      // 1. Initiate volunteer registration
+      const regRes = await registerFn(registrationPayload);
 
-      // 2. Submit application as newly authenticated user
+      // 2. If registration requires OTP verification (standard secure flow),
+      // do not attempt authenticated application submission before email verification
+      if (regRes?.requires_otp) {
+        return {
+          requires_otp: true,
+          identifier: regRes.identifier || registrationPayload.email,
+          message: regRes.message || 'Verification code sent. Please verify your email.',
+        };
+      }
+
+      // 3. Submit application as newly authenticated user (if tokens exist, e.g. test environments)
       const res = await volunteerService.apply(applicationPayload);
       setSuccessApplication(res.application || res);
       return res;
@@ -284,6 +294,69 @@ export function useMyVolunteerApplications(user) {
     loading,
     error,
     refetchApplications: fetchMyApplications,
+  };
+}
+
+/**
+ * Hook to manage authenticated citizen onboarding application status, loading, and submission.
+ */
+export function useVolunteerOnboarding(user) {
+  const [onboarding, setOnboarding] = useState(null);
+  const [loading, setLoading] = useState(Boolean(user));
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState(null);
+
+  const fetchOnboarding = useCallback(async () => {
+    if (!user) {
+      setOnboarding(null);
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await volunteerService.getMyOnboarding();
+      setOnboarding(data);
+    } catch (err) {
+      console.error('Error fetching volunteer onboarding status:', err);
+      setError(err?.response?.data?.detail || 'Failed to retrieve onboarding status.');
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    fetchOnboarding();
+  }, [fetchOnboarding]);
+
+  const submitOnboarding = async (formData) => {
+    setSubmitting(true);
+    setError(null);
+    try {
+      const res = await volunteerService.submitOnboarding(formData);
+      setOnboarding(res);
+      return res;
+    } catch (err) {
+      console.error('Error submitting onboarding application:', err);
+      const detail = err?.response?.data?.detail ||
+        err?.response?.data?.statement_of_intent?.[0] ||
+        err?.response?.data?.phone?.[0] ||
+        'Failed to submit onboarding application. Please check your inputs.';
+      setError(detail);
+      throw err;
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return {
+    onboarding,
+    loading,
+    submitting,
+    error,
+    refetchOnboarding: fetchOnboarding,
+    submitOnboarding,
+    setError,
   };
 }
 

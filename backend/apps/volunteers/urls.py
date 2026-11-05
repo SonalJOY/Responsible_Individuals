@@ -7,12 +7,15 @@ from .views import (
     VolunteerApplicationViewSet,
     VolunteerParticipationViewSet,
     CertificateViewSet,
+    VolunteerOnboardingApplicationViewSet,
     VolunteerRegisterView,
     VolunteerApplyView,
     MyVolunteerProfileView,
     MyVolunteerApplicationsView,
     MyVolunteerParticipationsView,
     MyCertificatesView,
+    MyOnboardingApplicationView,
+    SubmitOnboardingApplicationView,
 )
 
 router = DefaultRouter()
@@ -22,6 +25,7 @@ router.register(r'profiles', VolunteerProfileViewSet, basename='volunteer-profil
 router.register(r'applications', VolunteerApplicationViewSet, basename='volunteer-application')
 router.register(r'participations', VolunteerParticipationViewSet, basename='volunteer-participation')
 router.register(r'admin/certificates', CertificateViewSet, basename='volunteer-admin-certificate')
+router.register(r'onboarding-applications', VolunteerOnboardingApplicationViewSet, basename='volunteer-onboarding-application')
 
 app_name = 'volunteers'
 
@@ -33,6 +37,8 @@ urlpatterns = [
     path('my-applications/', MyVolunteerApplicationsView.as_view(), name='my-volunteer-applications'),
     path('my-participations/', MyVolunteerParticipationsView.as_view(), name='my-volunteer-participations'),
     path('certificates/', MyCertificatesView.as_view(), name='my-volunteer-certificates'),
+    path('my-onboarding/', MyOnboardingApplicationView.as_view(), name='my-onboarding-application'),
+    path('submit-onboarding/', SubmitOnboardingApplicationView.as_view(), name='submit-onboarding-application'),
 
     # ViewSet Router endpoints
     path('', include(router.urls)),

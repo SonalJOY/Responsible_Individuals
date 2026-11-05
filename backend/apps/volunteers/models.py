@@ -66,7 +66,7 @@ class VolunteerProfile(TimeStampedModel):
     interests = models.ManyToManyField(VolunteerInterest, blank=True, related_name='volunteers')
     availability = models.CharField(max_length=100, help_text="e.g. Weekends, Weekdays, Evenings")
     bio = models.TextField(blank=True)
-    approval_status = models.CharField(max_length=20, choices=ApprovalStatus.choices, default=ApprovalStatus.APPROVED)
+    approval_status = models.CharField(max_length=20, choices=ApprovalStatus.choices, default=ApprovalStatus.PENDING)
     total_hours_contributed = models.DecimalField(max_digits=8, decimal_places=1, default=0.0)
 
     class Meta:
@@ -140,4 +140,63 @@ class Certificate(TimeStampedModel):
 
     def __str__(self):
         return f"{self.certificate_code} - {self.volunteer_profile.full_name} ({self.hours_recognized} hrs)"
+
+
+class VolunteerOnboardingApplication(TimeStampedModel):
+    class Status(models.TextChoices):
+        DRAFT = 'DRAFT', 'Draft'
+        SUBMITTED = 'SUBMITTED', 'Submitted / Under Review'
+        APPROVED = 'APPROVED', 'Approved'
+        REJECTED = 'REJECTED', 'Rejected'
+        WITHDRAWN = 'WITHDRAWN', 'Withdrawn'
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    volunteer_profile = models.ForeignKey(
+        VolunteerProfile,
+        on_delete=models.CASCADE,
+        related_name='onboarding_applications'
+    )
+    statement_of_intent = models.TextField(
+        help_text="Motivation for volunteering with Responsible Individuals"
+    )
+    skills_summary = models.CharField(
+        max_length=255,
+        blank=True,
+        help_text="Summary of skills relevant to volunteer drives"
+    )
+    experience_summary = models.TextField(
+        blank=True,
+        help_text="Prior volunteer or community service experience"
+    )
+    availability = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="Weekly or weekend availability"
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.SUBMITTED,
+        db_index=True
+    )
+    submitted_at = models.DateTimeField(null=True, blank=True)
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    reviewed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='reviewed_onboarding_applications'
+    )
+    admin_review_notes = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Volunteer Onboarding Application'
+        verbose_name_plural = 'Volunteer Onboarding Applications'
+
+    def __str__(self):
+        return f"Onboarding: {self.volunteer_profile.full_name} ({self.status})"
+
+
 

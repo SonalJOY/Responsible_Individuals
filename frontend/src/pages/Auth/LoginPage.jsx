@@ -1,7 +1,8 @@
 
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { buildAuthParams } from '../../utils/navigation';
 
 import {
   ShieldCheck,
@@ -11,6 +12,10 @@ import {
 } from 'lucide-react';
 
 export default function LoginPage() {
+  const [searchParams] = useSearchParams();
+  const opportunity = searchParams.get('opportunity') || sessionStorage.getItem('ri_target_opportunity') || '';
+  const redirectParam = searchParams.get('redirect') || '';
+
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
 
@@ -106,8 +111,9 @@ export default function LoginPage() {
         data.identifier || identifier.trim()
       );
 
-      // Navigate to login OTP page
-      navigate('/login-otp');
+      // Navigate to login OTP page preserving opportunity and safe redirect
+      const nextQuery = buildAuthParams({ opportunity, redirect: redirectParam });
+      navigate(`/login-otp${nextQuery}`);
 
     } catch (err) {
       console.error('Login error:', err);

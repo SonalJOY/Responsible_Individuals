@@ -6,7 +6,7 @@ from django.utils.html import strip_tags
 from celery import shared_task
 from celery.exceptions import MaxRetriesExceededError, Retry
 
-from .models import VolunteerProfile, VolunteerApplication
+from .models import VolunteerProfile, VolunteerApplication, VolunteerOnboardingApplication
 
 logger = logging.getLogger(__name__)
 
@@ -268,3 +268,114 @@ def send_application_status_email(self, application_id, status):
         except MaxRetriesExceededError:
             logger.error("Max retries exceeded sending status email for application %s", application_id)
             return False
+
+
+@shared_task(bind=True, max_retries=3, default_retry_delay=60)
+def send_onboarding_submitted_admin_email(self, onboarding_application_id):
+    """
+    Notifies volunteer administrators that a new volunteer onboarding application has been submitted.
+    """
+    try:
+        app = VolunteerOnboardingApplication.objects.select_related('volunteer_profile').filter(id=onboarding_application_id).first()
+        if not app:
+            logger.warning("send_onboarding_submitted_admin_email: OnboardingApplication not found for ID %s", onboarding_application_id)
+            return False
+
+        site_name = getattr(settings, 'SITE_NAME', 'Responsible Individuals')
+        subject = f"New Volunteer Onboarding Application: {app.volunteer_profile.full_name} – {site_name}"
+        admin_email = _get_contact_email()
+
+        context = {
+            'full_name': app.volunteer_profile.full_name,
+            'email': app.volunteer_profile.email,
+            'city': app.volunteer_profile.city,
+            'skills': app.skills_summary or app.volunteer_profile.skills,
+            'statement_of_intent': app.statement_of_intent,
+            'submitted_date': app.submitted_at.strftime('%B %d, %Y') if app.submitted_at else 'Recently',
+        }
+
+        try:
+            _send_templated_email(
+                subject=subject,
+                template_base='volunteers/emails/admin_onboarding_received',
+                context=context,
+                recipient_list=[admin_email],
+            )
+        except Exception as t_err:
+            logger.warning("Falling back to plaintext notification for onboarding submission %s: %s", onboarding_application_id, t_err)
+            from django.core.mail import send_mail
+            send_mail(
+                subject=subject,
+                message=f"New volunteer onboarding application received from {app.volunteer_profile.full_name} ({app.volunteer_profile.email}). Please review in Admin Portal.",
+                from_email=_get_from_email(),
+                recipient_list=[admin_email],
+                fail_silently=True,
+            )
+
+        logger.info("Admin onboarding notification sent for application %s", onboarding_application_id)
+        return True
+
+    except Retry:
+        raise
+    except Exception as exc:
+        logger.error("Failed sending admin onboarding notification for %s: %s", onboarding_application_id, exc)
+        return False
+
+
+@shared_task(bind=True, max_retries=3, default_retry_delay=60)
+def send_onboarding_decision_email(self, onboarding_application_id, decision):
+    """
+    Sends decision notification (Approved / Rejected) to volunteer applicant.
+    """
+    try:
+        app = VolunteerOnboardingApplication.objects.select_related('volunteer_profile').filter(id=onboarding_application_id).first()
+        if not app:
+            logger.warning("send_onboarding_decision_email: OnboardingApplication not found for ID %s", onboarding_application_id)
+            return False
+
+        site_name = getattr(settings, 'SITE_NAME', 'Responsible Individuals')
+        context = {
+            'full_name': app.volunteer_profile.full_name,
+            'admin_notes': app.admin_review_notes,
+            'decision': decision,
+        }
+
+        if decision == VolunteerOnboardingApplication.Status.APPROVED:
+            subject = f"Welcome to Responsible Individuals! Your Volunteer Onboarding is Approved – {site_name}"
+            template_base = 'volunteers/emails/onboarding_approved'
+        else:
+            subject = f"Update on Your Volunteer Application – {site_name}"
+            template_base = 'volunteers/emails/onboarding_rejected'
+
+        try:
+            _send_templated_email(
+                subject=subject,
+                template_base=template_base,
+                context=context,
+                recipient_list=[app.volunteer_profile.email],
+            )
+        except Exception as t_err:
+            logger.warning("Falling back to plaintext decision email for application %s: %s", onboarding_application_id, t_err)
+            from django.core.mail import send_mail
+            msg = (
+                f"Hello {app.volunteer_profile.full_name},\n\nYour volunteer onboarding application has been {decision.lower()}.\n"
+                f"Notes: {app.admin_review_notes or 'None'}\n\nThank you,\n{site_name}"
+            )
+            send_mail(
+                subject=subject,
+                message=msg,
+                from_email=_get_from_email(),
+                recipient_list=[app.volunteer_profile.email],
+                fail_silently=True,
+            )
+
+        logger.info("Onboarding decision email sent for application %s", onboarding_application_id)
+        return True
+
+    except Retry:
+        raise
+    except Exception as exc:
+        logger.error("Failed sending onboarding decision email for %s: %s", onboarding_application_id, exc)
+        return False
+
+

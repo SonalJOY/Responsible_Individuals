@@ -521,6 +521,23 @@ export const volunteerService = {
 
     return res.data.results || res.data;
   },
+
+  getMyOnboarding: async () => {
+    const res = await api.get(
+      '/volunteers/my-onboarding/'
+    );
+
+    return res.data;
+  },
+
+  submitOnboarding: async (onboardingData) => {
+    const res = await api.post(
+      '/volunteers/submit-onboarding/',
+      onboardingData
+    );
+
+    return res.data;
+  },
 };
 
 // ============================================================
