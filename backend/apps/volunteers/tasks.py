@@ -379,3 +379,119 @@ def send_onboarding_decision_email(self, onboarding_application_id, decision):
         return False
 
 
+@shared_task(bind=True, max_retries=3, default_retry_delay=60, ignore_result=True)
+def send_volunteer_invitation_email(self, invitation_id):
+    """
+    Sends personal registration invitation email to an existing volunteer.
+    Never logs raw invitation tokens or decrypted secrets.
+    Retrieves and decrypts the ephemeral encrypted_delivery_token.
+    Purges encrypted_delivery_token immediately upon successful delivery.
+    Updates email_sent, email_sent_at, and email_error fields on VolunteerInvitation.
+    """
+    from django.utils import timezone
+    from .models import VolunteerInvitation
+    from .encryption import decrypt_invitation_token
+    from apps.core.models import AuditLog
+
+    try:
+        invitation = VolunteerInvitation.objects.filter(id=invitation_id).first()
+        if not invitation:
+            logger.warning("send_volunteer_invitation_email: VolunteerInvitation not found for ID %s", invitation_id)
+            return False
+
+        if invitation.status != VolunteerInvitation.Status.PENDING:
+            logger.info("send_volunteer_invitation_email: Skipping non-pending invitation %s (status=%s)", invitation_id, invitation.status)
+            return False
+
+        if not invitation.encrypted_delivery_token:
+            logger.warning("send_volunteer_invitation_email: No encrypted delivery token available for invitation %s", invitation_id)
+            return False
+
+        try:
+            raw_token = decrypt_invitation_token(invitation.encrypted_delivery_token)
+        except Exception as dec_err:
+            logger.error("send_volunteer_invitation_email: Failed to decrypt token for invitation %s: %s", invitation_id, dec_err)
+            invitation.email_error = f"Decryption error: {str(dec_err)}"
+            invitation.save(update_fields=['email_error', 'updated_at'])
+            return False
+
+        site_name = getattr(settings, 'SITE_NAME', 'Responsible Individuals')
+        frontend_url = getattr(settings, 'FRONTEND_URL', 'http://localhost:5173').rstrip('/')
+        # URL fragment format: #token=... to protect against web server log leakage
+        registration_url = f"{frontend_url}/volunteer-invitation/accept#token={raw_token}"
+        contact_email = _get_contact_email()
+        subject = f"You're Invited to Join the Responsible Individuals Volunteer Portal - {site_name}"
+
+        context = {
+            'email': invitation.email,
+            'expiry_date': invitation.expires_at.strftime('%B %d, %Y at %I:%M %p UTC'),
+            'registration_url': registration_url,
+            'contact_email': contact_email,
+        }
+
+        try:
+            _send_templated_email(
+                subject=subject,
+                template_base='volunteers/emails/volunteer_invitation',
+                context=context,
+                recipient_list=[invitation.email],
+            )
+        except Exception as t_err:
+            logger.warning("Falling back to plaintext invitation email for %s: %s", invitation_id, t_err)
+            from django.core.mail import send_mail
+            msg = (
+                f"Hello,\n\nYou have been invited to set up your account on the Responsible Individuals Volunteer Portal.\n\n"
+                f"Your registration link (expires {context['expiry_date']}):\n{registration_url}\n\n"
+                f"If unexpected, contact {contact_email}.\n\n- Responsible Individuals Team"
+            )
+            send_mail(
+                subject=subject,
+                message=msg,
+                from_email=_get_from_email(),
+                recipient_list=[invitation.email],
+                fail_silently=False,
+            )
+
+        # Successful delivery: mark sent and purge ephemeral encrypted token
+        invitation.email_sent = True
+        invitation.email_sent_at = timezone.now()
+        invitation.email_error = ''
+        invitation.encrypted_delivery_token = None
+        invitation.save(update_fields=['email_sent', 'email_sent_at', 'email_error', 'encrypted_delivery_token', 'updated_at'])
+
+        logger.info("Volunteer invitation email successfully sent for invitation %s to %s", invitation_id, invitation.email)
+        return True
+
+    except Retry:
+        raise
+    except Exception as exc:
+        err_msg = str(exc)
+        logger.error(
+            "Failed sending volunteer invitation email for %s (Attempt %d/%d): %s",
+            invitation_id,
+            self.request.retries + 1,
+            self.max_retries,
+            err_msg
+        )
+        try:
+            inv = VolunteerInvitation.objects.filter(id=invitation_id).first()
+            if inv:
+                inv.email_error = f"Attempt {self.request.retries + 1}/{self.max_retries}: {err_msg}"
+                inv.save(update_fields=['email_error', 'updated_at'])
+
+                AuditLog.objects.create(
+                    user=None,
+                    action='UPDATE',
+                    entity_type='VolunteerInvitation',
+                    entity_id=str(invitation_id),
+                    description="Volunteer invitation email dispatch failed.",
+                    metadata={'attempt': self.request.retries + 1, 'error': err_msg[:500]}
+                )
+        except Exception:
+            pass
+
+        try:
+            raise self.retry(exc=exc, countdown=min(300, 30 * (2 ** self.request.retries)))
+        except MaxRetriesExceededError:
+            logger.error("Max retries exceeded sending volunteer invitation email for %s", invitation_id)
+            return False

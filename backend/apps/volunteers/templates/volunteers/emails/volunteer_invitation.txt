@@ -1,0 +1,16 @@
+Hello,
+
+As a valued contributor and recognized volunteer with Responsible Individuals, you have been invited to set up your official account on our Volunteer Portal.
+
+Because you are already an active part of our volunteer community, your profile is pre-approved. You will not need to go through the standard applicant onboarding review process.
+
+Invited Email: {{ email }}
+Invitation Expiry: {{ expiry_date }}
+
+Please complete your portal registration using the secure link below:
+{{ registration_url }}
+
+Notice: This invitation link is personal, single-use, and will expire on {{ expiry_date }}. If you did not expect this invitation or believe this was sent in error, please contact us at {{ contact_email }} or simply ignore this email.
+
+Warm regards,
+Responsible Individuals Volunteer Operations Team

@@ -5,6 +5,7 @@ import GlobalPreloader from '../components/common/GlobalPreloader';
 
 // Layouts
 import PublicLayout from '../layouts/PublicLayout';
+import AdminLayout from '../layouts/AdminLayout';
 import ProtectedRoute from '../components/common/ProtectedRoute';
 
 // Public Pages (Lazy Loaded for route chunk preloading)
@@ -33,6 +34,13 @@ const VerifyOTPPage = lazy(() => import('../pages/Auth/VerifyOTPPage'));
 const LoginOTPPage = lazy(() => import('../pages/Auth/LoginOTPPage'));
 const ForgotPasswordPage = lazy(() => import('../pages/Auth/ForgotPasswordPage'));
 
+// Admin Pages
+const AdminDashboard = lazy(() => import('../pages/Admin/AdminDashboard'));
+const AdminOnboarding = lazy(() => import('../pages/Admin/AdminOnboarding'));
+const AdminVolunteerDirectory = lazy(() => import('../pages/Admin/AdminVolunteerDirectory'));
+const AdminVolunteers = lazy(() => import('../pages/Admin/AdminVolunteers'));
+const AdminDonations = lazy(() => import('../pages/Admin/AdminDonations'));
+const AdminEnquiries = lazy(() => import('../pages/Admin/AdminEnquiries'));
 
 export default function AppRoutes() {
   return (
@@ -134,6 +142,51 @@ export default function AppRoutes() {
         <Route
           path="forgot-password"
           element={<ForgotPasswordPage />}
+        />
+
+      </Route>
+
+      {/* =========================
+          ADMIN ROUTES
+      ========================== */}
+
+      <Route
+        path="/admin-portal"
+        element={
+          <ProtectedRoute adminOnly={true}>
+            <AdminLayout />
+          </ProtectedRoute>
+        }
+      >
+
+        <Route
+          index
+          element={<AdminDashboard />}
+        />
+
+        <Route
+          path="onboarding"
+          element={<AdminOnboarding />}
+        />
+
+        <Route
+          path="directory"
+          element={<AdminVolunteerDirectory />}
+        />
+
+        <Route
+          path="volunteers"
+          element={<AdminVolunteers />}
+        />
+
+        <Route
+          path="donations"
+          element={<AdminDonations />}
+        />
+
+        <Route
+          path="enquiries"
+          element={<AdminEnquiries />}
         />
 
       </Route>

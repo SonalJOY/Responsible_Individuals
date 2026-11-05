@@ -8,6 +8,8 @@ from .models import (
     VolunteerParticipation,
     Certificate,
     VolunteerOnboardingApplication,
+    VolunteerInvitationBatch,
+    VolunteerInvitation,
 )
 from .validators import (
     validate_indian_phone,
@@ -47,9 +49,10 @@ class VolunteerProfileSerializer(serializers.ModelSerializer):
             'id', 'user', 'full_name', 'email', 'phone', 'city', 'state',
             'occupation', 'skills', 'interests', 'interests_detail',
             'availability', 'bio', 'approval_status', 'is_active',
+            'registration_source',
             'total_hours_contributed', 'certificates_count', 'created_at'
         )
-        read_only_fields = ('id', 'email', 'approval_status', 'is_active', 'total_hours_contributed', 'created_at', 'user')
+        read_only_fields = ('id', 'email', 'approval_status', 'is_active', 'registration_source', 'total_hours_contributed', 'created_at', 'user')
 
 
 class VolunteerActiveStatusSerializer(serializers.Serializer):
@@ -227,4 +230,111 @@ class VolunteerOnboardingReviewSerializer(serializers.Serializer):
 # =============================================================================
 # VOLUNTEER INVITATION SERIALIZERS (Phase 2.3)
 # =============================================================================
+
+class VolunteerInvitationBatchListSerializer(serializers.ModelSerializer):
+    """
+    Lightweight list serializer for invitation batches.
+    Excludes the detailed 'summary' JSON to minimize personal data exposure on collection listings.
+    """
+    uploaded_by_email = serializers.EmailField(source='uploaded_by.email', read_only=True)
+
+    class Meta:
+        model = VolunteerInvitationBatch
+        fields = (
+            'id',
+            'file_name',
+            'uploaded_by',
+            'uploaded_by_email',
+            'total_rows',
+            'valid_rows',
+            'duplicate_rows',
+            'rejected_rows',
+            'status',
+            'created_at',
+            'updated_at',
+        )
+        read_only_fields = fields
+
+
+class VolunteerInvitationBatchSerializer(serializers.ModelSerializer):
+    uploaded_by_email = serializers.EmailField(source='uploaded_by.email', read_only=True)
+
+    class Meta:
+        model = VolunteerInvitationBatch
+        fields = (
+            'id',
+            'file_name',
+            'uploaded_by',
+            'uploaded_by_email',
+            'total_rows',
+            'valid_rows',
+            'duplicate_rows',
+            'rejected_rows',
+            'status',
+            'summary',
+            'created_at',
+            'updated_at',
+        )
+        read_only_fields = fields
+
+
+class VolunteerInvitationSerializer(serializers.ModelSerializer):
+    invited_by_email = serializers.EmailField(source='invited_by.email', read_only=True)
+    batch_file_name = serializers.CharField(source='batch.file_name', read_only=True)
+
+    class Meta:
+        model = VolunteerInvitation
+        fields = (
+            'id',
+            'batch',
+            'batch_file_name',
+            'email',
+            'status',
+            'expires_at',
+            'invited_by',
+            'invited_by_email',
+            'accepted_at',
+            'volunteer_profile',
+            'email_sent',
+            'email_sent_at',
+            'email_error',
+            'created_at',
+            'updated_at',
+        )
+        # Note: token_hash is strictly excluded to prevent cryptographic material leakage.
+        read_only_fields = fields
+
+
+class CSVInvitationUploadSerializer(serializers.Serializer):
+    file = serializers.FileField(required=True)
+
+
+class IndividualInvitationSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=True)
+
+
+class ValidateInvitationTokenSerializer(serializers.Serializer):
+    token = serializers.CharField(required=True, trim_whitespace=True)
+
+
+class RequestInvitationOTPSerializer(serializers.Serializer):
+    token = serializers.CharField(required=True, trim_whitespace=True)
+
+
+class AcceptInvitationSerializer(serializers.Serializer):
+    token = serializers.CharField(required=True, trim_whitespace=True)
+    password = serializers.CharField(required=False, allow_blank=True, write_only=True)
+    confirm_password = serializers.CharField(required=False, allow_blank=True, write_only=True)
+    first_name = serializers.CharField(required=False, allow_blank=True)
+    last_name = serializers.CharField(required=False, allow_blank=True)
+    phone = serializers.CharField(required=False, allow_blank=True)
+    city = serializers.CharField(required=False, allow_blank=True)
+    state = serializers.CharField(required=False, allow_blank=True)
+    occupation = serializers.CharField(required=False, allow_blank=True)
+    skills = serializers.CharField(required=False, allow_blank=True)
+    availability = serializers.CharField(required=False, allow_blank=True)
+    bio = serializers.CharField(required=False, allow_blank=True)
+    interests = serializers.ListField(child=serializers.CharField(), required=False)
+    existing_password = serializers.CharField(required=False, allow_blank=True, write_only=True)
+    otp_code = serializers.CharField(required=False, allow_blank=True)
 

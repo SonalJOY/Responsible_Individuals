@@ -15,6 +15,8 @@ from .models import (
     VolunteerParticipation,
     Certificate,
     VolunteerOnboardingApplication,
+    VolunteerInvitationBatch,
+    VolunteerInvitation,
 )
 from .serializers import (
     VolunteerInterestSerializer,
@@ -29,6 +31,14 @@ from .serializers import (
     VolunteerOnboardingSubmitSerializer,
     VolunteerOnboardingReviewSerializer,
     VolunteerActiveStatusSerializer,
+    VolunteerInvitationBatchSerializer,
+    VolunteerInvitationBatchListSerializer,
+    VolunteerInvitationSerializer,
+    CSVInvitationUploadSerializer,
+    IndividualInvitationSerializer,
+    ValidateInvitationTokenSerializer,
+    RequestInvitationOTPSerializer,
+    AcceptInvitationSerializer,
 )
 from . import services
 
@@ -482,4 +492,197 @@ def _get_client_ip(request):
         return x_forwarded_for.split(',')[0].strip()
     return request.META.get('REMOTE_ADDR')
 
+
+class VolunteerInvitationBatchViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Administrative management for CSV volunteer invitation batches.
+    - list/retrieve batches
+    - upload_preview: validates uploaded CSV, stores batch summary without dispatching
+    - send: creates individual invitations and queues email dispatch via Celery
+    """
+    permission_classes = [IsAdminUserOrStaff]
+    queryset = VolunteerInvitationBatch.objects.all().select_related('uploaded_by').order_by('-created_at')
+    serializer_class = VolunteerInvitationBatchSerializer
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return VolunteerInvitationBatchListSerializer
+        return VolunteerInvitationBatchSerializer
+
+    @action(detail=False, methods=['post'], url_path='upload-preview')
+    def upload_preview(self, request):
+        serializer = CSVInvitationUploadSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        file_obj = serializer.validated_data['file']
+        ip_address = _get_client_ip(request)
+
+        filename = getattr(file_obj, 'name', 'volunteers.csv')
+        batch, summary = services.validate_csv_invitation_batch(
+            file_obj=file_obj,
+            filename=filename,
+            admin_user=request.user,
+            ip_address=ip_address
+        )
+
+        return Response({
+            'message': 'CSV validated and processed successfully.',
+            'batch': VolunteerInvitationBatchSerializer(batch).data,
+            'summary': summary,
+        }, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=['post'], url_path='send')
+    def send(self, request, pk=None):
+        batch = self.get_object()
+        ip_address = _get_client_ip(request)
+
+        result = services.generate_and_send_batch_invitations(
+            batch_or_id=batch.id,
+            admin_user=request.user,
+            ip_address=ip_address
+        )
+
+        return Response({
+            'message': f"Sent {result['sent_count']} volunteer invitations.",
+            'sent_count': result['sent_count'],
+            'batch': VolunteerInvitationBatchSerializer(result['batch']).data,
+        }, status=status.HTTP_200_OK)
+
+
+class VolunteerInvitationViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Administrative inspection and actions on individual volunteer invitations.
+    - list/retrieve invitations
+    - send_individual: invites a single existing volunteer
+    - resend: issues a fresh token and email
+    - revoke: invalidates a pending invitation
+    """
+    permission_classes = [IsAdminUserOrStaff]
+    queryset = VolunteerInvitation.objects.all().select_related('batch', 'invited_by', 'volunteer_profile').order_by('-created_at')
+    serializer_class = VolunteerInvitationSerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    filterset_fields = ['status', 'batch']
+    search_fields = ['email']
+
+    @action(detail=False, methods=['post'], url_path='send-individual')
+    def send_individual(self, request):
+        serializer = IndividualInvitationSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        email = serializer.validated_data['email']
+        ip_address = _get_client_ip(request)
+
+        invitation, raw_token = services.create_individual_invitation(
+            email=email,
+            admin_user=request.user,
+            ip_address=ip_address
+        )
+
+        return Response({
+            'message': f"Invitation sent to {invitation.email}.",
+            'invitation': VolunteerInvitationSerializer(invitation).data,
+        }, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=['post'], url_path='resend')
+    def resend(self, request, pk=None):
+        invitation = self.get_object()
+        ip_address = _get_client_ip(request)
+
+        updated_invitation, raw_token = services.resend_invitation(
+            invitation_or_id=invitation.id,
+            admin_user=request.user,
+            ip_address=ip_address
+        )
+
+        return Response({
+            'message': f"Invitation resent to {updated_invitation.email}.",
+            'invitation': VolunteerInvitationSerializer(updated_invitation).data,
+        }, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['post'], url_path='revoke')
+    def revoke(self, request, pk=None):
+        invitation = self.get_object()
+        reason = request.data.get('reason', '')
+        ip_address = _get_client_ip(request)
+
+        revoked_invitation = services.revoke_invitation(
+            invitation_or_id=invitation.id,
+            admin_user=request.user,
+            reason=reason,
+            ip_address=ip_address
+        )
+
+        return Response({
+            'message': f"Invitation for {revoked_invitation.email} has been revoked.",
+            'invitation': VolunteerInvitationSerializer(revoked_invitation).data,
+        }, status=status.HTTP_200_OK)
+
+
+class ValidateInvitationTokenView(APIView):
+    """
+    Public token validation endpoint for the volunteer invitation link.
+    POST /api/v1/volunteers/invitations/validate-token/
+    Accepts raw token in the JSON request payload.
+    GET is strictly disabled (returns HTTP 405 Method Not Allowed) to eliminate query-string token exposure.
+    Returns verification metadata without exposing secrets.
+    """
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        serializer = ValidateInvitationTokenSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        info = services.validate_invitation_token(serializer.validated_data['token'])
+        return Response({
+            'valid': True,
+            'email': info['email'],
+            'status': info['status'],
+            'expires_at': info['expires_at'],
+            'has_existing_user': info['has_existing_user'],
+            'has_existing_profile': info['has_existing_profile'],
+            'existing_user_name': info['existing_user_name'],
+        }, status=status.HTTP_200_OK)
+
+
+class RequestInvitationOTPView(APIView):
+    """
+    Public endpoint allowing existing account holders accepting an invitation to request an OTP code.
+    POST /api/v1/volunteers/invitations/request-otp/
+    """
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        serializer = RequestInvitationOTPSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        ip_address = _get_client_ip(request)
+        result = services.request_invitation_otp(
+            raw_token=serializer.validated_data['token'],
+            ip_address=ip_address
+        )
+
+        return Response(result, status=status.HTTP_200_OK)
+
+
+class AcceptInvitationView(APIView):
+    """
+    Public registration/acceptance endpoint for invited volunteers.
+    POST /api/v1/volunteers/invitations/accept/
+    Atomically creates or links User & VolunteerProfile with APPROVED and ACTIVE status.
+    """
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        serializer = AcceptInvitationSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        ip_address = _get_client_ip(request)
+        result = services.accept_invitation_and_register(
+            raw_token=serializer.validated_data['token'],
+            registration_data=serializer.validated_data,
+            authenticated_user=request.user if request.user.is_authenticated else None,
+            ip_address=ip_address
+        )
+
+        return Response(result, status=status.HTTP_200_OK)
 

@@ -1,0 +1,39 @@
+{% extends "volunteers/emails/base_email.html" %}
+
+{% block content %}
+<h2>You're Invited to Join Responsible Individuals!</h2>
+
+<p>Hello,</p>
+
+<p>As a valued contributor and recognized volunteer with <strong>Responsible Individuals</strong>, you have been invited to set up your official account on our new Volunteer Portal.</p>
+
+<p>Because you are already an active part of our volunteer community, your profile is <strong>pre-approved</strong>. You will not need to go through the standard applicant onboarding review process.</p>
+
+<div class="info-card">
+  <div class="info-card-item">
+    <span class="info-label">Invited Email:</span>
+    <span class="info-value">{{ email }}</span>
+  </div>
+  <div class="info-card-item">
+    <span class="info-label">Invitation Expiry:</span>
+    <span class="info-value">{{ expiry_date }}</span>
+  </div>
+</div>
+
+<p style="text-align: center; margin: 30px 0;">
+  <a href="{{ registration_url }}" style="background-color: #2563eb; color: #ffffff; padding: 12px 28px; text-decoration: none; border-radius: 6px; font-weight: 600; display: inline-block;">
+    Complete Your Portal Registration
+  </a>
+</p>
+
+<p style="font-size: 13px; color: #64748b; word-break: break-all;">
+  If the button above does not work, copy and paste this link into your browser:<br>
+  <a href="{{ registration_url }}" style="color: #2563eb;">{{ registration_url }}</a>
+</p>
+
+<p style="margin-top: 24px; font-size: 14px; color: #475569;">
+  <strong>Notice:</strong> This invitation link is personal, single-use, and will expire on {{ expiry_date }}. If you did not expect this invitation or believe this was sent in error, please contact us at <a href="mailto:{{ contact_email }}">{{ contact_email }}</a> or simply ignore this email.
+</p>
+
+<p style="margin-top: 24px;">Warm regards,<br><strong>Responsible Individuals Volunteer Operations Team</strong></p>
+{% endblock %}

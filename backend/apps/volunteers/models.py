@@ -65,8 +65,18 @@ class VolunteerProfile(TimeStampedModel):
     skills = models.CharField(max_length=255, help_text="Comma-separated skills")
     interests = models.ManyToManyField(VolunteerInterest, blank=True, related_name='volunteers')
     availability = models.CharField(max_length=100, help_text="e.g. Weekends, Weekdays, Evenings")
+    class RegistrationSource(models.TextChoices):
+        PUBLIC = 'PUBLIC', 'Public Self-Registration'
+        ADMIN_ADDED = 'ADMIN_ADDED', 'Admin CSV / Direct Invitation'
+
     bio = models.TextField(blank=True)
     approval_status = models.CharField(max_length=20, choices=ApprovalStatus.choices, default=ApprovalStatus.PENDING)
+    registration_source = models.CharField(
+        max_length=30,
+        choices=RegistrationSource.choices,
+        default=RegistrationSource.PUBLIC,
+        db_index=True
+    )
     total_hours_contributed = models.DecimalField(max_digits=8, decimal_places=1, default=0.0)
 
     class Meta:
@@ -200,3 +210,93 @@ class VolunteerOnboardingApplication(TimeStampedModel):
 
 
 
+class VolunteerInvitationBatch(TimeStampedModel):
+    class Status(models.TextChoices):
+        PENDING = 'PENDING', 'Pending Validation'
+        VALIDATED = 'VALIDATED', 'Validated / Ready to Send'
+        PROCESSED = 'PROCESSED', 'Invitations Dispatched'
+        FAILED = 'FAILED', 'Processing Failed'
+
+    file_name = models.CharField(max_length=255)
+    uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='invitation_batches'
+    )
+    total_rows = models.PositiveIntegerField(default=0)
+    valid_rows = models.PositiveIntegerField(default=0)
+    duplicate_rows = models.PositiveIntegerField(default=0)
+    rejected_rows = models.PositiveIntegerField(default=0)
+    status = models.CharField(max_length=30, choices=Status.choices, default=Status.PENDING, db_index=True)
+    summary = models.JSONField(default=dict, blank=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Volunteer Invitation Batch'
+        verbose_name_plural = 'Volunteer Invitation Batches'
+
+    def __str__(self):
+        return f"Batch {self.file_name} ({self.status}) - {self.valid_rows}/{self.total_rows} valid"
+
+
+class VolunteerInvitation(TimeStampedModel):
+    class Status(models.TextChoices):
+        PENDING = 'PENDING', 'Pending Acceptance'
+        ACCEPTED = 'ACCEPTED', 'Accepted'
+        EXPIRED = 'EXPIRED', 'Expired'
+        REVOKED = 'REVOKED', 'Revoked'
+
+    batch = models.ForeignKey(
+        VolunteerInvitationBatch,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='invitations'
+    )
+    email = models.EmailField(db_index=True)
+    token_hash = models.CharField(max_length=64, unique=True, db_index=True, help_text="SHA-256 hash of single-use raw token")
+    encrypted_delivery_token = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Ephemeral encrypted ciphertext for asynchronous email dispatch; purged on successful send."
+    )
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING, db_index=True)
+    expires_at = models.DateTimeField(db_index=True)
+    invited_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='sent_volunteer_invitations'
+    )
+    accepted_at = models.DateTimeField(null=True, blank=True)
+    volunteer_profile = models.ForeignKey(
+        VolunteerProfile,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='invitations'
+    )
+    email_sent = models.BooleanField(default=False)
+    email_sent_at = models.DateTimeField(null=True, blank=True)
+    email_error = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['email', 'status']),
+            models.Index(fields=['token_hash', 'status']),
+            models.Index(fields=['expires_at', 'status']),
+        ]
+        verbose_name = 'Volunteer Invitation'
+        verbose_name_plural = 'Volunteer Invitations'
+
+    @property
+    def is_expired(self):
+        from django.utils import timezone
+        return timezone.now() > self.expires_at
+
+    def __str__(self):
+        return f"Invitation for {self.email} ({self.status})"

@@ -4,6 +4,7 @@ import re
 import secrets
 import hashlib
 from django.db import IntegrityError
+from .encryption import encrypt_invitation_token, decrypt_invitation_token
 from datetime import timedelta
 from django.core.validators import validate_email as django_validate_email
 from django.core.exceptions import ValidationError as DjangoValidationError
@@ -26,6 +27,8 @@ from .models import (
     VolunteerParticipation,
     Certificate,
     VolunteerOnboardingApplication,
+    VolunteerInvitationBatch,
+    VolunteerInvitation,
 )
 from .tasks import (
     send_volunteer_registration_email,
@@ -34,6 +37,7 @@ from .tasks import (
     send_application_status_email,
     send_onboarding_submitted_admin_email,
     send_onboarding_decision_email,
+    send_volunteer_invitation_email,
 )
 
 User = get_user_model()
@@ -573,3 +577,785 @@ MAX_CSV_ROW_COUNT = 500
 INVITATION_EXPIRY_DAYS = 7
 
 
+def validate_csv_invitation_batch(file_obj, filename, admin_user=None, ip_address=None):
+    """
+    Parses and validates a CSV upload containing volunteer email addresses without creating
+    user accounts or marking volunteers as registered.
+    Returns: VolunteerInvitationBatch instance and row-level breakdown.
+    """
+    if not filename.lower().endswith('.csv'):
+        raise ValidationError({'file': 'Only CSV files (.csv) are accepted.'})
+
+    # Validate file size
+    size = getattr(file_obj, 'size', None)
+    if size is not None and size > MAX_CSV_FILE_SIZE:
+        raise ValidationError({'file': f'CSV file size exceeds the maximum allowed limit of {MAX_CSV_FILE_SIZE // (1024 * 1024)}MB.'})
+
+    # Read and decode content
+    try:
+        content_bytes = file_obj.read()
+        if not content_bytes or len(content_bytes.strip()) == 0:
+            raise ValidationError({'file': 'Uploaded CSV file is empty.'})
+        
+        # Try utf-8-sig (handles UTF-8 BOM), fallback to utf-8 and latin-1
+        try:
+            content_str = content_bytes.decode('utf-8-sig')
+        except UnicodeDecodeError:
+            try:
+                content_str = content_bytes.decode('utf-8')
+            except UnicodeDecodeError:
+                content_str = content_bytes.decode('latin-1')
+    except ValidationError:
+        raise
+    except Exception as e:
+        raise ValidationError({'file': f'Unable to read CSV file: {str(e)}'})
+
+    stream = io.StringIO(content_str)
+    try:
+        reader = list(csv.reader(stream))
+    except Exception as e:
+        raise ValidationError({'file': f'Malformed CSV format: {str(e)}'})
+
+    if not reader:
+        raise ValidationError({'file': 'Uploaded CSV file contains no data rows.'})
+
+    first_row = reader[0]
+    email_col_idx = 0
+    start_row_idx = 0
+    has_header = False
+
+    # Check if first row contains a recognised email header
+    for idx, col in enumerate(first_row):
+        col_clean = col.strip().lower()
+        if col_clean in ['email', 'email address', 'e-mail', 'mail']:
+            email_col_idx = idx
+            start_row_idx = 1
+            has_header = True
+            break
+
+    if not has_header:
+        raise ValidationError({'file': "CSV must contain an 'email' or 'email address' header column."})
+
+    raw_rows = reader[start_row_idx:]
+    if not raw_rows:
+        raise ValidationError({'file': 'Uploaded CSV file contains no data rows after header.'})
+
+    if len(raw_rows) > MAX_CSV_ROW_COUNT:
+        raise ValidationError({'file': f'CSV row count ({len(raw_rows)}) exceeds the maximum allowed limit of {MAX_CSV_ROW_COUNT} rows.'})
+
+    rows_detail = []
+    seen_in_file = set()
+    valid_count = 0
+    duplicate_count = 0
+    rejected_count = 0
+
+    now = timezone.now()
+
+    for row_num, row in enumerate(raw_rows, start=start_row_idx + 1):
+        if not row or all(c.strip() == '' for c in row):
+            continue  # skip completely blank lines
+
+        raw_val = row[email_col_idx].strip() if email_col_idx < len(row) else ''
+        normalized_email = raw_val.lower()
+
+        # 1. Check blank
+        if not normalized_email:
+            rejected_count += 1
+            rows_detail.append({
+                'row_number': row_num,
+                'email': raw_val,
+                'status': 'INVALID_FORMAT',
+                'is_eligible': False,
+                'reason': 'Email address column is empty.',
+            })
+            continue
+
+        # 2. Check format
+        try:
+            django_validate_email(normalized_email)
+        except DjangoValidationError:
+            rejected_count += 1
+            rows_detail.append({
+                'row_number': row_num,
+                'email': raw_val,
+                'status': 'INVALID_FORMAT',
+                'is_eligible': False,
+                'reason': 'Malformed email syntax.',
+            })
+            continue
+
+        # 3. Check duplicate within file
+        if normalized_email in seen_in_file:
+            duplicate_count += 1
+            rows_detail.append({
+                'row_number': row_num,
+                'email': normalized_email,
+                'status': 'DUPLICATE_IN_FILE',
+                'is_eligible': False,
+                'reason': 'Duplicate email address found within this CSV upload.',
+            })
+            continue
+
+        seen_in_file.add(normalized_email)
+
+        # 4. Check existing approved volunteer profile
+        existing_profile = VolunteerProfile.objects.filter(email__iexact=normalized_email).first()
+        if existing_profile:
+            rejected_count += 1
+            is_approved = existing_profile.approval_status == VolunteerProfile.ApprovalStatus.APPROVED
+            status_code = 'ALREADY_APPROVED' if is_approved else 'EXISTING_PROFILE'
+            reason_msg = 'This volunteer is already approved.' if is_approved else 'A volunteer profile already exists for this email address.'
+            rows_detail.append({
+                'row_number': row_num,
+                'email': normalized_email,
+                'status': status_code,
+                'is_eligible': False,
+                'reason': reason_msg,
+            })
+            continue
+
+        # 5. Check active pending invitation
+        if VolunteerInvitation.objects.filter(
+            email__iexact=normalized_email,
+            status=VolunteerInvitation.Status.PENDING,
+            expires_at__gt=now
+        ).exists():
+            duplicate_count += 1
+            rows_detail.append({
+                'row_number': row_num,
+                'email': normalized_email,
+                'status': 'ALREADY_PENDING',
+                'is_eligible': False,
+                'reason': 'An active pending invitation has already been issued for this email.',
+            })
+            continue
+
+        # 6. Check existing user account requiring account linking
+        if User.objects.filter(email__iexact=normalized_email).exists():
+            valid_count += 1
+            rows_detail.append({
+                'row_number': row_num,
+                'email': normalized_email,
+                'status': 'EXISTING_USER_NEEDS_LINKING',
+                'is_eligible': True,
+                'reason': 'A registered portal user account exists. Invitation will initiate account linking.',
+            })
+            continue
+
+        # 7. Valid brand-new volunteer email
+        valid_count += 1
+        rows_detail.append({
+            'row_number': row_num,
+            'email': normalized_email,
+            'status': 'VALID',
+            'is_eligible': True,
+            'reason': 'Eligible for new volunteer portal invitation.',
+        })
+
+    valid_emails = [r['email'] for r in rows_detail if r.get('is_eligible')]
+    rejected_details = [r for r in rows_detail if not r.get('is_eligible') and r.get('status') in ['INVALID_SYNTAX', 'ALREADY_APPROVED', 'EXISTING_PROFILE', 'BLANK']]
+    duplicate_details = [r for r in rows_detail if not r.get('is_eligible') and r.get('status') in ['DUPLICATE_IN_FILE', 'ALREADY_PENDING']]
+
+    summary_data = {
+        'total_rows': len(rows_detail),
+        'valid_rows': valid_count,
+        'duplicate_rows': duplicate_count,
+        'rejected_rows': rejected_count,
+        'valid_emails': valid_emails,
+        'rejected_details': rejected_details,
+        'duplicate_details': duplicate_details,
+        'rows': rows_detail,
+    }
+
+    with transaction.atomic():
+        batch = VolunteerInvitationBatch.objects.create(
+            file_name=filename,
+            uploaded_by=admin_user if (admin_user and admin_user.is_authenticated) else None,
+            total_rows=len(rows_detail),
+            valid_rows=valid_count,
+            duplicate_rows=duplicate_count,
+            rejected_rows=rejected_count,
+            status=VolunteerInvitationBatch.Status.VALIDATED,
+            summary=summary_data,
+        )
+
+        AuditLog.objects.create(
+            user=admin_user if (admin_user and admin_user.is_authenticated) else None,
+            action='CREATE',
+            entity_type='VolunteerInvitationBatch',
+            entity_id=str(batch.id),
+            description=f"Uploaded CSV invitation batch '{filename}' ({valid_count}/{len(rows_detail)} valid).",
+            ip_address=ip_address,
+            metadata={
+                'file_name': filename,
+                'total_rows': len(rows_detail),
+                'valid_rows': valid_count,
+                'duplicate_rows': duplicate_count,
+                'rejected_rows': rejected_count,
+            }
+        )
+
+    return batch, summary_data
+
+
+def generate_and_send_batch_invitations(batch_or_id, admin_user=None, ip_address=None):
+    """
+    Generates and dispatches individual VolunteerInvitation records for all eligible rows in a batch.
+    Never stores or logs raw tokens.
+    """
+    if isinstance(batch_or_id, VolunteerInvitationBatch):
+        batch = batch_or_id
+    else:
+        batch = VolunteerInvitationBatch.objects.filter(id=batch_or_id).first()
+        if not batch:
+            raise ValidationError({'batch': 'Invitation batch not found.'})
+
+    if batch.status == VolunteerInvitationBatch.Status.PROCESSED:
+        raise ValidationError({'batch': 'This batch has already been processed and invitations dispatched.'})
+
+    eligible_rows = [r for r in batch.summary.get('rows', []) if r.get('is_eligible')]
+    if not eligible_rows:
+        raise ValidationError({'batch': 'This batch does not contain any eligible email addresses to invite.'})
+
+    created_invitations = []
+    invitation_ids_to_dispatch = []
+    now = timezone.now()
+    expires_at = now + timedelta(days=INVITATION_EXPIRY_DAYS)
+
+    with transaction.atomic():
+        for row in eligible_rows:
+            email = row['email'].strip().lower()
+
+            # Double check that no pending invitation was created in the meantime
+            if VolunteerInvitation.objects.filter(email=email, status=VolunteerInvitation.Status.PENDING, expires_at__gt=now).exists():
+                continue
+
+            raw_token = secrets.token_urlsafe(32)
+            token_hash = hashlib.sha256(raw_token.encode('utf-8')).hexdigest()
+            encrypted_token = encrypt_invitation_token(raw_token)
+
+            invitation = VolunteerInvitation.objects.create(
+                batch=batch,
+                email=email,
+                token_hash=token_hash,
+                encrypted_delivery_token=encrypted_token,
+                status=VolunteerInvitation.Status.PENDING,
+                expires_at=expires_at,
+                invited_by=admin_user if (admin_user and admin_user.is_authenticated) else None,
+            )
+
+            created_invitations.append(invitation)
+            invitation_ids_to_dispatch.append(str(invitation.id))
+
+            AuditLog.objects.create(
+                user=admin_user if (admin_user and admin_user.is_authenticated) else None,
+                action='CREATE',
+                entity_type='VolunteerInvitation',
+                entity_id=str(invitation.id),
+                description=f"Generated volunteer invitation for {email} from batch {batch.file_name}.",
+                ip_address=ip_address,
+                metadata={'email': email, 'batch_id': str(batch.id), 'expires_at': str(expires_at)}
+            )
+
+        batch.status = VolunteerInvitationBatch.Status.PROCESSED
+        batch.save(update_fields=['status', 'updated_at'])
+
+        AuditLog.objects.create(
+            user=admin_user if (admin_user and admin_user.is_authenticated) else None,
+            action='UPDATE',
+            entity_type='VolunteerInvitationBatch',
+            entity_id=str(batch.id),
+            description=f"Dispatched {len(created_invitations)} volunteer invitations from batch '{batch.file_name}'.",
+            ip_address=ip_address,
+            metadata={'batch_id': str(batch.id), 'dispatched_count': len(created_invitations)}
+        )
+
+    # Asynchronously dispatch emails passing ONLY invitation ID (no raw tokens in Celery args)
+    for inv_id in invitation_ids_to_dispatch:
+        send_volunteer_invitation_email.delay(inv_id)
+
+    return {
+        'batch_id': str(batch.id),
+        'batch': batch,
+        'sent_count': len(created_invitations),
+        'dispatched_count': len(created_invitations),
+        'invitations': created_invitations,
+    }
+
+
+def create_individual_invitation(email, admin_user=None, ip_address=None):
+    """
+    Generates and dispatches a single volunteer invitation for a specific email address.
+    """
+    normalized_email = (email or '').strip().lower()
+    if not normalized_email:
+        raise ValidationError({'email': 'Email is required.'})
+
+    try:
+        django_validate_email(normalized_email)
+    except DjangoValidationError:
+        raise ValidationError({'email': 'Invalid email address syntax.'})
+
+    now = timezone.now()
+
+    if VolunteerProfile.objects.filter(email=normalized_email).exists():
+        raise ValidationError({'email': 'A volunteer profile already exists for this email address.'})
+
+    if VolunteerInvitation.objects.filter(email=normalized_email, status=VolunteerInvitation.Status.PENDING, expires_at__gt=now).exists():
+        raise ValidationError({'email': 'An active pending invitation has already been issued for this email.'})
+
+    raw_token = secrets.token_urlsafe(32)
+    token_hash = hashlib.sha256(raw_token.encode('utf-8')).hexdigest()
+    encrypted_token = encrypt_invitation_token(raw_token)
+    expires_at = now + timedelta(days=INVITATION_EXPIRY_DAYS)
+
+    with transaction.atomic():
+        invitation = VolunteerInvitation.objects.create(
+            email=normalized_email,
+            token_hash=token_hash,
+            encrypted_delivery_token=encrypted_token,
+            status=VolunteerInvitation.Status.PENDING,
+            expires_at=expires_at,
+            invited_by=admin_user if (admin_user and admin_user.is_authenticated) else None,
+        )
+
+        AuditLog.objects.create(
+            user=admin_user if (admin_user and admin_user.is_authenticated) else None,
+            action='CREATE',
+            entity_type='VolunteerInvitation',
+            entity_id=str(invitation.id),
+            description=f"Generated individual volunteer invitation for {normalized_email}.",
+            ip_address=ip_address,
+            metadata={'email': normalized_email, 'expires_at': str(expires_at)}
+        )
+
+    # Pass only invitation ID to Celery
+    send_volunteer_invitation_email.delay(str(invitation.id))
+    return invitation, raw_token
+
+
+def validate_invitation_token(raw_token):
+    """
+    Validates a raw invitation token against its SHA-256 hash.
+    Ensures token exists, is PENDING, and not expired.
+    """
+    if not raw_token or not isinstance(raw_token, str):
+        raise ValidationError({'token': 'Invitation token is required.'})
+
+    token_hash = hashlib.sha256(raw_token.strip().encode('utf-8')).hexdigest()
+    invitation = VolunteerInvitation.objects.filter(token_hash=token_hash).first()
+
+    if not invitation:
+        raise ValidationError({'token': 'Invalid or unrecognized invitation token.'})
+
+    if invitation.status == VolunteerInvitation.Status.ACCEPTED:
+        raise ValidationError({'token': 'This invitation has already been accepted.'})
+
+    if invitation.status == VolunteerInvitation.Status.REVOKED:
+        raise ValidationError({'token': 'This invitation has been revoked by administration.'})
+
+    now = timezone.now()
+    if invitation.status == VolunteerInvitation.Status.EXPIRED or now > invitation.expires_at:
+        if invitation.status != VolunteerInvitation.Status.EXPIRED:
+            invitation.status = VolunteerInvitation.Status.EXPIRED
+            invitation.save(update_fields=['status', 'updated_at'])
+        raise ValidationError({'token': 'This invitation has expired. Please contact administration for a new invitation.'})
+
+    existing_usr = User.objects.filter(email=invitation.email).first()
+    has_existing_account = existing_usr is not None
+    has_existing_profile = VolunteerProfile.objects.filter(email=invitation.email).exists()
+
+    return {
+        'valid': True,
+        'email': invitation.email,
+        'status': invitation.status,
+        'expires_at': invitation.expires_at,
+        'has_existing_account': has_existing_account,
+        'has_existing_user': has_existing_account,
+        'has_existing_profile': has_existing_profile,
+        'existing_user_name': existing_usr.get_full_name() if existing_usr else '',
+        'invitation': invitation,
+    }
+
+
+def request_invitation_otp(raw_token, ip_address=None):
+    """
+    Issues an OTP code to the invitation's intended email for email verification.
+    """
+    token_info = validate_invitation_token(raw_token)
+    invitation = token_info['invitation']
+
+    from apps.accounts.models import OTP, User
+    from apps.accounts.utils import send_email_otp
+
+    user = User.objects.filter(email=invitation.email).first()
+    if not user:
+        # Create unverified user if not already existing
+        user = User.objects.create_user(
+            email=invitation.email,
+            password=None,
+            is_active=False,
+            is_verified=False,
+            role=User.Role.PUBLIC
+        )
+
+    otp = OTP.objects.create(
+        user=user,
+        purpose='email'
+    )
+    send_email_otp(user, otp.code)
+
+    return {
+        'message': f'Verification code sent to {invitation.email}.',
+        'identifier': invitation.email,
+    }
+
+
+def accept_invitation_and_register(raw_token, registration_data, authenticated_user=None, ip_address=None):
+    """
+    Public invitation acceptance and registration workflow.
+    - Validates token hash, status, and expiry under row lock (select_for_update).
+    - Verified email must strictly match invitation email.
+    - Atomically creates or links User account.
+    - Atomically creates or links VolunteerProfile as APPROVED and ACTIVE.
+    - Registration source recorded as ADMIN_ADDED.
+    - Marks invitation ACCEPTED.
+    - Writes AuditLog records.
+    - Returns JWT tokens and profile data.
+    """
+    if not raw_token or not isinstance(raw_token, str):
+        raise ValidationError({'token': 'Invitation token is required.'})
+
+    token_hash = hashlib.sha256(raw_token.strip().encode('utf-8')).hexdigest()
+
+    from apps.accounts.models import OTP, UserProfile
+    from apps.accounts.serializers import UserSerializer
+
+    with transaction.atomic():
+        # Lock invitation row before checking current status to prevent race conditions
+        invitation = VolunteerInvitation.objects.select_for_update().filter(token_hash=token_hash).first()
+        if not invitation:
+            raise ValidationError({'token': 'Invalid or unrecognized invitation token.'})
+
+        if invitation.status == VolunteerInvitation.Status.ACCEPTED:
+            raise ValidationError({'token': 'This invitation has already been accepted.'})
+
+        if invitation.status == VolunteerInvitation.Status.REVOKED:
+            raise ValidationError({'token': 'This invitation has been revoked by administration.'})
+
+        now = timezone.now()
+        if invitation.status == VolunteerInvitation.Status.EXPIRED or now > invitation.expires_at:
+            if invitation.status != VolunteerInvitation.Status.EXPIRED:
+                invitation.status = VolunteerInvitation.Status.EXPIRED
+                invitation.save(update_fields=['status', 'updated_at'])
+            raise ValidationError({'token': 'This invitation has expired. Please contact administration for a new invitation.'})
+
+        email = invitation.email.lower()
+        existing_user = User.objects.select_for_update().filter(email=email).first()
+        # -------------------------------------------------------------
+        # BRANCH 1: User already exists (Account Linking Workflow)
+        # -------------------------------------------------------------
+        if existing_user and existing_user.has_usable_password():
+            # Enforce authentication / ownership verification
+            is_verified_owner = False
+
+            if authenticated_user and authenticated_user.is_authenticated and authenticated_user.email.lower() == email:
+                is_verified_owner = True
+            elif 'existing_password' in registration_data and registration_data['existing_password']:
+                if existing_user.check_password(registration_data['existing_password']):
+                    is_verified_owner = True
+                else:
+                    raise ValidationError({'existing_password': 'The provided password for this existing account is incorrect.'})
+            elif 'otp_code' in registration_data and registration_data['otp_code']:
+                otp = existing_user.otps.filter(
+                    code=str(registration_data['otp_code']).strip(),
+                    is_used=False
+                ).order_by('-created_at').first()
+                if not otp or otp.is_expired:
+                    raise ValidationError({'otp_code': 'Invalid or expired verification code.'})
+                otp.is_used = True
+                otp.save(update_fields=['is_used'])
+                is_verified_owner = True
+
+            if not is_verified_owner:
+                raise ValidationError({
+                    'existing_account': 'An account with this email already exists. Please provide your existing password or verify via OTP to link your account.'
+                })
+
+            # Preserve existing user roles. Promote PUBLIC users to VOLUNTEER.
+            if existing_user.role == User.Role.PUBLIC:
+                existing_user.role = User.Role.VOLUNTEER
+            existing_user.is_verified = True
+            existing_user.is_active = True
+            existing_user.save(update_fields=['role', 'is_verified', 'is_active', 'updated_at'])
+
+            # Link or create VolunteerProfile
+            profile = VolunteerProfile.objects.filter(email=email).first()
+            if profile:
+                profile.user = existing_user
+                profile.approval_status = VolunteerProfile.ApprovalStatus.APPROVED
+                profile.is_active = True
+                profile.registration_source = VolunteerProfile.RegistrationSource.ADMIN_ADDED
+                profile.save(update_fields=['user', 'approval_status', 'is_active', 'registration_source', 'updated_at'])
+            else:
+                profile = VolunteerProfile.objects.create(
+                    user=existing_user,
+                    email=email,
+                    full_name=existing_user.get_full_name() or registration_data.get('full_name', email),
+                    phone=registration_data.get('phone', existing_user.phone or '+91 00000 00000'),
+                    city=registration_data.get('city', 'Bengaluru'),
+                    state=registration_data.get('state', ''),
+                    occupation=registration_data.get('occupation', ''),
+                    skills=registration_data.get('skills', 'Community Volunteering'),
+                    availability=registration_data.get('availability', 'Weekends'),
+                    bio=registration_data.get('bio', ''),
+                    approval_status=VolunteerProfile.ApprovalStatus.APPROVED,
+                    is_active=True,
+                    registration_source=VolunteerProfile.RegistrationSource.ADMIN_ADDED,
+                )
+
+            target_user = existing_user
+
+        # -------------------------------------------------------------
+        # BRANCH 2: Brand-new Volunteer Account (or unactivated stub)
+        # -------------------------------------------------------------
+        else:
+            password = registration_data.get('password')
+            confirm_password = registration_data.get('confirm_password')
+
+            if not password:
+                raise ValidationError({'password': 'Password is required to create your account.'})
+            if confirm_password and password != confirm_password:
+                raise ValidationError({'confirm_password': 'Passwords do not match.'})
+
+            try:
+                validate_password(password)
+            except DjangoValidationError as e:
+                raise ValidationError({'password': list(e.messages)})
+
+            # Optional OTP verification if otp_code passed or if user had an OTP generated
+            if 'otp_code' in registration_data and registration_data['otp_code']:
+                otp = OTP.objects.filter(
+                    user__email=email,
+                    code=str(registration_data['otp_code']).strip(),
+                    is_used=False
+                ).order_by('-created_at').first()
+                if not otp or otp.is_expired:
+                    raise ValidationError({'otp_code': 'Invalid or expired verification code.'})
+                otp.is_used = True
+                otp.save(update_fields=['is_used'])
+
+            first_name = registration_data.get('first_name', '').strip()
+            last_name = registration_data.get('last_name', '').strip()
+            phone = registration_data.get('phone', '').strip()
+            city = registration_data.get('city', 'Bengaluru').strip()
+            state = registration_data.get('state', '').strip()
+            occupation = registration_data.get('occupation', '').strip()
+            skills = registration_data.get('skills', 'Community Volunteering').strip()
+            availability = registration_data.get('availability', 'Weekends').strip()
+            bio = registration_data.get('bio', '').strip()
+            interests = registration_data.get('interests', [])
+
+            if existing_user:
+                target_user = existing_user
+                target_user.set_password(password)
+                target_user.first_name = first_name or target_user.first_name
+                target_user.last_name = last_name or target_user.last_name
+                target_user.phone = phone or target_user.phone
+                target_user.role = User.Role.VOLUNTEER
+                target_user.is_verified = True
+                target_user.is_active = True
+                target_user.save(update_fields=['password', 'first_name', 'last_name', 'phone', 'role', 'is_verified', 'is_active', 'updated_at'])
+            else:
+                try:
+                    target_user = User.objects.create_user(
+                        email=email,
+                        password=password,
+                        first_name=first_name,
+                        last_name=last_name,
+                        phone=phone,
+                        role=User.Role.VOLUNTEER,
+                        is_verified=True,
+                        is_active=True,
+                    )
+                except IntegrityError:
+                    raise ValidationError({'email': 'An account with this email address was recently created. Please sign in to link your volunteer profile.'})
+
+            # Create UserProfile
+            UserProfile.objects.get_or_create(
+                user=target_user,
+                defaults={'city': city, 'state': state, 'bio': bio}
+            )
+
+            # Create or link VolunteerProfile
+            full_name = f"{first_name} {last_name}".strip() or email
+            existing_profile = VolunteerProfile.objects.filter(email=email).first()
+            if existing_profile:
+                existing_profile.user = target_user
+                existing_profile.full_name = full_name or existing_profile.full_name
+                existing_profile.phone = phone or existing_profile.phone
+                existing_profile.approval_status = VolunteerProfile.ApprovalStatus.APPROVED
+                existing_profile.is_active = True
+                existing_profile.registration_source = VolunteerProfile.RegistrationSource.ADMIN_ADDED
+                existing_profile.save(update_fields=['user', 'full_name', 'phone', 'approval_status', 'is_active', 'registration_source', 'updated_at'])
+                profile = existing_profile
+            else:
+                profile = VolunteerProfile.objects.create(
+                    user=target_user,
+                    email=email,
+                    full_name=full_name,
+                    phone=phone or '+91 00000 00000',
+                    city=city,
+                    state=state,
+                    occupation=occupation,
+                    skills=skills,
+                    availability=availability,
+                    bio=bio,
+                    approval_status=VolunteerProfile.ApprovalStatus.APPROVED,
+                    is_active=True,
+                    registration_source=VolunteerProfile.RegistrationSource.ADMIN_ADDED,
+                )
+
+            if interests:
+                profile.interests.set(_resolve_interests(interests))
+
+        # -------------------------------------------------------------
+        # FINALIZE INVITATION & AUDIT LOGS
+        # -------------------------------------------------------------
+        invitation.status = VolunteerInvitation.Status.ACCEPTED
+        invitation.accepted_at = timezone.now()
+        invitation.volunteer_profile = profile
+        invitation.encrypted_delivery_token = None
+        invitation.save(update_fields=['status', 'accepted_at', 'volunteer_profile', 'encrypted_delivery_token', 'updated_at'])
+
+        AuditLog.objects.create(
+            user=target_user,
+            action='UPDATE',
+            entity_type='VolunteerInvitation',
+            entity_id=str(invitation.id),
+            description=f"Volunteer invitation accepted by {email}.",
+            ip_address=ip_address,
+            metadata={'email': email, 'profile_id': str(profile.id), 'user_id': str(target_user.id)}
+        )
+
+        AuditLog.objects.create(
+            user=target_user,
+            action='CREATE' if not existing_user else 'UPDATE',
+            entity_type='VolunteerProfile',
+            entity_id=str(profile.id),
+            description="Volunteer profile linked to portal account via invitation.",
+            ip_address=ip_address,
+            metadata={
+                'email': email,
+                'registration_source': 'ADMIN_ADDED',
+                'approval_status': 'APPROVED',
+                'is_active': True,
+                'invitation_id': str(invitation.id),
+            }
+        )
+
+    # Issue JWT tokens
+    refresh = RefreshToken.for_user(target_user)
+
+    return {
+        'message': 'Volunteer registration completed successfully. Welcome to the portal!',
+        'access': str(refresh.access_token),
+        'refresh': str(refresh),
+        'user': UserSerializer(target_user).data,
+        'profile_id': str(profile.id),
+        'approval_status': profile.approval_status,
+        'is_active': profile.is_active,
+    }
+
+
+def resend_invitation(invitation_or_id, admin_user=None, ip_address=None):
+    """
+    Resends an invitation to an eligible volunteer under database row lock (select_for_update).
+    - Accepted invitations cannot be resent.
+    - Revoked invitations cannot be resent (explicit policy).
+    - Generates a new secure token hash, resets status to PENDING, extends expiry.
+    - Encrypts new delivery token and queues Celery email dispatch passing only invitation ID.
+    """
+    new_raw_token = secrets.token_urlsafe(32)
+    new_token_hash = hashlib.sha256(new_raw_token.encode('utf-8')).hexdigest()
+    new_encrypted_token = encrypt_invitation_token(new_raw_token)
+    new_expiry = timezone.now() + timedelta(days=INVITATION_EXPIRY_DAYS)
+
+    with transaction.atomic():
+        if isinstance(invitation_or_id, VolunteerInvitation):
+            invitation = VolunteerInvitation.objects.select_for_update().get(id=invitation_or_id.id)
+        else:
+            invitation = VolunteerInvitation.objects.select_for_update().filter(id=invitation_or_id).first()
+            if not invitation:
+                raise ValidationError({'invitation': 'Invitation not found.'})
+
+        if invitation.status == VolunteerInvitation.Status.ACCEPTED:
+            raise ValidationError({'invitation': 'Cannot resend an already accepted invitation.'})
+
+        if invitation.status == VolunteerInvitation.Status.REVOKED:
+            raise ValidationError({'invitation': 'Cannot resend a revoked invitation.'})
+
+        invitation.token_hash = new_token_hash
+        invitation.encrypted_delivery_token = new_encrypted_token
+        invitation.status = VolunteerInvitation.Status.PENDING
+        invitation.expires_at = new_expiry
+        invitation.email_sent = False
+        invitation.email_error = ''
+        invitation.save(update_fields=['token_hash', 'encrypted_delivery_token', 'status', 'expires_at', 'email_sent', 'email_error', 'updated_at'])
+
+        AuditLog.objects.create(
+            user=admin_user if (admin_user and admin_user.is_authenticated) else None,
+            action='UPDATE',
+            entity_type='VolunteerInvitation',
+            entity_id=str(invitation.id),
+            description=f"Resent volunteer invitation to {invitation.email}.",
+            ip_address=ip_address,
+            metadata={'email': invitation.email, 'expires_at': str(new_expiry)}
+        )
+
+    # Pass only invitation ID to Celery
+    send_volunteer_invitation_email.delay(str(invitation.id))
+    return invitation, new_raw_token
+
+
+def revoke_invitation(invitation_or_id, admin_user=None, reason=None, ip_address=None):
+    """
+    Revokes an active or pending invitation under database row lock (select_for_update).
+    Purges any pending encrypted delivery token.
+    """
+    with transaction.atomic():
+        if isinstance(invitation_or_id, VolunteerInvitation):
+            invitation = VolunteerInvitation.objects.select_for_update().get(id=invitation_or_id.id)
+        else:
+            invitation = VolunteerInvitation.objects.select_for_update().filter(id=invitation_or_id).first()
+            if not invitation:
+                raise ValidationError({'invitation': 'Invitation not found.'})
+
+        if invitation.status == VolunteerInvitation.Status.ACCEPTED:
+            raise ValidationError({'invitation': 'Cannot revoke an already accepted invitation.'})
+
+        if invitation.status == VolunteerInvitation.Status.REVOKED:
+            return invitation
+
+        invitation.status = VolunteerInvitation.Status.REVOKED
+        invitation.encrypted_delivery_token = None
+        invitation.save(update_fields=['status', 'encrypted_delivery_token', 'updated_at'])
+
+        desc = f"Revoked volunteer invitation for {invitation.email}."
+        if reason:
+            desc += f" Reason: {reason}"
+        meta = {'email': invitation.email}
+        if reason:
+            meta['reason'] = reason
+
+        AuditLog.objects.create(
+            user=admin_user if (admin_user and admin_user.is_authenticated) else None,
+            action='UPDATE',
+            entity_type='VolunteerInvitation',
+            entity_id=str(invitation.id),
+            description=desc,
+            ip_address=ip_address,
+            metadata=meta
+        )
+
+    return invitation

@@ -16,6 +16,11 @@ from .views import (
     MyCertificatesView,
     MyOnboardingApplicationView,
     SubmitOnboardingApplicationView,
+    VolunteerInvitationBatchViewSet,
+    VolunteerInvitationViewSet,
+    ValidateInvitationTokenView,
+    RequestInvitationOTPView,
+    AcceptInvitationView,
 )
 
 router = DefaultRouter()
@@ -26,6 +31,8 @@ router.register(r'applications', VolunteerApplicationViewSet, basename='voluntee
 router.register(r'participations', VolunteerParticipationViewSet, basename='volunteer-participation')
 router.register(r'admin/certificates', CertificateViewSet, basename='volunteer-admin-certificate')
 router.register(r'onboarding-applications', VolunteerOnboardingApplicationViewSet, basename='volunteer-onboarding-application')
+router.register(r'invitations/batches', VolunteerInvitationBatchViewSet, basename='volunteer-invitation-batch')
+router.register(r'invitations', VolunteerInvitationViewSet, basename='volunteer-invitation')
 
 app_name = 'volunteers'
 
@@ -39,6 +46,11 @@ urlpatterns = [
     path('certificates/', MyCertificatesView.as_view(), name='my-volunteer-certificates'),
     path('my-onboarding/', MyOnboardingApplicationView.as_view(), name='my-onboarding-application'),
     path('submit-onboarding/', SubmitOnboardingApplicationView.as_view(), name='submit-onboarding-application'),
+
+    # Volunteer Invitation Public Endpoints (must precede router to avoid pk pattern collisions)
+    path('invitations/validate-token/', ValidateInvitationTokenView.as_view(), name='volunteer-invitation-validate'),
+    path('invitations/request-otp/', RequestInvitationOTPView.as_view(), name='volunteer-invitation-request-otp'),
+    path('invitations/accept/', AcceptInvitationView.as_view(), name='volunteer-invitation-accept'),
 
     # ViewSet Router endpoints
     path('', include(router.urls)),
