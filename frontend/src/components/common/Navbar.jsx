@@ -130,14 +130,6 @@ export default function Navbar() {
             )}
           </div>
 
-          <Link to="/projects" className={`nav-link ${isActive('/projects') ? 'active' : ''}`}>
-            Our Work
-          </Link>
-
-          <Link to="/impact" className={`nav-link ${isActive('/impact') ? 'active' : ''}`}>
-            Impact
-          </Link>
-
           {/* Get Involved Dropdown */}
           <div className="nav-dropdown-wrapper" onMouseEnter={() => toggleDropdown('involved')} onMouseLeave={() => toggleDropdown(null)}>
             <button className={`nav-link dropdown-btn ${['/volunteer', '/donate', '/partners', '/events'].includes(location.pathname) ? 'active' : ''}`}>
@@ -152,10 +144,6 @@ export default function Navbar() {
               </div>
             )}
           </div>
-
-          <Link to="/stories" className={`nav-link ${isActive('/stories') ? 'active' : ''}`}>
-            Stories
-          </Link>
 
           <Link to="/gallery" className={`nav-link ${isActive('/gallery') ? 'active' : ''}`}>
             Gallery
@@ -208,11 +196,8 @@ export default function Navbar() {
           <div className="mobile-links">
             <Link to="/" className="mobile-nav-link" onClick={closeMenus}>Home</Link>
             <Link to="/about" className="mobile-nav-link" onClick={closeMenus}>About Us & Approach</Link>
-            <Link to="/projects" className="mobile-nav-link" onClick={closeMenus}>Our Work & Projects</Link>
-            <Link to="/impact" className="mobile-nav-link" onClick={closeMenus}>Impact Dashboard</Link>
             <Link to="/volunteer" className="mobile-nav-link" onClick={closeMenus}>Volunteer Opportunities</Link>
             <Link to="/events" className="mobile-nav-link" onClick={closeMenus}>Events & Drives</Link>
-            <Link to="/stories" className="mobile-nav-link" onClick={closeMenus}>Stories of Change</Link>
             <Link to="/gallery" className="mobile-nav-link" onClick={closeMenus}>Photo Gallery</Link>
             <Link to="/partners" className="mobile-nav-link" onClick={closeMenus}>CSR & Partnerships</Link>
             <Link to="/careers" className="mobile-nav-link" onClick={closeMenus}>Careers</Link>

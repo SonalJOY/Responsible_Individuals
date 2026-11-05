@@ -1,11 +1,12 @@
-import React, { useEffect, useState } from 'react';
-import { X, ChevronLeft, ChevronRight, MapPin, Calendar, Sparkles } from 'lucide-react';
+import React, { useEffect, useState, useRef } from 'react';
+import { X, ChevronLeft, ChevronRight, MapPin, Calendar, Sparkles, Users } from 'lucide-react';
 
 export default function GalleryLightbox({ isOpen, items, currentIndex, onClose, onPrev, onNext }) {
   const currentItem = items && items.length > 0 ? (items[currentIndex] || items[0]) : null;
   const [imgSrc, setImgSrc] = useState(currentItem?.image);
   const [fallbackAttempted, setFallbackAttempted] = useState(false);
   const [imgFailed, setImgFailed] = useState(false);
+  const infoAreaRef = useRef(null);
 
   useEffect(() => {
     if (currentItem) {
@@ -14,6 +15,13 @@ export default function GalleryLightbox({ isOpen, items, currentIndex, onClose, 
       setImgFailed(false);
     }
   }, [currentIndex, currentItem]);
+
+  // Reset scroll to top on photo change
+  useEffect(() => {
+    if (infoAreaRef.current) {
+      infoAreaRef.current.scrollTop = 0;
+    }
+  }, [currentIndex]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -68,7 +76,14 @@ export default function GalleryLightbox({ isOpen, items, currentIndex, onClose, 
           <X size={20} />
         </button>
 
-        <div className="gallery-lightbox-img-area">
+        <div 
+          className="gallery-lightbox-img-area"
+          onWheel={(e) => {
+            if (infoAreaRef.current) {
+              infoAreaRef.current.scrollTop += e.deltaY;
+            }
+          }}
+        >
           {!imgFailed ? (
             <img 
               src={imgSrc} 
@@ -118,7 +133,7 @@ export default function GalleryLightbox({ isOpen, items, currentIndex, onClose, 
           )}
         </div>
 
-        <div className="gallery-lightbox-info-area">
+        <div className="gallery-lightbox-info-area" ref={infoAreaRef} tabIndex={0}>
           <div className="gallery-lightbox-header">
             <span 
               className="gallery-lightbox-tag"
@@ -144,6 +159,12 @@ export default function GalleryLightbox({ isOpen, items, currentIndex, onClose, 
                 <span>{currentItem.date}</span>
               </div>
             )}
+            {currentItem.participants && (
+              <div className="gallery-lightbox-meta-item">
+                <Users size={15} style={{ color: currentItem.themeColor }} />
+                <span>{currentItem.participants}</span>
+              </div>
+            )}
           </div>
 
           {currentItem.impact && (
@@ -156,6 +177,23 @@ export default function GalleryLightbox({ isOpen, items, currentIndex, onClose, 
           <p className="gallery-lightbox-desc">
             {currentItem.description}
           </p>
+
+          {currentItem.highlights && currentItem.highlights.length > 0 && (
+            <div className="gallery-lightbox-highlights">
+              <h4 className="gallery-lightbox-highlights-title">Key Initiatives & Impact</h4>
+              <ul className="gallery-lightbox-highlights-list">
+                {currentItem.highlights.map((highlight, idx) => (
+                  <li key={idx} className="gallery-lightbox-highlight-item">
+                    <span 
+                      className="gallery-highlight-bullet" 
+                      style={{ backgroundColor: currentItem.themeColor || '#F59E0B' }} 
+                    />
+                    <span>{highlight}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           <div className="gallery-lightbox-footer">
             <div className="gallery-lightbox-keyboard-hint">

@@ -96,8 +96,8 @@ export default function Hero() {
 
         {/* CTA Cluster */}
         <div className="hero-cta-cluster hero-fade-item" style={{ animationDelay: '0.5s' }}>
-          <Link to="/projects" className="btn-editorial-primary">
-            <span>Explore Our Work</span>
+          <Link to="/gallery" className="btn-editorial-primary">
+            <span>Explore Photo Gallery</span>
             <div className="btn-arrow-circle">
               <ArrowRight size={16} />
             </div>

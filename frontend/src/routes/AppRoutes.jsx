@@ -10,14 +10,9 @@ import AdminLayout from '../layouts/AdminLayout';
 // Public Pages (Lazy Loaded for route chunk preloading)
 const HomePage = lazy(() => import('../pages/Home/HomePage'));
 const AboutPage = lazy(() => import('../pages/About/AboutPage'));
-const ProjectsPage = lazy(() => import('../pages/Projects/ProjectsPage'));
-const ProjectDetailPage = lazy(() => import('../pages/Projects/ProjectDetailPage'));
-const ImpactPage = lazy(() => import('../pages/Impact/ImpactPage'));
 const VolunteerPage = lazy(() => import('../pages/Volunteer/VolunteerPage'));
 const DonatePage = lazy(() => import('../pages/Donate/DonatePage'));
 const EventsPage = lazy(() => import('../pages/Events/EventsPage'));
-const StoriesPage = lazy(() => import('../pages/Stories/StoriesPage'));
-const StoryDetailPage = lazy(() => import('../pages/Stories/StoryDetailPage'));
 const GalleryPage = lazy(() => import('../pages/Gallery/GalleryPage'));
 const PartnersPage = lazy(() => import('../pages/Partners/PartnersPage'));
 const CareersPage = lazy(() => import('../pages/Careers/CareersPage'));
@@ -50,27 +45,18 @@ export default function AppRoutes() {
 
         <Route path="about" element={<AboutPage />} />
 
-        <Route path="projects" element={<ProjectsPage />} />
-
-        <Route
-          path="projects/:slug"
-          element={<ProjectDetailPage />}
-        />
-
-        <Route path="impact" element={<ImpactPage />} />
+        {/* Removed Pages Redirects */}
+        <Route path="projects" element={<Navigate to="/gallery" replace />} />
+        <Route path="projects/*" element={<Navigate to="/gallery" replace />} />
+        <Route path="impact" element={<Navigate to="/" replace />} />
+        <Route path="stories" element={<Navigate to="/gallery" replace />} />
+        <Route path="stories/*" element={<Navigate to="/gallery" replace />} />
 
         <Route path="volunteer" element={<VolunteerPage />} />
 
         <Route path="donate" element={<DonatePage />} />
 
         <Route path="events" element={<EventsPage />} />
-
-        <Route path="stories" element={<StoriesPage />} />
-
-        <Route
-          path="stories/:slug"
-          element={<StoryDetailPage />}
-        />
 
         <Route path="gallery" element={<GalleryPage />} />
 

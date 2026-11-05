@@ -38,7 +38,7 @@ export default function WhatWeDoSection() {
       badgeBg: 'rgba(245, 158, 11, 0.15)',
       badgeBorder: 'rgba(245, 158, 11, 0.35)',
       alt: 'Responsible Individuals team and volunteers outside Government Senior Primary School with banner supporting students',
-      link: '/projects?focus_area=education',
+      link: '/gallery',
     },
     {
       id: 'health',
@@ -53,7 +53,7 @@ export default function WhatWeDoSection() {
       badgeBg: 'rgba(225, 29, 72, 0.15)',
       badgeBorder: 'rgba(225, 29, 72, 0.35)',
       alt: 'Community wellness initiative with young children in a supportive healthcare setting',
-      link: '/projects?focus_area=health',
+      link: '/gallery',
     },
     {
       id: 'environment',
@@ -68,7 +68,7 @@ export default function WhatWeDoSection() {
       badgeBg: 'rgba(16, 185, 129, 0.15)',
       badgeBorder: 'rgba(16, 185, 129, 0.35)',
       alt: 'Volunteer engaged in eco-restoration and environment conservation surrounded by greenery',
-      link: '/projects?focus_area=environment',
+      link: '/gallery',
     },
   ];
 
@@ -157,9 +157,9 @@ export default function WhatWeDoSection() {
 
           {/* Bottom Supporting Link */}
           <div className="what-we-do-cta">
-            <Link to="/projects" className="what-we-do-link">
+            <Link to="/gallery" className="what-we-do-link">
               <Sparkles size={16} />
-              <span>See our community development programs in action</span>
+              <span>See our community work in the photo gallery</span>
               <ArrowRight size={16} />
             </Link>
           </div>

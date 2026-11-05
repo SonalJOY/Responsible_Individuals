@@ -43,7 +43,7 @@ export default function FocusAreasSection() {
         'Empowering educators through robust teacher training and capacity-building programs to elevate classroom impact.',
         'Equipping youth for the future with vocational training, career guidance, and digital literacy initiatives.',
       ],
-      link: '/projects?focus_area=education',
+      link: '/gallery',
     },
     {
       id: 'environment',
@@ -60,7 +60,7 @@ export default function FocusAreasSection() {
         'Reviving local ecosystems by desilting and restoring water bodies through community participation.',
         'Environmental education via workshops that foster awareness and sustainable habits among youth and local communities.',
       ],
-      link: '/projects?focus_area=environment',
+      link: '/gallery',
     },
     {
       id: 'health',
@@ -77,7 +77,7 @@ export default function FocusAreasSection() {
         'Access to safe drinking water as a fundamental right.',
         'Community health drives including blood donation camps and preventive care outreach.',
       ],
-      link: '/projects?focus_area=health',
+      link: '/gallery',
     },
   ];
 
@@ -161,8 +161,8 @@ export default function FocusAreasSection() {
                 </div>
 
                 <div className="caption-cta-row">
-                  <Link to="/projects" className="caption-explore-link">
-                    <span>Explore Field Projects</span>
+                  <Link to="/gallery" className="caption-explore-link">
+                    <span>Explore Field Gallery</span>
                     <ArrowRight size={14} />
                   </Link>
                 </div>
@@ -218,7 +218,7 @@ export default function FocusAreasSection() {
                   {/* Footer Link */}
                   <div className="focus-area-card-footer">
                     <Link to={area.link} className="focus-area-link">
-                      <span>Explore {area.shortTitle} Projects</span>
+                      <span>View in Photo Gallery</span>
                       <ArrowRight size={14} />
                     </Link>
                   </div>

@@ -42,42 +42,42 @@ export default function ProjectShowcase() {
       alt: 'Restored Kaikondrahalli-Varthur feeder wetland with blooming shoreline flora and clean open water',
       title: 'Kaikondrahalli-Varthur Lake Rejuvenation',
       subtitle: 'Environment & Water',
-      link: '/projects/lake-rejuvenation-bengaluru-east',
+      link: '/gallery',
     },
     {
       src: stemImg,
       alt: 'Rural government school students learning robotics and electronics in a STEM smart lab',
       title: 'Rural STEM Labs & Digital Classrooms',
       subtitle: 'Education & Digital Access',
-      link: '/projects/rural-digital-classrooms-stem-hub',
+      link: '/gallery',
     },
     {
       src: forestImg,
       alt: 'Dense multi-tier native Miyawaki micro-forest canopy planted by volunteers in Bengaluru',
       title: 'Urban Micro-Forests Initiative',
       subtitle: 'Afforestation & Ecology',
-      link: '/projects/urban-miyawaki-micro-forests',
+      link: '/gallery',
     },
     {
       src: wasteImg,
       alt: 'Community aerobic composting and residential waste segregation hub',
       title: 'Zero-Waste Neighborhood Composting',
       subtitle: 'Community Waste & Ecology',
-      link: '/projects/community-waste-circular-hub',
+      link: '/gallery',
     },
     {
       src: waterMonitoringImg,
       alt: 'Citizen volunteers collecting water samples for dissolved oxygen and wetland health monitoring',
       title: 'Citizen Water Quality Monitoring',
       subtitle: 'Water & Environmental Health',
-      link: '/projects/lake-rejuvenation-bengaluru-east',
+      link: '/gallery',
     },
     {
       src: desiltingImg,
       alt: 'Community volunteers removing debris and clearing silt channels at the feeder lake',
       title: 'Community Wetland Desilting Drive',
       subtitle: 'Citizen Volunteer Drives',
-      link: '/projects/lake-rejuvenation-bengaluru-east',
+      link: '/gallery',
     },
   ];
 
@@ -96,8 +96,8 @@ export default function ProjectShowcase() {
               Structured grassroots interventions delivering measurable environmental restoration and rural school support. Drag or rotate through our live active project showcase below.
             </p>
           </div>
-          <Link to="/projects" className="btn-view-all">
-            <span>View All Projects</span>
+          <Link to="/gallery" className="btn-view-all">
+            <span>View Photo Gallery</span>
             <ArrowRight size={16} />
           </Link>
         </div>

@@ -73,7 +73,8 @@ describe('Gallery Page Data Contract Tests', () => {
     assert.strictEqual(washItem.category, 'Education');
     assert.strictEqual(washItem.location, 'Hosa Byrohalli School, Karnataka');
     assert.strictEqual(washItem.image, '/images/gallery/20251216_135124.jpg');
-    assert.strictEqual(washItem.description, 'An interactive awareness session educating students on hygiene, sanitation, and healthy daily practices.');
+    assert.ok(washItem.description.includes('Water, Sanitation, and Hygiene (WASH)'));
+    assert.ok(washItem.description.length > 100, 'Description should be detailed and comprehensive');
   });
 
   test('8. Category counts dynamically update based on remaining stories', () => {

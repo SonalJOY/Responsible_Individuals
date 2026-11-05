@@ -95,6 +95,10 @@ export default function GalleryCard({ item, index, onClick, isVisible }) {
 
         <h3 className="gallery-card-title">{item.title}</h3>
 
+        {item.description && (
+          <p className="gallery-card-desc">{item.description}</p>
+        )}
+
         <div className="gallery-card-meta">
           <MapPin size={13} style={{ color: item.themeColor || '#F59E0B' }} />
           <span>{item.location}</span>
