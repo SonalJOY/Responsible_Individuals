@@ -3,7 +3,7 @@ import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { 
   LayoutDashboard, FolderKanban, HeartHandshake, 
-  CreditCard, MessageSquare, ArrowLeft, LogOut, ShieldCheck 
+  CreditCard, MessageSquare, ArrowLeft, LogOut, ShieldCheck, UserCheck, Users 
 } from 'lucide-react';
 
 export default function AdminLayout() {
@@ -18,6 +18,8 @@ export default function AdminLayout() {
 
   const navItems = [
     { name: 'Dashboard Overview', path: '/admin-portal', icon: LayoutDashboard },
+    { name: 'Onboarding Applications', path: '/admin-portal/onboarding', icon: UserCheck },
+    { name: 'Volunteer Directory', path: '/admin-portal/directory', icon: Users },
     { name: 'Volunteer Applications', path: '/admin-portal/volunteers', icon: HeartHandshake },
     { name: 'Financial Donations', path: '/admin-portal/donations', icon: CreditCard },
     { name: 'Contact & Inquiries', path: '/admin-portal/enquiries', icon: MessageSquare },

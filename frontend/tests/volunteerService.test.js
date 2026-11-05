@@ -44,6 +44,9 @@ test('volunteerService - API Endpoint and Method Contract Tests', async (t) => {
       if (url === '/volunteers/certificates/') {
         return { data: [{ id: 'cert-1', code: 'RI-001' }] };
       }
+      if (url === '/volunteers/my-onboarding/') {
+        return { data: { id: 'onb-1', status: 'SUBMITTED', statement_of_intent: 'PASSION FOR CONSERVATION' } };
+      }
       return { data: {} };
     },
     post: async (url, payload, config = {}) => {
@@ -51,10 +54,11 @@ test('volunteerService - API Endpoint and Method Contract Tests', async (t) => {
       if (url === '/volunteers/register/') {
         return {
           data: {
-            access: 'fake-jwt-access-token',
-            refresh: 'fake-jwt-refresh-token',
-            user: { id: 'u1', email: payload.email, role: 'VOLUNTEER' },
-            volunteer_profile: { id: 'vp1', full_name: 'Test Volunteer' }
+            message: 'Volunteer registration initiated. Please verify your email using the OTP sent to your inbox.',
+            identifier: payload.email,
+            requires_otp: true,
+            user: { id: 'u1', email: payload.email, role: 'PUBLIC', is_verified: false },
+            volunteer_profile: { id: 'vp1', full_name: 'Test Volunteer', approval_status: 'PENDING' }
           }
         };
       }
@@ -63,6 +67,16 @@ test('volunteerService - API Endpoint and Method Contract Tests', async (t) => {
           data: {
             message: 'Application submitted successfully',
             application: { id: 'app-new', status: 'PENDING' }
+          }
+        };
+      }
+      if (url === '/volunteers/submit-onboarding/') {
+        return {
+          data: {
+            id: 'onb-new',
+            status: 'SUBMITTED',
+            statement_of_intent: payload.statement_of_intent,
+            submitted_at: '2026-10-26T00:00:00Z',
           }
         };
       }
@@ -119,6 +133,14 @@ test('volunteerService - API Endpoint and Method Contract Tests', async (t) => {
     getCertificates: async () => {
       const res = await mockApi.get('/volunteers/certificates/');
       return res.data.results || res.data;
+    },
+    getMyOnboarding: async () => {
+      const res = await mockApi.get('/volunteers/my-onboarding/');
+      return res.data;
+    },
+    submitOnboarding: async (onboardingData) => {
+      const res = await mockApi.post('/volunteers/submit-onboarding/', onboardingData);
+      return res.data;
     }
   };
 
@@ -141,7 +163,7 @@ test('volunteerService - API Endpoint and Method Contract Tests', async (t) => {
     assert.equal(interests[0].name, 'Water');
   });
 
-  await t.test('3. register calls POST /volunteers/register/ and sets localStorage tokens', async () => {
+  await t.test('3. register calls POST /volunteers/register/ requiring OTP without issuing immediate tokens', async () => {
     localStorage.clear();
     recordedCalls.length = 0;
     const payload = {
@@ -154,9 +176,12 @@ test('volunteerService - API Endpoint and Method Contract Tests', async (t) => {
     assert.equal(recordedCalls.length, 1);
     assert.equal(recordedCalls[0].method, 'POST');
     assert.equal(recordedCalls[0].url, '/volunteers/register/');
-    assert.equal(localStorage.getItem('ri_access_token'), 'fake-jwt-access-token');
-    assert.equal(localStorage.getItem('ri_refresh_token'), 'fake-jwt-refresh-token');
-    assert.equal(JSON.parse(localStorage.getItem('ri_user')).email, 'frontend.volunteer@test.org');
+    assert.equal(regRes.requires_otp, true);
+    assert.equal(regRes.identifier, 'frontend.volunteer@test.org');
+    assert.equal(localStorage.getItem('ri_access_token'), null);
+    assert.equal(localStorage.getItem('ri_refresh_token'), null);
+    assert.equal(regRes.user.is_verified, false);
+    assert.equal(regRes.volunteer_profile.approval_status, 'PENDING');
     assert.equal(regRes.volunteer_profile.full_name, 'Test Volunteer');
   });
 
@@ -247,5 +272,32 @@ test('volunteerService - API Endpoint and Method Contract Tests', async (t) => {
         return true;
       }
     );
+  });
+
+  await t.test('11. getMyOnboarding calls GET /volunteers/my-onboarding/', async () => {
+    recordedCalls.length = 0;
+    const onb = await volunteerService.getMyOnboarding();
+    assert.equal(recordedCalls.length, 1);
+    assert.equal(recordedCalls[0].method, 'GET');
+    assert.equal(recordedCalls[0].url, '/volunteers/my-onboarding/');
+    assert.equal(onb.id, 'onb-1');
+    assert.equal(onb.status, 'SUBMITTED');
+  });
+
+  await t.test('12. submitOnboarding calls POST /volunteers/submit-onboarding/ with payload', async () => {
+    recordedCalls.length = 0;
+    const payload = {
+      statement_of_intent: 'Passionate about urban water bodies restoration and rural education.',
+      skills_summary: 'Water Quality Testing',
+      availability: 'Weekends',
+      city: 'Bengaluru',
+      phone: '+919845012345',
+    };
+    const res = await volunteerService.submitOnboarding(payload);
+    assert.equal(recordedCalls.length, 1);
+    assert.equal(recordedCalls[0].method, 'POST');
+    assert.equal(recordedCalls[0].url, '/volunteers/submit-onboarding/');
+    assert.equal(recordedCalls[0].payload.statement_of_intent, payload.statement_of_intent);
+    assert.equal(res.status, 'SUBMITTED');
   });
 });

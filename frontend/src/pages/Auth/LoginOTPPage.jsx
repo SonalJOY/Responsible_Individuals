@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import {
     ShieldCheck,
     KeyRound,
@@ -7,11 +7,16 @@ import {
 } from 'lucide-react';
 
 import { useAuth } from '../../context/AuthContext';
+import { sanitizeInternalRedirect } from '../../utils/navigation';
 
 
 export default function LoginOTPPage() {
 
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+
+    const opportunity = searchParams.get('opportunity') || sessionStorage.getItem('ri_target_opportunity') || '';
+    const redirectParam = searchParams.get('redirect');
 
     const {
         verifyLoginOTP,
@@ -105,24 +110,22 @@ export default function LoginOTPPage() {
                 'Login successful! Redirecting...'
             );
 
-
-            // Admin users go to admin portal
-            if (
-                data.user?.is_admin_or_staff ||
-                data.user?.is_staff
-            ) {
-
-                setTimeout(() => {
-                    navigate('/admin-portal');
-                }, 800);
-
+            let destination = '/';
+            if (data.user?.is_admin_or_staff || data.user?.is_staff) {
+                destination = '/admin-portal';
+            } else if (data.user?.role === 'VOLUNTEER') {
+                destination = opportunity
+                    ? `/volunteer/dashboard?opportunity=${encodeURIComponent(opportunity)}`
+                    : (redirectParam ? sanitizeInternalRedirect(redirectParam, '/volunteer/dashboard') : '/volunteer/dashboard');
             } else {
-
-                setTimeout(() => {
-                    navigate('/');
-                }, 800);
-
+                destination = opportunity
+                    ? `/volunteer/applicant-portal?opportunity=${encodeURIComponent(opportunity)}`
+                    : (redirectParam ? sanitizeInternalRedirect(redirectParam, '/volunteer/applicant-portal') : '/volunteer/applicant-portal');
             }
+
+            setTimeout(() => {
+                navigate(destination);
+            }, 800);
 
         } catch (err) {
 

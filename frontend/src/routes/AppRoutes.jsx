@@ -6,11 +6,15 @@ import GlobalPreloader from '../components/common/GlobalPreloader';
 // Layouts
 import PublicLayout from '../layouts/PublicLayout';
 import AdminLayout from '../layouts/AdminLayout';
+import ProtectedRoute from '../components/common/ProtectedRoute';
 
 // Public Pages (Lazy Loaded for route chunk preloading)
 const HomePage = lazy(() => import('../pages/Home/HomePage'));
 const AboutPage = lazy(() => import('../pages/About/AboutPage'));
 const VolunteerPage = lazy(() => import('../pages/Volunteer/VolunteerPage'));
+const VolunteerPortalPage = lazy(() => import('../pages/Volunteer/VolunteerPortalPage'));
+const ApplicantPortalPage = lazy(() => import('../pages/Volunteer/ApplicantPortalPage'));
+const VolunteerDashboardPage = lazy(() => import('../pages/Volunteer/VolunteerDashboardPage'));
 const DonatePage = lazy(() => import('../pages/Donate/DonatePage'));
 const EventsPage = lazy(() => import('../pages/Events/EventsPage'));
 const GalleryPage = lazy(() => import('../pages/Gallery/GalleryPage'));
@@ -27,6 +31,8 @@ const ForgotPasswordPage = lazy(() => import('../pages/Auth/ForgotPasswordPage')
 
 // Admin Pages
 const AdminDashboard = lazy(() => import('../pages/Admin/AdminDashboard'));
+const AdminOnboarding = lazy(() => import('../pages/Admin/AdminOnboarding'));
+const AdminVolunteerDirectory = lazy(() => import('../pages/Admin/AdminVolunteerDirectory'));
 const AdminVolunteers = lazy(() => import('../pages/Admin/AdminVolunteers'));
 const AdminDonations = lazy(() => import('../pages/Admin/AdminDonations'));
 const AdminEnquiries = lazy(() => import('../pages/Admin/AdminEnquiries'));
@@ -53,6 +59,35 @@ export default function AppRoutes() {
         <Route path="stories/*" element={<Navigate to="/gallery" replace />} />
 
         <Route path="volunteer" element={<VolunteerPage />} />
+
+        <Route path="volunteer-portal" element={<VolunteerPortalPage />} />
+
+        <Route
+          path="volunteer/dashboard"
+          element={
+            <ProtectedRoute requireApprovedVolunteer={true}>
+              <VolunteerDashboardPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="volunteer/dashboard/:tab"
+          element={
+            <ProtectedRoute requireApprovedVolunteer={true}>
+              <VolunteerDashboardPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="volunteer/applicant-portal"
+          element={
+            <ProtectedRoute>
+              <ApplicantPortalPage />
+            </ProtectedRoute>
+          }
+        />
 
         <Route path="donate" element={<DonatePage />} />
 
@@ -103,12 +138,26 @@ export default function AppRoutes() {
 
       <Route
         path="/admin-portal"
-        element={<AdminLayout />}
+        element={
+          <ProtectedRoute adminOnly={true}>
+            <AdminLayout />
+          </ProtectedRoute>
+        }
       >
 
         <Route
           index
           element={<AdminDashboard />}
+        />
+
+        <Route
+          path="onboarding"
+          element={<AdminOnboarding />}
+        />
+
+        <Route
+          path="directory"
+          element={<AdminVolunteerDirectory />}
         />
 
         <Route

@@ -521,6 +521,23 @@ export const volunteerService = {
 
     return res.data.results || res.data;
   },
+
+  getMyOnboarding: async () => {
+    const res = await api.get(
+      '/volunteers/my-onboarding/'
+    );
+
+    return res.data;
+  },
+
+  submitOnboarding: async (onboardingData) => {
+    const res = await api.post(
+      '/volunteers/submit-onboarding/',
+      onboardingData
+    );
+
+    return res.data;
+  },
 };
 
 // ============================================================
@@ -698,6 +715,88 @@ export const adminService = {
   getEnquiries: async () => {
     const res = await api.get(
       '/contact/enquiries/'
+    );
+
+    return res.data.results || res.data;
+  },
+
+  getOnboardingApplications: async (params = {}) => {
+    const res = await api.get(
+      '/volunteers/onboarding-applications/',
+      { params }
+    );
+
+    return res.data;
+  },
+
+  getOnboardingApplicationDetail: async (id) => {
+    const res = await api.get(
+      `/volunteers/onboarding-applications/${id}/`
+    );
+
+    return res.data;
+  },
+
+  reviewOnboardingApplication: async (id, status, notes = '') => {
+    const res = await api.post(
+      `/volunteers/onboarding-applications/${id}/review/`,
+      {
+        status,
+        review_notes: notes,
+      }
+    );
+
+    return res.data;
+  },
+
+  getVolunteerDirectory: async (params = {}) => {
+    const res = await api.get(
+      '/volunteers/profiles/',
+      { params }
+    );
+
+    return res.data;
+  },
+
+  getVolunteerDetail: async (id) => {
+    const res = await api.get(
+      `/volunteers/profiles/${id}/`
+    );
+
+    return res.data;
+  },
+
+  setVolunteerActiveStatus: async (id, isActive, reason) => {
+    const res = await api.post(
+      `/volunteers/profiles/${id}/set-active-status/`,
+      {
+        is_active: isActive,
+        reason,
+      }
+    );
+
+    return res.data;
+  },
+
+  getVolunteerOpportunityApplications: async (volunteerProfileId) => {
+    const res = await api.get(
+      `/volunteers/applications/?volunteer_profile=${volunteerProfileId}`
+    );
+
+    return res.data.results || res.data;
+  },
+
+  getVolunteerParticipations: async (volunteerProfileId) => {
+    const res = await api.get(
+      `/volunteers/participations/?volunteer_profile=${volunteerProfileId}`
+    );
+
+    return res.data.results || res.data;
+  },
+
+  getVolunteerCertificates: async (volunteerProfileId) => {
+    const res = await api.get(
+      `/volunteers/admin/certificates/?volunteer_profile=${volunteerProfileId}`
     );
 
     return res.data.results || res.data;
