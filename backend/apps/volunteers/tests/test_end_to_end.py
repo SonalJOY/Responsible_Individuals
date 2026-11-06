@@ -12,6 +12,7 @@ from apps.volunteers.models import (
     VolunteerOpportunity,
     VolunteerProfile,
     VolunteerApplication,
+    VolunteerOnboardingApplication,
     VolunteerParticipation,
     Certificate,
 )
@@ -116,32 +117,75 @@ class VolunteerEndToEndLifecycleTests(APITestCase):
         }
         res_step4 = self.client.post(reg_url, reg_payload, format='json')
         self.assertEqual(res_step4.status_code, status.HTTP_201_CREATED)
+        self.assertNotIn('access', res_step4.data)
+        self.assertNotIn('refresh', res_step4.data)
+        self.assertTrue(res_step4.data.get('requires_otp'))
+        self.assertEqual(res_step4.data.get('identifier'), 'ananya.kashyap@e2e-test.org')
 
         # ---------------------------------------------------------------------
-        # STEP 5: User receives JWT authentication tokens
-        # ---------------------------------------------------------------------
-        self.assertIn('access', res_step4.data)
-        self.assertIn('refresh', res_step4.data)
-        access_token = res_step4.data['access']
-
-        # ---------------------------------------------------------------------
-        # STEP 6: VolunteerProfile is created and linked to User
+        # STEP 5: User verifies email OTP via standard endpoint to receive JWT tokens
         # ---------------------------------------------------------------------
         user = User.objects.get(email='ananya.kashyap@e2e-test.org')
-        self.assertEqual(user.role, User.Role.VOLUNTEER)
+        self.assertFalse(user.is_verified)
+        self.assertFalse(user.is_active)
+        otp = user.otps.filter(is_used=False).latest('created_at')
+
+        verify_url = reverse('accounts:verify_otp')
+        res_verify = self.client.post(verify_url, {
+            'identifier': user.email,
+            'code': otp.code,
+        }, format='json')
+        self.assertEqual(res_verify.status_code, status.HTTP_200_OK)
+        self.assertIn('access', res_verify.data)
+        self.assertIn('refresh', res_verify.data)
+        access_token = res_verify.data['access']
+
+        user.refresh_from_db()
+        self.assertTrue(user.is_verified)
+        self.assertTrue(user.is_active)
+
+        # ---------------------------------------------------------------------
+        # STEP 6: VolunteerProfile is created and linked to User (PENDING approval, role PUBLIC)
+        # ---------------------------------------------------------------------
+        self.assertEqual(user.role, User.Role.PUBLIC)
         vol_profile = VolunteerProfile.objects.get(user=user)
+        self.assertEqual(vol_profile.approval_status, VolunteerProfile.ApprovalStatus.PENDING)
         self.assertEqual(vol_profile.full_name, 'Ananya Kashyap')
         self.assertEqual(vol_profile.email, 'ananya.kashyap@e2e-test.org')
 
         # ---------------------------------------------------------------------
-        # STEP 7: Interests are correctly linked
+        # STEP 7: Interests are correctly linked and Onboarding is submitted/approved
         # ---------------------------------------------------------------------
         self.assertEqual(vol_profile.interests.count(), 2)
         self.assertTrue(vol_profile.interests.filter(slug='water-stewardship').exists())
 
+        # Submit onboarding application
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {access_token}')
+        onboarding_url = reverse('volunteers:submit-onboarding-application')
+        res_onb = self.client.post(onboarding_url, {
+            'statement_of_intent': 'Deeply committed to urban lake stewardship and citizen science community action.',
+            'skills_summary': 'Water sampling, field reporting',
+            'availability': 'Weekends',
+        }, format='json')
+        self.assertEqual(res_onb.status_code, status.HTTP_201_CREATED)
+
+        # Admin reviews and approves onboarding application
+        onboarding_app = VolunteerOnboardingApplication.objects.get(volunteer_profile=vol_profile)
+        self.client.force_authenticate(user=self.admin)
+        review_url = reverse('volunteers:volunteer-onboarding-application-review', kwargs={'pk': str(onboarding_app.id)})
+        res_review = self.client.post(review_url, {
+            'status': 'APPROVED',
+            'review_notes': 'Credentials and background verified. Approved as official volunteer.',
+        }, format='json')
+        self.assertEqual(res_review.status_code, status.HTTP_200_OK)
+
+        vol_profile.refresh_from_db()
+        self.assertEqual(vol_profile.approval_status, VolunteerProfile.ApprovalStatus.APPROVED)
+
         # ---------------------------------------------------------------------
         # STEP 8: Authenticated Volunteer submits application
         # ---------------------------------------------------------------------
+        self.client.force_authenticate(user=None)
         self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {access_token}')
         apply_url = reverse('volunteers:volunteer-apply')
         apply_payload = {

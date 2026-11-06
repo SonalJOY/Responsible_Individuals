@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import {
     ShieldCheck,
     KeyRound,
@@ -7,9 +7,20 @@ import {
 } from 'lucide-react';
 
 import { useAuth } from '../../context/AuthContext';
+import { sanitizeInternalRedirect, buildAuthParams } from '../../utils/navigation';
 
 export default function VerifyOTPPage() {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const opportunity = searchParams.get('opportunity') || sessionStorage.getItem('ri_target_opportunity') || '';
+    const redirect = searchParams.get('redirect') || '';
+
+    useEffect(() => {
+        const oppParam = searchParams.get('opportunity');
+        if (oppParam) {
+            sessionStorage.setItem('ri_target_opportunity', oppParam);
+        }
+    }, [searchParams]);
 
     const { verifyOTP, resendOTP } = useAuth();
 
@@ -33,12 +44,13 @@ export default function VerifyOTPPage() {
         );
 
         if (!savedIdentifier) {
-            navigate('/register');
+            const authQuery = buildAuthParams({ redirect, opportunity });
+            navigate(`/register${authQuery}`);
             return;
         }
 
         setIdentifier(savedIdentifier);
-    }, [navigate]);
+    }, [navigate, redirect, opportunity]);
 
 
     // ----------------------------------------------------------
@@ -113,10 +125,25 @@ export default function VerifyOTPPage() {
             );
 
 
-            // Go to home page
+            // Role-aware destination resolution preserving opportunity and safe redirect
+            const isUserAdmin = Boolean(data.user?.is_admin_or_staff || data.user?.is_staff);
+            const isApprovedVolunteer = Boolean(data.user?.role === 'VOLUNTEER');
+
+            let destination = '/volunteer/applicant-portal';
+            if (isUserAdmin) {
+                destination = '/admin-portal';
+            } else if (isApprovedVolunteer) {
+                destination = opportunity
+                    ? `/volunteer/dashboard?opportunity=${encodeURIComponent(opportunity)}`
+                    : (redirect ? sanitizeInternalRedirect(redirect, '/volunteer/dashboard') : '/volunteer/dashboard');
+            } else {
+                destination = opportunity
+                    ? `/volunteer/applicant-portal?opportunity=${encodeURIComponent(opportunity)}`
+                    : (redirect ? sanitizeInternalRedirect(redirect, '/volunteer/applicant-portal') : '/volunteer/applicant-portal');
+            }
 
             setTimeout(() => {
-                navigate('/');
+                navigate(destination, { replace: true });
             }, 800);
 
         } catch (err) {
@@ -369,7 +396,7 @@ export default function VerifyOTPPage() {
                 <div className="back-register-box">
 
                     <Link
-                        to="/register"
+                        to={`/register${buildAuthParams({ redirect, opportunity })}`}
                         className="back-register-link"
                     >
                         Use a different email or phone

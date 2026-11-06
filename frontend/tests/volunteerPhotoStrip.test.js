@@ -138,4 +138,36 @@ test('Volunteer Stories Photo Strip & Lightbox Modal Tests (Phase 3B-UI)', async
     assert.equal(reducedMotion.overflowX, 'auto');
   });
 
+  await t.test('7. Bharath verified testimonial data and asset integrity', () => {
+    const bharath = volunteerStories.find((s) => s.name === 'Bharath');
+    assert.ok(bharath, 'Bharath must be present in volunteerStories');
+    assert.equal(bharath.isPlaceholder, false, 'Bharath must be a verified testimonial (isPlaceholder: false)');
+    assert.equal(bharath.statusLabel, 'Verified Testimonial');
+    assert.equal(bharath.role, 'Community Outreach & Field Operations');
+    assert.equal(bharath.image, '/images/Bharath.jpeg');
+    assert.ok(bharath.objectPosition, 'Bharath image must have objectPosition set to avoid facial cropping');
+    assert.ok(bharath.quote.includes('kindness and responsibility'), 'Quote must preserve personal voice');
+    assert.ok(bharath.quote.includes('government schools'), 'Quote must reflect words on government schools');
+    assert.ok(bharath.quote.includes('better tomorrow'), 'Quote must preserve closing sentiment');
+  });
+
+  await t.test('8. Neither Chetan nor Meera has a separate card in volunteer stories dataset', () => {
+    const chetan = volunteerStories.find((s) => s.name === 'Chetan');
+    assert.equal(chetan, undefined, 'Chetan must not have a separate card in volunteerStories');
+
+    const meera = volunteerStories.find((s) => s.id === 'meera-sundararajan' || (s.name && s.name.toLowerCase().includes('meera')));
+    assert.equal(meera, undefined, 'Meera must be completely removed from volunteerStories');
+  });
+
+  await t.test('9. Placeholders use meaningful temporary editorial copy without generic phrasing', () => {
+    const placeholders = volunteerStories.filter((s) => s.isPlaceholder);
+    assert.ok(placeholders.length > 0, 'Placeholder stories must exist for upcoming documentation');
+
+    placeholders.forEach((story) => {
+      assert.doesNotMatch(story.quote, /\[Volunteer testimonial coming soon/i, `Story ${story.name} must not contain generic bracketed placeholder in quote`);
+      assert.ok(story.statusLabel && !story.statusLabel.toLowerCase().includes('coming soon'), `Status label for ${story.name} must be meaningful editorial label`);
+      assert.ok(story.placeholderNote && story.placeholderNote.length > 20, `placeholderNote for ${story.name} must be substantial editorial copy`);
+    });
+  });
+
 });

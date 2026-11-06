@@ -6,7 +6,7 @@ from django.utils.html import strip_tags
 from celery import shared_task
 from celery.exceptions import MaxRetriesExceededError, Retry
 
-from .models import VolunteerProfile, VolunteerApplication
+from .models import VolunteerProfile, VolunteerApplication, VolunteerOnboardingApplication
 
 logger = logging.getLogger(__name__)
 
@@ -267,4 +267,231 @@ def send_application_status_email(self, application_id, status):
             raise self.retry(exc=exc, countdown=min(300, 30 * (2 ** self.request.retries)))
         except MaxRetriesExceededError:
             logger.error("Max retries exceeded sending status email for application %s", application_id)
+            return False
+
+
+@shared_task(bind=True, max_retries=3, default_retry_delay=60)
+def send_onboarding_submitted_admin_email(self, onboarding_application_id):
+    """
+    Notifies volunteer administrators that a new volunteer onboarding application has been submitted.
+    """
+    try:
+        app = VolunteerOnboardingApplication.objects.select_related('volunteer_profile').filter(id=onboarding_application_id).first()
+        if not app:
+            logger.warning("send_onboarding_submitted_admin_email: OnboardingApplication not found for ID %s", onboarding_application_id)
+            return False
+
+        site_name = getattr(settings, 'SITE_NAME', 'Responsible Individuals')
+        subject = f"New Volunteer Onboarding Application: {app.volunteer_profile.full_name} – {site_name}"
+        admin_email = _get_contact_email()
+
+        context = {
+            'full_name': app.volunteer_profile.full_name,
+            'email': app.volunteer_profile.email,
+            'city': app.volunteer_profile.city,
+            'skills': app.skills_summary or app.volunteer_profile.skills,
+            'statement_of_intent': app.statement_of_intent,
+            'submitted_date': app.submitted_at.strftime('%B %d, %Y') if app.submitted_at else 'Recently',
+        }
+
+        try:
+            _send_templated_email(
+                subject=subject,
+                template_base='volunteers/emails/admin_onboarding_received',
+                context=context,
+                recipient_list=[admin_email],
+            )
+        except Exception as t_err:
+            logger.warning("Falling back to plaintext notification for onboarding submission %s: %s", onboarding_application_id, t_err)
+            from django.core.mail import send_mail
+            send_mail(
+                subject=subject,
+                message=f"New volunteer onboarding application received from {app.volunteer_profile.full_name} ({app.volunteer_profile.email}). Please review in Admin Portal.",
+                from_email=_get_from_email(),
+                recipient_list=[admin_email],
+                fail_silently=True,
+            )
+
+        logger.info("Admin onboarding notification sent for application %s", onboarding_application_id)
+        return True
+
+    except Retry:
+        raise
+    except Exception as exc:
+        logger.error("Failed sending admin onboarding notification for %s: %s", onboarding_application_id, exc)
+        return False
+
+
+@shared_task(bind=True, max_retries=3, default_retry_delay=60)
+def send_onboarding_decision_email(self, onboarding_application_id, decision):
+    """
+    Sends decision notification (Approved / Rejected) to volunteer applicant.
+    """
+    try:
+        app = VolunteerOnboardingApplication.objects.select_related('volunteer_profile').filter(id=onboarding_application_id).first()
+        if not app:
+            logger.warning("send_onboarding_decision_email: OnboardingApplication not found for ID %s", onboarding_application_id)
+            return False
+
+        site_name = getattr(settings, 'SITE_NAME', 'Responsible Individuals')
+        context = {
+            'full_name': app.volunteer_profile.full_name,
+            'admin_notes': app.admin_review_notes,
+            'decision': decision,
+        }
+
+        if decision == VolunteerOnboardingApplication.Status.APPROVED:
+            subject = f"Welcome to Responsible Individuals! Your Volunteer Onboarding is Approved – {site_name}"
+            template_base = 'volunteers/emails/onboarding_approved'
+        else:
+            subject = f"Update on Your Volunteer Application – {site_name}"
+            template_base = 'volunteers/emails/onboarding_rejected'
+
+        try:
+            _send_templated_email(
+                subject=subject,
+                template_base=template_base,
+                context=context,
+                recipient_list=[app.volunteer_profile.email],
+            )
+        except Exception as t_err:
+            logger.warning("Falling back to plaintext decision email for application %s: %s", onboarding_application_id, t_err)
+            from django.core.mail import send_mail
+            msg = (
+                f"Hello {app.volunteer_profile.full_name},\n\nYour volunteer onboarding application has been {decision.lower()}.\n"
+                f"Notes: {app.admin_review_notes or 'None'}\n\nThank you,\n{site_name}"
+            )
+            send_mail(
+                subject=subject,
+                message=msg,
+                from_email=_get_from_email(),
+                recipient_list=[app.volunteer_profile.email],
+                fail_silently=True,
+            )
+
+        logger.info("Onboarding decision email sent for application %s", onboarding_application_id)
+        return True
+
+    except Retry:
+        raise
+    except Exception as exc:
+        logger.error("Failed sending onboarding decision email for %s: %s", onboarding_application_id, exc)
+        return False
+
+
+@shared_task(bind=True, max_retries=3, default_retry_delay=60, ignore_result=True)
+def send_volunteer_invitation_email(self, invitation_id):
+    """
+    Sends personal registration invitation email to an existing volunteer.
+    Never logs raw invitation tokens or decrypted secrets.
+    Retrieves and decrypts the ephemeral encrypted_delivery_token.
+    Purges encrypted_delivery_token immediately upon successful delivery.
+    Updates email_sent, email_sent_at, and email_error fields on VolunteerInvitation.
+    """
+    from django.utils import timezone
+    from .models import VolunteerInvitation
+    from .encryption import decrypt_invitation_token
+    from apps.core.models import AuditLog
+
+    try:
+        invitation = VolunteerInvitation.objects.filter(id=invitation_id).first()
+        if not invitation:
+            logger.warning("send_volunteer_invitation_email: VolunteerInvitation not found for ID %s", invitation_id)
+            return False
+
+        if invitation.status != VolunteerInvitation.Status.PENDING:
+            logger.info("send_volunteer_invitation_email: Skipping non-pending invitation %s (status=%s)", invitation_id, invitation.status)
+            return False
+
+        if not invitation.encrypted_delivery_token:
+            logger.warning("send_volunteer_invitation_email: No encrypted delivery token available for invitation %s", invitation_id)
+            return False
+
+        try:
+            raw_token = decrypt_invitation_token(invitation.encrypted_delivery_token)
+        except Exception as dec_err:
+            logger.error("send_volunteer_invitation_email: Failed to decrypt token for invitation %s: %s", invitation_id, dec_err)
+            invitation.email_error = f"Decryption error: {str(dec_err)}"
+            invitation.save(update_fields=['email_error', 'updated_at'])
+            return False
+
+        site_name = getattr(settings, 'SITE_NAME', 'Responsible Individuals')
+        frontend_url = getattr(settings, 'FRONTEND_URL', 'http://localhost:5173').rstrip('/')
+        # URL fragment format: #token=... to protect against web server log leakage
+        registration_url = f"{frontend_url}/volunteer-invitation/accept#token={raw_token}"
+        contact_email = _get_contact_email()
+        subject = f"You're Invited to Join the Responsible Individuals Volunteer Portal - {site_name}"
+
+        context = {
+            'email': invitation.email,
+            'expiry_date': invitation.expires_at.strftime('%B %d, %Y at %I:%M %p UTC'),
+            'registration_url': registration_url,
+            'contact_email': contact_email,
+        }
+
+        try:
+            _send_templated_email(
+                subject=subject,
+                template_base='volunteers/emails/volunteer_invitation',
+                context=context,
+                recipient_list=[invitation.email],
+            )
+        except Exception as t_err:
+            logger.warning("Falling back to plaintext invitation email for %s: %s", invitation_id, t_err)
+            from django.core.mail import send_mail
+            msg = (
+                f"Hello,\n\nYou have been invited to set up your account on the Responsible Individuals Volunteer Portal.\n\n"
+                f"Your registration link (expires {context['expiry_date']}):\n{registration_url}\n\n"
+                f"If unexpected, contact {contact_email}.\n\n- Responsible Individuals Team"
+            )
+            send_mail(
+                subject=subject,
+                message=msg,
+                from_email=_get_from_email(),
+                recipient_list=[invitation.email],
+                fail_silently=False,
+            )
+
+        # Successful delivery: mark sent and purge ephemeral encrypted token
+        invitation.email_sent = True
+        invitation.email_sent_at = timezone.now()
+        invitation.email_error = ''
+        invitation.encrypted_delivery_token = None
+        invitation.save(update_fields=['email_sent', 'email_sent_at', 'email_error', 'encrypted_delivery_token', 'updated_at'])
+
+        logger.info("Volunteer invitation email successfully sent for invitation %s to %s", invitation_id, invitation.email)
+        return True
+
+    except Retry:
+        raise
+    except Exception as exc:
+        err_msg = str(exc)
+        logger.error(
+            "Failed sending volunteer invitation email for %s (Attempt %d/%d): %s",
+            invitation_id,
+            self.request.retries + 1,
+            self.max_retries,
+            err_msg
+        )
+        try:
+            inv = VolunteerInvitation.objects.filter(id=invitation_id).first()
+            if inv:
+                inv.email_error = f"Attempt {self.request.retries + 1}/{self.max_retries}: {err_msg}"
+                inv.save(update_fields=['email_error', 'updated_at'])
+
+                AuditLog.objects.create(
+                    user=None,
+                    action='UPDATE',
+                    entity_type='VolunteerInvitation',
+                    entity_id=str(invitation_id),
+                    description="Volunteer invitation email dispatch failed.",
+                    metadata={'attempt': self.request.retries + 1, 'error': err_msg[:500]}
+                )
+        except Exception:
+            pass
+
+        try:
+            raise self.retry(exc=exc, countdown=min(300, 30 * (2 ** self.request.retries)))
+        except MaxRetriesExceededError:
+            logger.error("Max retries exceeded sending volunteer invitation email for %s", invitation_id)
             return False

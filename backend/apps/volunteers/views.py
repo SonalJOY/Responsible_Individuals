@@ -5,7 +5,7 @@ from rest_framework.views import APIView
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
 
-from apps.accounts.permissions import IsAdminUserOrStaff
+from apps.accounts.permissions import IsAdminUserOrStaff, IsOwnerOrAdmin, IsApprovedVolunteer
 from apps.accounts.serializers import UserSerializer
 from .models import (
     VolunteerInterest,
@@ -14,6 +14,9 @@ from .models import (
     VolunteerApplication,
     VolunteerParticipation,
     Certificate,
+    VolunteerOnboardingApplication,
+    VolunteerInvitationBatch,
+    VolunteerInvitation,
 )
 from .serializers import (
     VolunteerInterestSerializer,
@@ -24,6 +27,18 @@ from .serializers import (
     CertificateSerializer,
     VolunteerRegistrationSerializer,
     VolunteerApplySerializer,
+    VolunteerOnboardingApplicationSerializer,
+    VolunteerOnboardingSubmitSerializer,
+    VolunteerOnboardingReviewSerializer,
+    VolunteerActiveStatusSerializer,
+    VolunteerInvitationBatchSerializer,
+    VolunteerInvitationBatchListSerializer,
+    VolunteerInvitationSerializer,
+    CSVInvitationUploadSerializer,
+    IndividualInvitationSerializer,
+    ValidateInvitationTokenSerializer,
+    RequestInvitationOTPSerializer,
+    AcceptInvitationSerializer,
 )
 from . import services
 
@@ -52,7 +67,7 @@ class VolunteerProfileViewSet(viewsets.ModelViewSet):
     queryset = VolunteerProfile.objects.all().prefetch_related('interests', 'certificates')
     serializer_class = VolunteerProfileSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
-    filterset_fields = ['approval_status', 'city']
+    filterset_fields = ['approval_status', 'city', 'is_active']
     search_fields = ['full_name', 'email', 'phone', 'skills']
 
     def get_permissions(self):
@@ -60,40 +75,118 @@ class VolunteerProfileViewSet(viewsets.ModelViewSet):
             return [permissions.AllowAny()]
         if self.action in ['list', 'destroy']:
             return [IsAdminUserOrStaff()]
-        return [permissions.IsAuthenticated()]
+        return [permissions.IsAuthenticated(), IsOwnerOrAdmin()]
 
     def create(self, request, *args, **kwargs):
-        # Gracefully handle profile creation or retrieval by email to prevent duplicate email crashes
         email = request.data.get('email', '').strip().lower()
         if not email:
             return Response({'email': 'This field is required.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        existing = VolunteerProfile.objects.filter(email=email).first()
+        existing = VolunteerProfile.objects.filter(email__iexact=email).first()
         if existing:
-            # Update fields safely
+            # Security remediation: Reject unauthorized attempts to update existing profiles.
+            # Do not rely on email knowledge as proof of ownership.
+            if not (request.user and request.user.is_authenticated):
+                return Response(
+                    {'detail': 'Authentication required to update an existing profile.'},
+                    status=status.HTTP_401_UNAUTHORIZED
+                )
+
+            is_admin_or_staff = bool(request.user.is_admin_or_staff)
+            is_owner = bool(existing.user_id and existing.user_id == request.user.id)
+
+            if not (is_admin_or_staff or is_owner):
+                return Response(
+                    {'detail': 'You do not have permission to modify this profile.'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+
+            # Authorized update for owner or administrator
             serializer = self.get_serializer(existing, data=request.data, partial=True)
             serializer.is_valid(raise_exception=True)
             serializer.save()
+
+            # If full_name is updated by owner and linked user exists, synchronize first/last names
+            if is_owner and 'full_name' in request.data and request.data['full_name'] and existing.user:
+                name_str = str(request.data['full_name']).strip()
+                parts = name_str.split(' ', 1)
+                existing.user.first_name = parts[0]
+                existing.user.last_name = parts[1] if len(parts) > 1 else ''
+                existing.user.save(update_fields=['first_name', 'last_name', 'updated_at'])
+
             return Response(serializer.data, status=status.HTTP_200_OK)
 
+        # New profile creation
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        if request.user.is_authenticated and not serializer.validated_data.get('user'):
-            serializer.save(user=request.user)
+
+        if request.user and request.user.is_authenticated:
+            if not request.user.is_admin_or_staff and VolunteerProfile.objects.filter(user=request.user).exists():
+                return Response(
+                    {'detail': 'A volunteer profile already exists for this account.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            if not serializer.validated_data.get('user'):
+                if not request.user.is_admin_or_staff or not VolunteerProfile.objects.filter(user=request.user).exists():
+                    serializer.save(email=email, user=request.user)
+                else:
+                    serializer.save(email=email)
+            else:
+                serializer.save(email=email)
         else:
-            serializer.save()
+            serializer.save(email=email)
+
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=['post'], permission_classes=[IsAdminUserOrStaff], url_path='set-active-status')
+    def set_active_status(self, request, pk=None):
+        profile = self.get_object()
+        serializer = VolunteerActiveStatusSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        is_active = serializer.validated_data['is_active']
+        reason = serializer.validated_data['reason']
+
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip_address = x_forwarded_for.split(',')[0].strip()
+        else:
+            ip_address = request.META.get('REMOTE_ADDR')
+
+        profile, changed = services.update_volunteer_active_status(
+            profile_or_id=profile,
+            is_active=is_active,
+            reason=reason,
+            admin_user=request.user,
+            ip_address=ip_address,
+        )
+
+        if not changed:
+            msg = f"Volunteer profile active status is already {is_active}."
+        else:
+            msg = f"Volunteer profile successfully {'activated' if is_active else 'deactivated'}."
+
+        return Response({
+            'message': msg,
+            'status_changed': changed,
+            'is_active': profile.is_active,
+            'profile': VolunteerProfileSerializer(profile).data,
+        }, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['post'], permission_classes=[IsAdminUserOrStaff], url_path='set_active_status')
+    def set_active_status_snake(self, request, pk=None):
+        return self.set_active_status(request, pk)
 
 
 class VolunteerApplicationViewSet(viewsets.ModelViewSet):
     queryset = VolunteerApplication.objects.all().select_related('opportunity', 'volunteer_profile')
     serializer_class = VolunteerApplicationSerializer
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['status', 'opportunity']
+    filterset_fields = ['status', 'opportunity', 'volunteer_profile']
 
     def get_permissions(self):
         if self.action == 'create':
-            return [permissions.AllowAny()]
+            return [permissions.IsAuthenticated(), IsApprovedVolunteer()]
         return [IsAdminUserOrStaff()]
 
     def create(self, request, *args, **kwargs):
@@ -169,8 +262,10 @@ class CertificateViewSet(viewsets.ModelViewSet):
 class VolunteerRegisterView(APIView):
     """
     POST /api/v1/volunteers/register/
-    Atomic registration for volunteers: creates User + UserProfile + VolunteerProfile + links Interests.
-    Returns User data, VolunteerProfile data, and SimpleJWT authentication tokens.
+    [DEPRECATED] Legacy volunteer registration endpoint.
+    Direct token issuance is disabled to prevent OTP bypass. Newly registered accounts start unverified,
+    inactive, and pending approval. To complete registration and obtain tokens, callers must verify email
+    via /api/v1/auth/verify-otp/.
     """
     permission_classes = [permissions.AllowAny]
 
@@ -178,15 +273,26 @@ class VolunteerRegisterView(APIView):
         serializer = VolunteerRegistrationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        result = services.register_volunteer(serializer.validated_data)
+        result = services.register_volunteer(
+            serializer.validated_data,
+            is_verified=False,
+            is_active=False,
+            issue_tokens=False,
+            approval_status=VolunteerProfile.ApprovalStatus.PENDING,
+            send_otp=True,
+        )
 
-        return Response({
+        resp = Response({
+            'message': 'Registration initiated. Please verify your email using the OTP sent to activate your account and obtain access tokens.',
+            'identifier': result['identifier'],
+            'requires_otp': True,
             'user': UserSerializer(result['user']).data,
             'volunteer_profile': VolunteerProfileSerializer(result['volunteer_profile']).data,
-            'access': result['access'],
-            'refresh': result['refresh'],
-            'message': result['message'],
+            'deprecated': True,
+            'deprecation_notice': 'Direct token issuance via legacy registration is disabled to prevent OTP bypass. Please verify via /api/v1/auth/verify-otp/ to activate your account and obtain tokens.',
         }, status=status.HTTP_201_CREATED)
+        resp['Warning'] = '299 - "This endpoint is deprecated. Direct token issuance is disabled. Verify email via /api/v1/auth/verify-otp/."'
+        return resp
 
 
 class VolunteerApplyView(APIView):
@@ -196,7 +302,7 @@ class VolunteerApplyView(APIView):
     Derives VolunteerProfile from request.user, validates capacity & duplicate constraints,
     and returns created application.
     """
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsApprovedVolunteer]
 
     def post(self, request):
         serializer = VolunteerApplySerializer(data=request.data)
@@ -298,3 +404,285 @@ class MyCertificatesView(APIView):
             ).select_related('volunteer_profile').order_by('-issue_date')
 
         return Response(CertificateSerializer(certs, many=True).data)
+
+
+class MyOnboardingApplicationView(APIView):
+    """
+    GET /api/v1/volunteers/my-onboarding/
+    Returns the latest onboarding application for the authenticated user, or a NOT_SUBMITTED status.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        profile = services.get_or_create_volunteer_profile_for_user(request.user)
+        latest = profile.onboarding_applications.order_by('-created_at').first()
+        if latest:
+            return Response(VolunteerOnboardingApplicationSerializer(latest).data, status=status.HTTP_200_OK)
+        return Response({
+            'status': 'NOT_SUBMITTED',
+            'volunteer_profile': str(profile.id),
+            'profile_approval_status': profile.approval_status,
+            'message': 'No onboarding application submitted yet. Please complete and submit your onboarding application.'
+        }, status=status.HTTP_200_OK)
+
+
+class SubmitOnboardingApplicationView(APIView):
+    """
+    POST /api/v1/volunteers/submit-onboarding/
+    Submits a one-time volunteer onboarding application.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        serializer = VolunteerOnboardingSubmitSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        profile = services.get_or_create_volunteer_profile_for_user(request.user)
+        application = services.submit_onboarding_application(
+            volunteer_profile=profile,
+            validated_data=serializer.validated_data
+        )
+
+        return Response(
+            VolunteerOnboardingApplicationSerializer(application).data,
+            status=status.HTTP_201_CREATED
+        )
+
+
+class VolunteerOnboardingApplicationViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Admin ViewSet to review citizen onboarding applications.
+    GET /api/v1/volunteers/onboarding-applications/
+    POST /api/v1/volunteers/onboarding-applications/{id}/review/
+    """
+    permission_classes = [IsAdminUserOrStaff]
+    queryset = VolunteerOnboardingApplication.objects.all().select_related('volunteer_profile', 'reviewed_by').order_by('-created_at')
+    serializer_class = VolunteerOnboardingApplicationSerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    filterset_fields = ['status']
+    search_fields = ['volunteer_profile__full_name', 'volunteer_profile__email', 'statement_of_intent']
+
+    @action(detail=True, methods=['post'], permission_classes=[IsAdminUserOrStaff])
+    def review(self, request, pk=None):
+        instance = self.get_object()
+        serializer = VolunteerOnboardingReviewSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        app = services.review_onboarding_application(
+            application_id=instance.id,
+            decision=serializer.validated_data['status'],
+            review_notes=serializer.validated_data.get('review_notes', ''),
+            admin_user=request.user
+        )
+
+        return Response({
+            'message': f"Onboarding application {app.status.lower()} successfully.",
+            'status': app.status,
+            'application': VolunteerOnboardingApplicationSerializer(app).data,
+        }, status=status.HTTP_200_OK)
+
+
+# =============================================================================
+# VOLUNTEER INVITATION VIEWS (Phase 2.3)
+# =============================================================================
+
+def _get_client_ip(request):
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        return x_forwarded_for.split(',')[0].strip()
+    return request.META.get('REMOTE_ADDR')
+
+
+class VolunteerInvitationBatchViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Administrative management for CSV volunteer invitation batches.
+    - list/retrieve batches
+    - upload_preview: validates uploaded CSV, stores batch summary without dispatching
+    - send: creates individual invitations and queues email dispatch via Celery
+    """
+    permission_classes = [IsAdminUserOrStaff]
+    queryset = VolunteerInvitationBatch.objects.all().select_related('uploaded_by').order_by('-created_at')
+    serializer_class = VolunteerInvitationBatchSerializer
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return VolunteerInvitationBatchListSerializer
+        return VolunteerInvitationBatchSerializer
+
+    @action(detail=False, methods=['post'], url_path='upload-preview')
+    def upload_preview(self, request):
+        serializer = CSVInvitationUploadSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        file_obj = serializer.validated_data['file']
+        ip_address = _get_client_ip(request)
+
+        filename = getattr(file_obj, 'name', 'volunteers.csv')
+        batch, summary = services.validate_csv_invitation_batch(
+            file_obj=file_obj,
+            filename=filename,
+            admin_user=request.user,
+            ip_address=ip_address
+        )
+
+        return Response({
+            'message': 'CSV validated and processed successfully.',
+            'batch': VolunteerInvitationBatchSerializer(batch).data,
+            'summary': summary,
+        }, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=['post'], url_path='send')
+    def send(self, request, pk=None):
+        batch = self.get_object()
+        ip_address = _get_client_ip(request)
+
+        result = services.generate_and_send_batch_invitations(
+            batch_or_id=batch.id,
+            admin_user=request.user,
+            ip_address=ip_address
+        )
+
+        return Response({
+            'message': f"Sent {result['sent_count']} volunteer invitations.",
+            'sent_count': result['sent_count'],
+            'batch': VolunteerInvitationBatchSerializer(result['batch']).data,
+        }, status=status.HTTP_200_OK)
+
+
+class VolunteerInvitationViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Administrative inspection and actions on individual volunteer invitations.
+    - list/retrieve invitations
+    - send_individual: invites a single existing volunteer
+    - resend: issues a fresh token and email
+    - revoke: invalidates a pending invitation
+    """
+    permission_classes = [IsAdminUserOrStaff]
+    queryset = VolunteerInvitation.objects.all().select_related('batch', 'invited_by', 'volunteer_profile').order_by('-created_at')
+    serializer_class = VolunteerInvitationSerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    filterset_fields = ['status', 'batch']
+    search_fields = ['email']
+
+    @action(detail=False, methods=['post'], url_path='send-individual')
+    def send_individual(self, request):
+        serializer = IndividualInvitationSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        email = serializer.validated_data['email']
+        ip_address = _get_client_ip(request)
+
+        invitation, raw_token = services.create_individual_invitation(
+            email=email,
+            admin_user=request.user,
+            ip_address=ip_address
+        )
+
+        return Response({
+            'message': f"Invitation sent to {invitation.email}.",
+            'invitation': VolunteerInvitationSerializer(invitation).data,
+        }, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=['post'], url_path='resend')
+    def resend(self, request, pk=None):
+        invitation = self.get_object()
+        ip_address = _get_client_ip(request)
+
+        updated_invitation, raw_token = services.resend_invitation(
+            invitation_or_id=invitation.id,
+            admin_user=request.user,
+            ip_address=ip_address
+        )
+
+        return Response({
+            'message': f"Invitation resent to {updated_invitation.email}.",
+            'invitation': VolunteerInvitationSerializer(updated_invitation).data,
+        }, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['post'], url_path='revoke')
+    def revoke(self, request, pk=None):
+        invitation = self.get_object()
+        reason = request.data.get('reason', '')
+        ip_address = _get_client_ip(request)
+
+        revoked_invitation = services.revoke_invitation(
+            invitation_or_id=invitation.id,
+            admin_user=request.user,
+            reason=reason,
+            ip_address=ip_address
+        )
+
+        return Response({
+            'message': f"Invitation for {revoked_invitation.email} has been revoked.",
+            'invitation': VolunteerInvitationSerializer(revoked_invitation).data,
+        }, status=status.HTTP_200_OK)
+
+
+class ValidateInvitationTokenView(APIView):
+    """
+    Public token validation endpoint for the volunteer invitation link.
+    POST /api/v1/volunteers/invitations/validate-token/
+    Accepts raw token in the JSON request payload.
+    GET is strictly disabled (returns HTTP 405 Method Not Allowed) to eliminate query-string token exposure.
+    Returns verification metadata without exposing secrets.
+    """
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        serializer = ValidateInvitationTokenSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        info = services.validate_invitation_token(serializer.validated_data['token'])
+        return Response({
+            'valid': True,
+            'email': info['email'],
+            'status': info['status'],
+            'expires_at': info['expires_at'],
+            'has_existing_user': info['has_existing_user'],
+            'has_existing_profile': info['has_existing_profile'],
+            'existing_user_name': info['existing_user_name'],
+        }, status=status.HTTP_200_OK)
+
+
+class RequestInvitationOTPView(APIView):
+    """
+    Public endpoint allowing existing account holders accepting an invitation to request an OTP code.
+    POST /api/v1/volunteers/invitations/request-otp/
+    """
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        serializer = RequestInvitationOTPSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        ip_address = _get_client_ip(request)
+        result = services.request_invitation_otp(
+            raw_token=serializer.validated_data['token'],
+            ip_address=ip_address
+        )
+
+        return Response(result, status=status.HTTP_200_OK)
+
+
+class AcceptInvitationView(APIView):
+    """
+    Public registration/acceptance endpoint for invited volunteers.
+    POST /api/v1/volunteers/invitations/accept/
+    Atomically creates or links User & VolunteerProfile with APPROVED and ACTIVE status.
+    """
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        serializer = AcceptInvitationSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        ip_address = _get_client_ip(request)
+        result = services.accept_invitation_and_register(
+            raw_token=serializer.validated_data['token'],
+            registration_data=serializer.validated_data,
+            authenticated_user=request.user if request.user.is_authenticated else None,
+            ip_address=ip_address
+        )
+
+        return Response(result, status=status.HTTP_200_OK)
+

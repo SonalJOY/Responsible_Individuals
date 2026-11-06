@@ -6,11 +6,52 @@
   --primary-saffron-light: #FDE68A;
   --primary-saffron-50: #FFF7ED;
 
+  /* Editorial Redesign Tokens */
+  --deep-amber: #D97706;
+  --warm-white: #FFFDF8;
+  --charcoal: #171717;
+  --soft-neutral-border: #E8E1D5;
+
   --secondary-light-blue: #7DD3FC;
   --secondary-light-blue-hover: #38BDF8;
   --secondary-blue-light: #F0F9FF;
   --secondary-blue-100: #E0F2FE;
   --secondary-blue-200: #BAE6FD;
+
+  /* Forest Green Brand Identity Palette */
+  --color-forest-950: #043327;
+  --color-forest-900: #064E3B;
+  --color-forest-800: #0D4A38;
+  --color-forest-700: #0F5C46;
+  --color-forest-600: #059669;
+  --color-forest-500: #10B981;
+  --color-forest-100: #D1FAE5;
+  --color-forest-50:  #ECFDF5;
+
+  /* Warm Ivory / Editorial Backgrounds */
+  --color-warm-ivory: #FDFBF7;
+  --color-warm-ivory-light: #FFFFFF;
+  --color-warm-ivory-subtle: #F8F6F0;
+  --color-warm-ivory-border: #EFECE4;
+
+  /* Reusable Shared Semantic Tokens */
+  --color-primary: #064E3B;
+  --color-primary-hover: #0D4A38;
+  --color-primary-accent: #10B981;
+  --color-secondary: #0D4A38;
+  --color-accent: #F59E0B;
+  --color-accent-hover: #D97706;
+  --color-accent-dark: #B45309;
+  --color-background: #FDFBF7;
+  --color-background-alt: #FFFFFF;
+  --color-surface: #FFFFFF;
+  --color-surface-muted: #F8F6F0;
+  --color-surface-tint: #ECFDF5;
+  --color-text: #0F172A;
+  --color-text-muted: #475569;
+  --color-text-light: #64748B;
+  --color-border-subtle: rgba(13, 74, 56, 0.12);
+  --color-border-focus: #10B981;
 
   --background: #FFFFFF;
   --background-soft: #F8FAFC;

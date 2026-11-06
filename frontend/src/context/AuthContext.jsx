@@ -54,7 +54,7 @@ export const AuthProvider = ({ children }) => {
   // ----------------------------------------------------------
   const registerVolunteer = async (volunteerData) => {
     const data = await volunteerService.register(volunteerData);
-    if (data?.user) {
+    if (data?.user && data?.access) {
       setUser(data.user);
     }
     return data;

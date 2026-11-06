@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import {
     ShieldCheck,
     User,
@@ -13,9 +13,20 @@ import {
 } from 'lucide-react';
 
 import api from '../../services/api';
+import { buildAuthParams } from '../../utils/navigation';
 
 export default function RegisterPage() {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const opportunity = searchParams.get('opportunity') || sessionStorage.getItem('ri_target_opportunity') || '';
+    const redirect = searchParams.get('redirect') || '';
+
+    useEffect(() => {
+        const oppParam = searchParams.get('opportunity');
+        if (oppParam) {
+            sessionStorage.setItem('ri_target_opportunity', oppParam);
+        }
+    }, [searchParams]);
 
     const [form, setForm] = useState({
         name: '',
@@ -159,8 +170,9 @@ export default function RegisterPage() {
                 response.data.identifier || form.email.trim()
             );
 
-            // Go to OTP verification page
-            navigate('/verify-otp');
+            // Go to OTP verification page with preserved redirect and opportunity
+            const authQuery = buildAuthParams({ redirect, opportunity });
+            navigate(`/verify-otp${authQuery}`);
 
         } catch (err) {
             console.error('Registration error:', err);
@@ -446,7 +458,7 @@ export default function RegisterPage() {
                     </span>
 
                     <Link
-                        to="/login"
+                        to={`/login${buildAuthParams({ redirect, opportunity })}`}
                         className="login-link"
                     >
                         Sign In
