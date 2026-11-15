@@ -283,7 +283,7 @@ export default function DonatePage() {
 
             <div className="receipt-paper" id="printable-receipt">
               <div className="receipt-org-header">
-                <h3>RESPONSIBLE INDIVIDUALS FOUNDATION</h3>
+                <h3>RESPONSIBLE INDIVIDUALS</h3>
                 <p>Registered Section 8 Non-Profit • 80G Reg: CIT(E)/BLR/80G/2024-25</p>
                 <span className="receipt-num-tag">Receipt #: <strong>{donationResult.receipt_number}</strong></span>
               </div>

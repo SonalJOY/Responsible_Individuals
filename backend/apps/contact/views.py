@@ -1,9 +1,13 @@
+import logging
 from rest_framework import viewsets, permissions, status, generics
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from .models import ContactEnquiry, NewsletterSubscriber
 from .serializers import ContactEnquirySerializer, NewsletterSubscriberSerializer
+from .emails import send_contact_enquiry_notification
 from apps.accounts.permissions import IsAdminUserOrStaff
+
+logger = logging.getLogger(__name__)
 
 
 class ContactEnquiryViewSet(viewsets.ModelViewSet):
@@ -16,6 +20,17 @@ class ContactEnquiryViewSet(viewsets.ModelViewSet):
         if self.action == 'create':
             return [permissions.AllowAny()]
         return [IsAdminUserOrStaff()]
+
+    def perform_create(self, serializer):
+        enquiry = serializer.save()
+        try:
+            send_contact_enquiry_notification(enquiry)
+        except Exception as exc:
+            logger.warning(
+                "Contact enquiry #%s was saved, but failed to deliver notification email to admin: %s",
+                getattr(enquiry, 'id', None),
+                exc
+            )
 
 
 class NewsletterSubscriberView(generics.CreateAPIView):

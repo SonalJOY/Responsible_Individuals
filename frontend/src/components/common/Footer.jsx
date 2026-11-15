@@ -106,13 +106,13 @@ export default function Footer() {
 
             <div className="footer-contact-info">
               <div className="contact-line">
-                <MapPin size={15} /> <span>Indiranagar, Bengaluru, KA 560038</span>
+                <MapPin size={15} /> <span>#48, 5th B Cross, Near Kabir Mutt, Kengeri Satellite Town, Bengaluru 560060</span>
               </div>
               <div className="contact-line">
-                <Mail size={15} /> <span>connect@responsibleindividuals.org</span>
+                <Mail size={15} /> <span>theresponsibleindividuals@gmail.com</span>
               </div>
               <div className="contact-line">
-                <Phone size={15} /> <span>+91 80 4123 4567</span>
+                <Phone size={15} /> <span>+91 99000 16979 / +91 78992 77968</span>
               </div>
             </div>
           </div>
@@ -120,7 +120,7 @@ export default function Footer() {
 
         {/* Bottom Bar */}
         <div className="footer-bottom">
-          <p>© {new Date().getFullYear()} Responsible Individuals Foundation. Registered Section 8 Non-Profit Organization.</p>
+          <p>© {new Date().getFullYear()} Responsible Individuals. Registered Section 8 Non-Profit Organization.</p>
           <div className="footer-bottom-links">
             <Link to="/contact">Privacy Policy</Link>
             <Link to="/contact">Terms of Service</Link>

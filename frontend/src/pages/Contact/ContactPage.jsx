@@ -14,16 +14,56 @@ export default function ContactPage() {
 
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
+    setSubmitError(null);
+
+    const accessKey = import.meta.env.VITE_WEB3FORMS_ACCESS_KEY || '';
+
     try {
-      await contactService.submitEnquiry(formData);
+      // 1. Direct Web3Forms submission to ri.responsibleindividuals@gmail.com (if key configured)
+      if (accessKey) {
+        try {
+          await fetch('https://api.web3forms.com/submit', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Accept: 'application/json',
+            },
+            body: JSON.stringify({
+              access_key: accessKey,
+              name: formData.name,
+              email: formData.email,
+              phone: formData.phone || 'Not provided',
+              department: formData.department,
+              subject: `[Website Inquiry - ${formData.department}] ${formData.subject}`,
+              message: formData.message,
+              from_name: 'Responsible Individuals Website',
+            }),
+          });
+        } catch (web3Err) {
+          console.warn('Web3Forms dispatch warning:', web3Err);
+        }
+      }
+
+      // 2. Submit to backend API to persist enquiry in database
+      try {
+        await contactService.submitEnquiry(formData);
+      } catch (backendErr) {
+        console.warn('Backend enquiry recording notice:', backendErr);
+        // If neither Web3Forms nor backend worked, throw to show direct fallback
+        if (!accessKey) {
+          throw backendErr;
+        }
+      }
+
       setSubmitted(true);
     } catch (err) {
-      console.error(err);
-      setSubmitted(true);
+      console.error('Contact enquiry submit error:', err);
+      setSubmitError('Unable to reach server. You can also send your message directly via email to ri.responsibleindividuals@gmail.com.');
     } finally {
       setSubmitting(false);
     }
@@ -53,7 +93,7 @@ export default function ContactPage() {
                     <MapPin size={20} color="#10B981" />
                     <div>
                       <strong>Office Address</strong>
-                      <p>#42, Social Innovation Corridor, 100ft Road, Indiranagar, Bengaluru, KA 560038</p>
+                      <p>#48, 5th B Cross, Near Kabir Mutt, Kengeri Satellite Town, Bengaluru, KA 560060</p>
                     </div>
                   </div>
 
@@ -61,7 +101,11 @@ export default function ContactPage() {
                     <Mail size={20} color="#10B981" />
                     <div>
                       <strong>Email Dispatch</strong>
-                      <p>connect@responsibleindividuals.org</p>
+                      <p>
+                        <a href="mailto:theresponsibleindividuals@gmail.com" style={{ color: 'inherit', textDecoration: 'none' }}>
+                          theresponsibleindividuals@gmail.com
+                        </a>
+                      </p>
                     </div>
                   </div>
 
@@ -69,7 +113,11 @@ export default function ContactPage() {
                     <Phone size={20} color="#10B981" />
                     <div>
                       <strong>Direct Phone Line</strong>
-                      <p>+91 80 4123 4567 / +91 98450 12345</p>
+                      <p>
+                        <a href="tel:+919900016979" style={{ color: 'inherit', textDecoration: 'none' }}>+91 99000 16979</a>
+                        {', '}
+                        <a href="tel:+917899277968" style={{ color: 'inherit', textDecoration: 'none' }}>+91 78992 77968</a>
+                      </p>
                     </div>
                   </div>
 
@@ -77,7 +125,7 @@ export default function ContactPage() {
                     <Clock size={20} color="#10B981" />
                     <div>
                       <strong>Working Hours</strong>
-                      <p>Monday - Friday: 9:30 AM to 6:00 PM IST<br />Saturday: 8:00 AM to 1:00 PM (Field Days)</p>
+                      <p>Working hours: All days, 10:30 AM to 5:30 PM IST</p>
                     </div>
                   </div>
                 </div>
@@ -86,8 +134,7 @@ export default function ContactPage() {
               {/* FCRA & Registration info */}
               <div className="card reg-info-card">
                 <h4>Legal & Tax Information</h4>
-                <p>Responsible Individuals Foundation is a non-profit registered under Section 8 of the Companies Act, 2013. Donations eligible for 50% deduction under Section 80G.</p>
-                <div className="cin-line"><strong>CIN:</strong> U85300KA2024NPL184920</div>
+                <p>Responsible Individuals is a non-profit organization registered under Section 80G of the Companies Act, 2013 .</p>
               </div>
             </div>
 
@@ -101,11 +148,56 @@ export default function ContactPage() {
                     <CheckCircle2 size={48} color="#10B981" />
                     <h3>Message Dispatched!</h3>
                     <p>
-                      Thank you for contacting us, <strong>{formData.name}</strong>. Your enquiry has been routed to our <strong>{formData.department}</strong> department. A team coordinator will reply to {formData.email} within 1 business day.
+                      Thank you for contacting us, <strong>{formData.name}</strong>. Your enquiry has been dispatched successfully. A team coordinator will review your request and get back to you shortly.
                     </p>
+                    <button
+                      type="button"
+                      className="btn btn-secondary btn-sm"
+                      style={{ marginTop: '1.25rem' }}
+                      onClick={() => {
+                        setSubmitted(false);
+                        setSubmitError(null);
+                        setFormData({
+                          name: '',
+                          email: '',
+                          phone: '',
+                          department: 'GENERAL',
+                          subject: '',
+                          message: '',
+                        });
+                      }}
+                    >
+                      Send Another Message
+                    </button>
                   </div>
                 ) : (
                   <form onSubmit={handleSubmit}>
+                    {submitError && (
+                      <div
+                        className="contact-error-banner"
+                        style={{
+                          background: '#FEF2F2',
+                          border: '1px solid #FCA5A5',
+                          borderRadius: '8px',
+                          padding: '1rem',
+                          marginBottom: '1.25rem',
+                          color: '#991B1B',
+                        }}
+                      >
+                        <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.9rem' }}>{submitError}</p>
+                        <a
+                          href={`mailto:ri.responsibleindividuals@gmail.com?subject=${encodeURIComponent(
+                            `[${formData.department || 'GENERAL'}] ${formData.subject || 'Direct Inquiry'}`
+                          )}&body=${encodeURIComponent(
+                            `Name: ${formData.name}\nEmail: ${formData.email}\nPhone: ${formData.phone}\nDepartment: ${formData.department}\n\nMessage:\n${formData.message}`
+                          )}`}
+                          className="btn btn-primary btn-sm"
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none' }}
+                        >
+                          <Mail size={14} /> Send Directly via Email App
+                        </a>
+                      </div>
+                    )}
                     <div className="form-grid-2">
                       <div className="form-group">
                         <label className="form-label">Full Name *</label>

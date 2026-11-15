@@ -158,6 +158,8 @@ EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'Responsible Individuals <noreply@responsibleindividuals.org>')
 VOLUNTEER_ADMIN_EMAIL = os.environ.get('VOLUNTEER_ADMIN_EMAIL', 'volunteer-coordinator@responsibleindividuals.org')
+CONTACT_ADMIN_EMAIL = os.environ.get('CONTACT_ADMIN_EMAIL', 'ri.responsibleindividuals@gmail.com')
+WEB3FORMS_ACCESS_KEY = os.environ.get('WEB3FORMS_ACCESS_KEY', '')
 
 # Site Identity
 SITE_NAME = os.environ.get('SITE_NAME', 'Responsible Individuals')
