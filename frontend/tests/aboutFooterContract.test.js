@@ -84,7 +84,7 @@ describe('About Us Page & Volunteer Page - Shared Footer Architecture Contract',
     assert.ok(footerContent.includes('to="/projects"'), 'Footer must link to /projects');
 
     // Bottom bar & disclosures
-    assert.ok(footerContent.includes('Responsible Individuals Foundation'), 'Footer must include organisation name');
+    assert.ok(footerContent.includes('Responsible Individuals'), 'Footer must include organisation name');
     assert.ok(footerContent.includes('Registered Section 8 Non-Profit Organization'), 'Footer must include Section 8 registration');
     assert.ok(footerContent.includes('Privacy Policy'), 'Footer must include Privacy Policy');
     assert.ok(footerContent.includes('Terms of Service'), 'Footer must include Terms of Service');

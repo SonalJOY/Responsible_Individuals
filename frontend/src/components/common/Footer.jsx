@@ -57,6 +57,7 @@ export default function Footer() {
             <h4 className="footer-heading">Platform</h4>
             <ul className="footer-links">
               <li><Link to="/about">Our Story & Mission</Link></li>
+              <li><Link to="/projects">Community Projects</Link></li>
               <li><Link to="/events">Events & Cleanup Drives</Link></li>
               <li><Link to="/gallery">Photo & Video Gallery</Link></li>
               <li><Link to="/volunteer">Volunteer With Us</Link></li>
