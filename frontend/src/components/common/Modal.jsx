@@ -93,6 +93,17 @@ export default function Modal({ isOpen, onClose, title, children, maxWidth = '55
           padding: 1.75rem;
           overflow-y: auto;
         }
+        @media (max-width: 480px) {
+          .modal-backdrop {
+            padding: 0.75rem;
+          }
+          .modal-header {
+            padding: 1rem 1.25rem;
+          }
+          .modal-body {
+            padding: 1.25rem;
+          }
+        }
       `}</style>
     </div>
   );

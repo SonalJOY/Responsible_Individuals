@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar, Clock, MapPin, Users } from 'lucide-react';
+import { Clock, MapPin, Users } from 'lucide-react';
 
 export default function EventCard({ event, onRegisterClick }) {
   const {
@@ -140,6 +140,15 @@ export default function EventCard({ event, onRegisterClick }) {
         }
         .event-action-col {
           align-self: flex-start;
+        }
+        @media (max-width: 640px) {
+          .event-action-col {
+            width: 100%;
+          }
+          .event-reg-btn {
+            width: 100%;
+            justify-content: center;
+          }
         }
         @media (min-width: 768px) {
           .event-action-col {

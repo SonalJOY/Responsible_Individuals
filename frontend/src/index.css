@@ -1,6 +1,7 @@
 @import './styles/design-tokens.css';
 @import './styles/animations.css';
 @import './styles/preloader.css';
+@import './styles/responsive.css';
 
 /* Global Reset & Base Styles */
 *, *::before, *::after {

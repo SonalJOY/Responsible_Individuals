@@ -273,6 +273,83 @@ class Command(BaseCommand):
             }
         )
 
+        p5, _ = Project.objects.get_or_create(
+            slug='hosa-byrohalli-wash-programme',
+            defaults={
+                'title': 'WASH Awareness & School Sanitation Programme',
+                'category': cat_comm,
+                'focus_area': created_areas['environment'],
+                'status': Project.Status.COMPLETED,
+                'location': 'Hosa Byrohalli Government School, Bengaluru, Karnataka',
+                'coordinates': '12.8942, 77.4764',
+                'summary': 'Promoting hygiene, clean sanitation facilities, and water awareness while distributing educational stationery and cleaning materials at Hosa Byrohalli Government School.',
+                'description': 'As part of our commitment to promoting health, hygiene, and sanitation awareness among students, we conducted a comprehensive WASH (Water, Sanitation, and Hygiene) Awareness Programme at Hosa Byrohalli Government School on 16 December 2025. The programme focused on instilling lifelong healthy habits, demonstrating correct handwashing techniques, educating children on personal hygiene, and keeping school classrooms and surrounding grounds clean. To support the students academic journey and encourage clean sanitation practices, educational stationery kits and sanitation supplies were distributed. In addition, our field team conducted a thorough assessment of the schools washroom and sanitation infrastructure to identify key upgrade opportunities for long-term health and dignity.',
+                'problem_statement': 'Government school students in peri-urban communities often lack structured guidance on daily sanitation practices, safe hand hygiene, and access to regular sanitation consumables, increasing vulnerability to water-borne illnesses and school absenteeism.',
+                'solution_approach': 'A holistic school-level WASH intervention: interactive student hygiene workshops, distribution of hygiene & stationery materials, on-site washroom safety and accessibility auditing, and long-term sanitation maintenance planning with school faculty.',
+                'start_date': date(2025, 12, 16),
+                'end_date': date(2025, 12, 16),
+                'budget': Decimal('250000.00'),
+                'raised_amount': Decimal('250000.00'),
+                'beneficiaries_count': 340,
+                'cover_image': 'projects/covers/hosa-byrohalli-wash-1.jpg',
+                'featured': True,
+            }
+        )
+        ProjectKPI.objects.get_or_create(project=p5, metric_name='Students Trained in Hygiene Practices', defaults={'baseline': Decimal('0'), 'target': Decimal('300'), 'achieved': Decimal('340'), 'unit': 'Students'})
+        ProjectKPI.objects.get_or_create(project=p5, metric_name='Stationery & Cleaning Kits Distributed', defaults={'baseline': Decimal('0'), 'target': Decimal('300'), 'achieved': Decimal('340'), 'unit': 'Kits'})
+        ProjectKPI.objects.get_or_create(project=p5, metric_name='Sanitation Facility Audit Completed', defaults={'baseline': Decimal('0'), 'target': Decimal('100'), 'achieved': Decimal('100'), 'unit': '%'})
+        ProjectObjective.objects.get_or_create(project=p5, title='Student WASH & personal hygiene awareness sessions', defaults={'target': '100% student participation', 'order': 1})
+        ProjectObjective.objects.get_or_create(project=p5, title='Distribute study stationery kits and school cleaning supplies', defaults={'target': '300+ students & facility maintenance', 'order': 2})
+        ProjectObjective.objects.get_or_create(project=p5, title='Comprehensive inspection of school sanitation & washroom facilities', defaults={'target': 'Complete baseline infrastructure audit', 'order': 3})
+        ProjectActivity.objects.get_or_create(project=p5, title='Interactive Handwashing & Sanitation Workshop', defaults={'status': 'COMPLETED', 'date': date(2025, 12, 16), 'outcome': 'Demonstrated 6-step handwashing techniques and hygiene best practices to all classes'})
+        ProjectActivity.objects.get_or_create(project=p5, title='Educational Stationery & Cleaning Materials Distribution', defaults={'status': 'COMPLETED', 'date': date(2025, 12, 16), 'outcome': 'Provided essential study stationery and hygiene supplies to students and staff'})
+        ProjectActivity.objects.get_or_create(project=p5, title='School Washroom & Sanitation Facility Condition Audit', defaults={'status': 'COMPLETED', 'date': date(2025, 12, 16), 'outcome': 'Documented existing sanitation conditions to plan accessibility and repair improvements'})
+        ProjectPartner.objects.get_or_create(project=p5, partner_name='Hosa Byrohalli Government School', defaults={'role': 'School & Community Partner'})
+        ProjectPartner.objects.get_or_create(project=p5, partner_name='Responsible Individuals Volunteer Corps', defaults={'role': 'Program Execution Partner'})
+        ProjectMedia.objects.get_or_create(project=p5, caption='Interactive WASH awareness session with students at Hosa Byrohalli Government School', defaults={'media_file': 'projects/covers/hosa-byrohalli-wash-1.jpg', 'is_cover': True})
+        ProjectMedia.objects.get_or_create(project=p5, caption='Distribution of learning stationery and sanitation supplies to students', defaults={'media_file': 'projects/covers/hosa-byrohalli-wash-2.jpg', 'is_cover': False})
+        ProjectMedia.objects.get_or_create(project=p5, caption='School sanitation facility inspection and infrastructure condition assessment', defaults={'media_file': 'projects/covers/hosa-byrohalli-wash-3.jpg', 'is_cover': False})
+
+        p6, _ = Project.objects.get_or_create(
+            slug='school-beautification-ri-inauguration',
+            defaults={
+                'title': 'School Beautification & Cleanliness Drive — RI Inauguration',
+                'category': cat_edu,
+                'focus_area': created_areas['education'],
+                'status': Project.Status.COMPLETED,
+                'location': 'Government School, Dasarahalli, Hebbal, Bengaluru, Karnataka',
+                'coordinates': '13.0425, 77.5925',
+                'summary': 'Commemorating the RI Inauguration with school wall painting, creative educational murals, and campus cleanliness drives to create an inspiring learning environment.',
+                'description': 'As part of the Responsible Individuals (RI) Inauguration Event held on 19 July 2025 at Dasarahalli, Hebbal, our dedicated volunteer corps, youth leaders, and team members transformed the local Government School into an uplifting, colorful sanctuary for young learners. The initiative combined thorough campus-wide cleanliness drives with vibrant, creative educational wall paintings and sketches designed to stimulate curiosity and civic pride among children. Volunteers scraped and primed weathered school walls, painted interactive educational art, cleaned classroom spaces, and created a renewed, dignified school environment that teachers and students cherish every single day.',
+                'problem_statement': 'Dilapidated wall surfaces, weathered exterior corridors, and lack of visual learning elements in community government schools negatively affect student enthusiasm, attendance, and pride in their academic spaces.',
+                'solution_approach': 'A volunteer-powered campus renewal: structured cleanliness drives, wall priming, artistic educational murals, and community ownership to foster a positive, motivating school atmosphere.',
+                'start_date': date(2025, 7, 19),
+                'end_date': date(2025, 7, 19),
+                'budget': Decimal('150000.00'),
+                'raised_amount': Decimal('150000.00'),
+                'beneficiaries_count': 450,
+                'cover_image': 'projects/covers/ri-inauguration-beautification-1.jpg',
+                'featured': True,
+            }
+        )
+        ProjectKPI.objects.get_or_create(project=p6, metric_name='Wall Space Painted & Beautified', defaults={'baseline': Decimal('0'), 'target': Decimal('1200'), 'achieved': Decimal('1450'), 'unit': 'Sq. Ft.'})
+        ProjectKPI.objects.get_or_create(project=p6, metric_name='Students & Teachers Impacted', defaults={'baseline': Decimal('0'), 'target': Decimal('400'), 'achieved': Decimal('450'), 'unit': 'Learners'})
+        ProjectKPI.objects.get_or_create(project=p6, metric_name='Volunteer Hours Invested', defaults={'baseline': Decimal('0'), 'target': Decimal('150'), 'achieved': Decimal('180'), 'unit': 'Hours'})
+        ProjectObjective.objects.get_or_create(project=p6, title='Campus cleanliness and sanitation drive', defaults={'target': '100% grounds & corridors cleared', 'order': 1})
+        ProjectObjective.objects.get_or_create(project=p6, title='Wall preparation and artistic educational murals', defaults={'target': '1,200+ sq ft vibrantly painted', 'order': 2})
+        ProjectObjective.objects.get_or_create(project=p6, title='School environment revitalization and volunteer engagement', defaults={'target': 'Engage 40+ active RI volunteers', 'order': 3})
+        ProjectActivity.objects.get_or_create(project=p6, title='School Campus Cleanliness & Debris Clearance', defaults={'status': 'COMPLETED', 'date': date(2025, 7, 19), 'outcome': 'Cleared school grounds, removed accumulated debris, and primed building walls'})
+        ProjectActivity.objects.get_or_create(project=p6, title='Creative Wall Art, Murals & Painting Drive', defaults={'status': 'COMPLETED', 'date': date(2025, 7, 19), 'outcome': 'Completed colorful educational murals, learning diagrams, and aesthetic sketches'})
+        ProjectActivity.objects.get_or_create(project=p6, title='Official RI Inauguration & Community Handover Ceremony', defaults={'status': 'COMPLETED', 'date': date(2025, 7, 19), 'outcome': 'Dedicated revitalized learning corridors to students and faculty with community pledge'})
+        ProjectPartner.objects.get_or_create(project=p6, partner_name='Government School Dasarahalli', defaults={'role': 'Host Institution & Faculty'})
+        ProjectPartner.objects.get_or_create(project=p6, partner_name='Responsible Individuals Volunteer Corps', defaults={'role': 'Event Organizer & Execution Team'})
+        ProjectMedia.objects.get_or_create(project=p6, caption='RI Volunteers painting vibrant murals and educational artwork on school walls', defaults={'media_file': 'projects/covers/ri-inauguration-beautification-1.jpg', 'is_cover': True})
+        ProjectMedia.objects.get_or_create(project=p6, caption='Creative sketches and artistic wall detailing by youth volunteers', defaults={'media_file': 'projects/covers/ri-inauguration-beautification-2.jpg', 'is_cover': False})
+        ProjectMedia.objects.get_or_create(project=p6, caption='Campus cleanliness drive and exterior wall preparation in progress', defaults={'media_file': 'projects/covers/ri-inauguration-beautification-3.jpg', 'is_cover': False})
+        ProjectMedia.objects.get_or_create(project=p6, caption='Volunteers collaborating on revitalizing school learning corridors', defaults={'media_file': 'projects/covers/ri-inauguration-beautification-4.jpg', 'is_cover': False})
+
+
+
         # 7. Stories of Change (Before & After)
         StoryCategory.objects.get_or_create(slug='water-environment', defaults={'name': 'Water & Environment'})
         cat_edu_story, _ = StoryCategory.objects.get_or_create(slug='education-youth', defaults={'name': 'Education & Youth'})

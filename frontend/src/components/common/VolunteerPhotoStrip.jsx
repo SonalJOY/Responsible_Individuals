@@ -1,36 +1,53 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { 
-  Quote, X, MapPin, Award, CheckCircle2, Clock, 
-  Sparkles, ArrowRight, HeartHandshake, UserCheck 
+  Quote, X, MapPin, CheckCircle2, Clock, 
+  Sparkles, ArrowRight, MessageSquarePlus
 } from 'lucide-react';
 import { volunteerStories } from '../../data/volunteerStoriesData';
 
 /**
- * VolunteerPhotoStrip Component (Phase 3B-UI)
- * Continuous animated horizontal photo strip of volunteer stories with interactive modal lightbox.
- * Features:
- * - GPU-accelerated infinite seamless marquee (Right -> Left)
- * - Visual variation: unique card widths, rotations, and vertical offsets
- * - Mouse hover elevations and keyboard accessible focus states
- * - Lightbox modal with rich personal journeys and impact milestones
- * - Background photo strip continues moving while the modal is open
- * - Full support for prefers-reduced-motion, ESC key, and body scroll lock
+ * Voices of Our Volunteers — Vertical Alternating Timeline
+ * 
+ * Replaces the horizontal carousel with an editorial-grade vertical timeline:
+ * - Alternating sequence: Story 1 (image left, text right), Story 2 (text left, image right), etc.
+ * - Central vertical timeline spine with smooth scroll-animated saffron progress
+ * - Timeline markers for each story (repositions to left edge on mobile)
+ * - Authentic organization imagery from /images/
+ * - Verified first-person testimonials & tasteful upcoming reflection notices
+ * - Detail lightbox modal with milestones and keyboard Escape / body-scroll-lock support
+ * - Accessible and respects prefers-reduced-motion
  */
 export default function VolunteerPhotoStrip({ onExploreRoles }) {
   const [selectedStory, setSelectedStory] = useState(null);
-  const modalContentRef = useRef(null);
+  const [timelineProgress, setTimelineProgress] = useState(() => {
+    if (typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches) {
+      return 1;
+    }
+    return 0;
+  });
+  const [revealedRows, setRevealedRows] = useState(() => {
+    if (typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches) {
+      const all = {};
+      volunteerStories.forEach((s) => { all[s.id] = true; });
+      return all;
+    }
+    return {};
+  });
 
-  // Open Story Modal Lightbox
+  const sectionRef = useRef(null);
+  const timelineSpineRef = useRef(null);
+  const rowRefs = useRef([]);
+
+  // Open & Close Details Lightbox Modal
   const handleOpenStory = (story) => {
     setSelectedStory(story);
   };
 
-  // Close Story Modal Lightbox
   const handleCloseStory = useCallback(() => {
     setSelectedStory(null);
   }, []);
 
-  // Keyboard accessibility: Close modal on Escape key & trap ESC
+  // Modal Keyboard Dismissal & Body Scroll Locking
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape' && selectedStory) {
@@ -40,7 +57,6 @@ export default function VolunteerPhotoStrip({ onExploreRoles }) {
 
     if (selectedStory) {
       window.addEventListener('keydown', handleKeyDown);
-      // Lock background body scroll while modal is active
       const originalOverflow = document.body.style.overflow;
       document.body.style.overflow = 'hidden';
 
@@ -51,230 +67,345 @@ export default function VolunteerPhotoStrip({ onExploreRoles }) {
     }
   }, [selectedStory, handleCloseStory]);
 
-  // Double the stories dataset for a seamless, continuous infinite loop (SET A -> SET B)
-  const duplicatedStories = [...volunteerStories, ...volunteerStories];
+  // Scroll-Driven Timeline Progress Calculation
+  useEffect(() => {
+    const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (motionQuery.matches) {
+      return;
+    }
+
+    let ticking = false;
+
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          if (!timelineSpineRef.current) {
+            ticking = false;
+            return;
+          }
+
+          const rect = timelineSpineRef.current.getBoundingClientRect();
+          const windowHeight = window.innerHeight;
+          const totalHeight = rect.height;
+
+          // How far down the viewport the scroll head has passed
+          const triggerPoint = windowHeight * 0.65;
+          const scrolledPast = triggerPoint - rect.top;
+          const ratio = Math.min(1, Math.max(0, scrolledPast / (totalHeight || 1)));
+
+          setTimelineProgress(ratio);
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
+  // IntersectionObserver for Row Reveal Animations
+  useEffect(() => {
+    const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (motionQuery.matches) {
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const storyId = entry.target.getAttribute('data-story-id');
+            if (storyId) {
+              setRevealedRows((prev) => ({ ...prev, [storyId]: true }));
+            }
+          }
+        });
+      },
+      {
+        rootMargin: '0px 0px -10% 0px',
+        threshold: 0.15,
+      }
+    );
+
+    const currentRows = rowRefs.current;
+    currentRows.forEach((el) => {
+      if (el) observer.observe(el);
+    });
+
+    return () => {
+      currentRows.forEach((el) => {
+        if (el) observer.unobserve(el);
+      });
+      observer.disconnect();
+    };
+  }, []);
 
   return (
-    <section className="volunteer-stories-section" aria-label="Volunteer Stories">
-      {/* Section Header */}
+    <section 
+      className="timeline-section" 
+      aria-label="Voices of Our Volunteers Timeline"
+      id="volunteer-voices"
+      ref={sectionRef}
+    >
       <div className="container">
-        <div className="stories-section-header">
-          <div className="section-badge stories-badge">
+        {/* Section Header */}
+        <div className="timeline-header">
+          <div className="section-badge timeline-badge">
             <Sparkles size={14} className="badge-sparkle" />
-            <span>Community Stories</span>
+            <span>Community Voices</span>
           </div>
-          <h2 className="stories-section-title">People Who Choose to Make a Difference</h2>
-          <p className="stories-section-subtitle">
-            Meet the students, engineers, educators, and community stewards dedicating their time, skills, 
-            and energy to driving tangible ground-level impact across our grassroots initiatives.
-          </p>
+          <h2 className="timeline-title">Voices of Our Volunteers</h2>
+          <p className="timeline-subtitle">Real people. Shared responsibility. Lasting community impact.</p>
         </div>
-      </div>
 
-      {/* Infinite Horizontal Photo Strip Container */}
-      <div className="photo-strip-viewport" role="region" aria-label="Volunteer Photographs Stream">
-        {/* Left and Right Edge Vignette Gradients for Cinematic Blend */}
-        <div className="vignette-edge vignette-left" aria-hidden="true" />
-        <div className="vignette-edge vignette-right" aria-hidden="true" />
+        {/* Vertical Alternating Timeline Container */}
+        <div className="timeline-wrapper" ref={timelineSpineRef}>
+          {/* Central Vertical Spine (Repositioned to left on mobile) */}
+          <div className="timeline-spine-track" aria-hidden="true">
+            <div className="timeline-spine-base" />
+            <div 
+              className="timeline-spine-fill" 
+              style={{ height: `${timelineProgress * 100}%` }}
+            />
+          </div>
 
-        {/* Animated Marquee Track */}
-        <div className="photo-strip-track">
-          {duplicatedStories.map((story, index) => {
-            const isSetB = index >= volunteerStories.length;
-            const uniqueKey = `${story.id}-${isSetB ? 'b' : 'a'}-${index}`;
+          {/* Alternating Story Rows */}
+          <div className="timeline-rows-list">
+            {volunteerStories.map((story, index) => {
+              const isEven = index % 2 === 0; // Even: image left, content right. Odd: content left, image right.
+              const isRevealed = !!revealedRows[story.id];
 
-            return (
-              <div
-                key={uniqueKey}
-                className="photo-card-wrapper"
-                style={{
-                  '--card-w': `${story.cardWidth || 290}px`,
-                  '--rot': `${story.rotation || 0}deg`,
-                  '--v-offset': `${story.verticalOffset || 0}px`,
-                  '--accent-color': story.focusColor || 'var(--primary-saffron, #F97316)',
-                }}
-              >
-                <button
-                  type="button"
-                  className="photo-card-btn"
-                  onClick={() => handleOpenStory(story)}
-                  aria-label={`View story of ${story.name}, ${story.role} in ${story.location}`}
+              return (
+                <div 
+                  key={story.id}
+                  ref={(el) => (rowRefs.current[index] = el)}
+                  data-story-id={story.id}
+                  className={`timeline-row ${isEven ? 'row-even' : 'row-odd'} ${isRevealed ? 'is-revealed' : ''}`}
                 >
-                  <div className="photo-card-inner">
-                    {/* Volunteer Photograph */}
-                    <img
-                      src={story.image}
-                      alt={`${story.name} - ${story.role}`}
-                      className="photo-card-img"
-                      loading={index < 4 ? 'eager' : 'lazy'}
-                    />
+                  {/* Timeline Marker Node */}
+                  <div className={`timeline-node ${isRevealed ? 'node-active' : ''}`} aria-hidden="true">
+                    <span className="timeline-node-dot" />
+                  </div>
 
-                    {/* Dark Gradient Overlay with Info */}
-                    <div className="photo-card-overlay">
-                      <div className="overlay-top">
+                  {/* Media Column (Photograph) */}
+                  <div className="timeline-col timeline-col-media">
+                    <div className="timeline-media-card">
+                      <img 
+                        src={story.image} 
+                        alt={`${story.name} — ${story.role}`}
+                        className="timeline-media-img"
+                        style={{ objectPosition: story.objectPosition || 'center 25%' }}
+                        loading={index < 2 ? 'eager' : 'lazy'}
+                      />
+                      <div className="timeline-media-overlay">
                         <span 
-                          className="focus-pill"
-                          style={{ backgroundColor: story.focusColor || 'var(--primary-saffron, #F97316)' }}
+                          className="timeline-focus-pill"
+                          style={{ '--focus-accent': story.focusColor || '#F59E0B' }}
                         >
                           {story.focusArea}
                         </span>
                       </div>
-
-                      <div className="overlay-bottom">
-                        <h3 className="card-volunteer-name">{story.name}</h3>
-                        <p className="card-volunteer-role">{story.role}</p>
-
-                        <div className="card-quote-preview">
-                          <Quote size={13} className="quote-preview-icon" />
-                          <span>"{story.quote.length > 70 ? `${story.quote.slice(0, 68)}...` : story.quote}"</span>
-                        </div>
-
-                        <div className="card-meta-row">
-                          <span className="card-location">
-                            <MapPin size={11} />
-                            <span>{story.location.split(',')[0]}</span>
-                          </span>
-                          <span className="card-read-hint">
-                            <span>Read Story</span>
-                            <ArrowRight size={12} />
-                          </span>
-                        </div>
-                      </div>
                     </div>
                   </div>
-                </button>
+
+                  {/* Content Column (Testimonial Narrative) */}
+                  <div className="timeline-col timeline-col-content">
+                    <article className="timeline-content-card">
+                      {/* Status Verification Badge */}
+                      <div className="timeline-meta-header">
+                        {!story.isPlaceholder ? (
+                          <span className="timeline-status-pill verified">
+                            <CheckCircle2 size={13} />
+                            <span>{story.statusLabel || 'Verified Testimonial'}</span>
+                          </span>
+                        ) : (
+                          <span className="timeline-status-pill upcoming">
+                            <Clock size={13} />
+                            <span>{story.statusLabel || 'Volunteer Story in Progress'}</span>
+                          </span>
+                        )}
+
+                        {story.location && (
+                          <span className="timeline-location-pill">
+                            <MapPin size={13} />
+                            <span>{story.location}</span>
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Volunteer / Cohort Title */}
+                      <h3 className="timeline-author-name">{story.name}</h3>
+                      <p className="timeline-author-role">{story.role}</p>
+
+                      {/* Testimonial Quote or Placeholder */}
+                      <div className="timeline-body-content">
+                        {!story.isPlaceholder ? (
+                          <div className="timeline-quote-wrap">
+                            <Quote size={24} className="timeline-quote-icon" aria-hidden="true" />
+                            <blockquote className="timeline-quote-text">
+                              "{story.quote}"
+                            </blockquote>
+                          </div>
+                        ) : (
+                          <div className="timeline-placeholder-box">
+                            <p className="timeline-placeholder-text">
+                              {story.placeholderNote || story.quote}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Action Button */}
+                      <div className="timeline-card-footer">
+                        <button
+                          type="button"
+                          onClick={() => handleOpenStory(story)}
+                          className="timeline-detail-btn"
+                          aria-label={`Read full story and reflection details for ${story.name}`}
+                        >
+                          <span>{!story.isPlaceholder ? 'Read full story' : 'Initiative details'}</span>
+                          <ArrowRight size={14} />
+                        </button>
+                      </div>
+                    </article>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Timeline Bottom Community Invitation */}
+          <div className="timeline-footer-card">
+            <div className="timeline-footer-content">
+              <div className="timeline-footer-icon" aria-hidden="true">
+                <MessageSquarePlus size={24} />
               </div>
-            );
-          })}
+              <div>
+                <h4 className="timeline-footer-title">Are you an active volunteer with Responsible Individuals?</h4>
+                <p className="timeline-footer-desc">
+                  We are gathering authentic first-person stories and ground reflections from our ongoing initiatives. 
+                  Share your experience with our community coordination team to be featured in upcoming documentation.
+                </p>
+              </div>
+            </div>
+            {onExploreRoles && (
+              <button 
+                type="button" 
+                onClick={onExploreRoles}
+                className="btn btn-primary btn-sm timeline-footer-cta"
+              >
+                <span>Explore Open Roles</span>
+                <ArrowRight size={14} />
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Interactive Story Lightbox Modal */}
+      {/* Story Details Lightbox Modal */}
       {selectedStory && (
         <div 
-          className="story-modal-backdrop" 
+          className="timeline-modal-backdrop"
           onClick={handleCloseStory}
           role="dialog"
           aria-modal="true"
-          aria-labelledby="story-modal-title"
-          aria-describedby="story-modal-desc"
+          aria-labelledby="modal-story-title"
         >
           <div 
-            className="story-modal-card" 
-            ref={modalContentRef}
+            className="timeline-modal-card"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Modal Close Button */}
             <button 
-              className="story-modal-close" 
+              type="button"
               onClick={handleCloseStory}
-              aria-label="Close volunteer story"
+              className="timeline-modal-close"
+              aria-label="Close reflection details"
             >
               <X size={20} />
             </button>
 
-            {/* Modal Two-Column Content Grid */}
-            <div className="story-modal-grid">
-              {/* Left Column: Large Portrait & Visual Badges */}
-              <div className="story-modal-media-col">
+            <div className="timeline-modal-layout">
+              {/* Image Column */}
+              <div className="timeline-modal-media">
                 <img 
                   src={selectedStory.image} 
-                  alt={`${selectedStory.name} - ${selectedStory.role}`} 
-                  className="story-modal-img"
+                  alt={selectedStory.name} 
+                  className="timeline-modal-img"
+                  style={{ objectPosition: selectedStory.objectPosition || 'center 25%' }}
                 />
-                <div className="media-overlay-gradient" />
-                
-                {/* Floating Media Badges */}
-                <div className="story-media-badges">
-                  <span className="media-badge verified">
-                    <UserCheck size={13} />
-                    <span>{selectedStory.badge || 'Verified Volunteer'}</span>
-                  </span>
-                  <span className="media-badge hours">
-                    <Clock size={13} />
-                    <span>{selectedStory.hoursContributed}</span>
-                  </span>
+                <div className="timeline-modal-media-tags">
+                  <span className="timeline-modal-tag saffron">{selectedStory.focusArea}</span>
+                  {selectedStory.location && (
+                    <span className="timeline-modal-tag slate">{selectedStory.location}</span>
+                  )}
                 </div>
               </div>
 
-              {/* Right Column: Detailed Journey & Testimonial */}
-              <div className="story-modal-body-col">
-                {/* Top Meta Bar */}
-                <div className="story-modal-meta-top">
-                  <span 
-                    className="story-modal-focus-pill"
-                    style={{ backgroundColor: selectedStory.focusColor || 'var(--primary-saffron, #F97316)' }}
-                  >
-                    {selectedStory.focusArea}
+              {/* Text Column */}
+              <div className="timeline-modal-body">
+                <div className="timeline-modal-header">
+                  <span className={`timeline-status-pill ${selectedStory.isPlaceholder ? 'upcoming' : 'verified'}`}>
+                    {!selectedStory.isPlaceholder 
+                      ? (selectedStory.statusLabel || 'Verified Testimonial') 
+                      : (selectedStory.statusLabel || 'Volunteer Story in Progress')}
                   </span>
-                  <span className="story-modal-location">
-                    <MapPin size={13} color="var(--primary-saffron, #F97316)" />
-                    <span>{selectedStory.location}</span>
-                  </span>
+                  <h3 id="modal-story-title" className="timeline-modal-title">{selectedStory.name}</h3>
+                  <p className="timeline-modal-role">{selectedStory.role}</p>
                 </div>
 
-                {/* Name & Title */}
-                <h3 id="story-modal-title" className="story-modal-name">
-                  {selectedStory.name}
-                </h3>
-                <p className="story-modal-role">{selectedStory.role}</p>
-
-                {/* Pull-Quote Callout */}
-                <div className="story-modal-quote-box">
-                  <Quote size={24} className="modal-quote-icon" />
-                  <blockquote className="modal-quote-text">
-                    "{selectedStory.quote}"
-                  </blockquote>
-                </div>
-
-                {/* Full Personal Story */}
-                <div className="story-modal-narrative" id="story-modal-desc">
-                  <h4 className="narrative-heading">Their Ground-Level Journey</h4>
-                  <p className="narrative-text">{selectedStory.fullStory}</p>
-                </div>
-
-                {/* Impact Milestones */}
-                {selectedStory.milestones && selectedStory.milestones.length > 0 && (
-                  <div className="story-modal-milestones">
-                    <h4 className="milestones-heading">
-                      <Award size={15} color="var(--secondary-light-blue, #0EA5E9)" />
-                      <span>Key Verified Milestones</span>
-                    </h4>
-                    <div className="milestones-list">
-                      {selectedStory.milestones.map((m, i) => (
-                        <div key={i} className="milestone-item">
-                          <CheckCircle2 size={14} className="milestone-check" />
-                          <span>{m}</span>
-                        </div>
-                      ))}
-                    </div>
+                {/* Approved Quote or Status Note */}
+                {!selectedStory.isPlaceholder ? (
+                  <div className="timeline-modal-quote-box">
+                    <Quote size={20} className="modal-quote-glyph" aria-hidden="true" />
+                    <p className="timeline-modal-quote">"{selectedStory.quote}"</p>
+                  </div>
+                ) : (
+                  <div className="timeline-modal-placeholder-box">
+                    <Clock size={16} className="modal-clock-glyph" aria-hidden="true" />
+                    <p className="timeline-modal-placeholder-note">
+                      {selectedStory.placeholderNote || selectedStory.quote}
+                    </p>
                   </div>
                 )}
 
-                {/* Footer Action Buttons */}
-                <div className="story-modal-footer">
-                  <button 
-                    type="button" 
-                    className="btn btn-primary story-action-btn"
+                {/* Initiative Overview */}
+                <div className="timeline-modal-narrative">
+                  <h4 className="timeline-modal-section-title">Initiative Overview</h4>
+                  <p className="timeline-modal-text">{selectedStory.fullStory}</p>
+                </div>
+
+                {/* Milestones / Focus Areas */}
+                {selectedStory.milestones && selectedStory.milestones.length > 0 && (
+                  <div className="timeline-modal-milestones">
+                    <h4 className="timeline-modal-section-title">Key Initiative Focus Areas</h4>
+                    <ul className="timeline-modal-milestone-list">
+                      {selectedStory.milestones.map((m, i) => (
+                        <li key={i} className="timeline-modal-milestone-item">
+                          <CheckCircle2 size={14} className="milestone-icon" />
+                          <span>{m}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Action CTA */}
+                <div className="timeline-modal-actions">
+                  <button
+                    type="button"
                     onClick={() => {
                       handleCloseStory();
-                      if (onExploreRoles) {
-                        onExploreRoles();
-                      } else {
-                        const el = document.getElementById('opportunities');
-                        if (el) el.scrollIntoView({ behavior: 'smooth' });
-                      }
+                      if (onExploreRoles) onExploreRoles();
                     }}
+                    className="btn btn-primary btn-sm"
                   >
-                    <HeartHandshake size={16} />
-                    <span>Join Initiatives Like This</span>
-                  </button>
-                  <button 
-                    type="button" 
-                    className="btn btn-outline story-dismiss-btn"
-                    onClick={handleCloseStory}
-                  >
-                    Close Story
+                    <span>Volunteer in Similar Initiatives</span>
+                    <ArrowRight size={14} />
                   </button>
                 </div>
               </div>
@@ -283,330 +414,586 @@ export default function VolunteerPhotoStrip({ onExploreRoles }) {
         </div>
       )}
 
-      {/* Component Styles Scoped */}
+      {/* Scoped CSS Styles for Vertical Alternating Timeline */}
       <style>{`
-        /* Volunteer Stories Section Layout */
-        .volunteer-stories-section {
-          padding: 4.5rem 0 3.5rem 0;
-          background: #0B1914;
-          color: #FFFFFF;
+        .timeline-section {
+          background-color: #FFFDF8;
+          padding: 5rem 0 5.5rem 0;
           position: relative;
+          border-bottom: 1px solid #E8E1D5;
           overflow: hidden;
-          border-bottom: 1px solid rgba(16, 185, 129, 0.15);
         }
 
-        .stories-section-header {
+        .timeline-header {
           text-align: center;
           max-width: 760px;
-          margin: 0 auto 3rem auto;
-          position: relative;
-          z-index: 2;
+          margin: 0 auto 3.5rem auto;
         }
 
-        .stories-badge {
-          background: rgba(16, 185, 129, 0.15) !important;
-          color: #34D399 !important;
-          border: 1px solid rgba(52, 211, 153, 0.3) !important;
+        .timeline-badge {
+          background: #FFF7ED;
+          color: #B45309;
+          border: 1px solid rgba(245, 158, 11, 0.35);
+          display: inline-flex;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 0.35rem 1rem;
+          border-radius: 9999px;
+          font-size: 0.8rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
           margin-bottom: 0.85rem;
         }
 
         .badge-sparkle {
-          color: #34D399;
+          color: #D97706;
         }
 
-        .stories-section-title {
-          font-size: 2.25rem;
+        .timeline-title {
+          font-size: clamp(2.35rem, 5vw, 3rem);
           font-weight: 800;
-          color: #FFFFFF;
+          color: #171717;
+          letter-spacing: -0.025em;
           margin-bottom: 0.85rem;
-          letter-spacing: -0.02em;
+          line-height: 1.18;
         }
 
-        @media (min-width: 768px) {
-          .stories-section-title {
-            font-size: 2.75rem;
-          }
-        }
-
-        .stories-section-subtitle {
-          font-size: 1.05rem;
-          color: #94A3B8;
+        .timeline-subtitle {
+          font-size: 1.15rem;
+          color: #475569;
           line-height: 1.65;
           margin: 0 auto;
         }
 
-        /* Viewport & Vignette Blend */
-        .photo-strip-viewport {
+        /* ------------------------------------------------------------------
+           Timeline Spine Architecture
+           ------------------------------------------------------------------ */
+        .timeline-wrapper {
           position: relative;
-          width: 100%;
-          overflow: hidden;
-          padding: 1.5rem 0 2rem 0;
-          /* GPU containment */
-          contain: layout paint;
+          max-width: 1200px;
+          margin: 0 auto;
         }
 
-        .vignette-edge {
+        .timeline-spine-track {
           position: absolute;
-          top: 0;
-          bottom: 0;
-          width: 90px;
-          z-index: 10;
+          top: 40px;
+          bottom: 160px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 2px;
           pointer-events: none;
-        }
-
-        @media (min-width: 768px) {
-          .vignette-edge {
-            width: 140px;
-          }
-        }
-
-        .vignette-left {
-          left: 0;
-          background: linear-gradient(to right, #0B1914 0%, rgba(11, 25, 20, 0) 100%);
-        }
-
-        .vignette-right {
-          right: 0;
-          background: linear-gradient(to left, #0B1914 0%, rgba(11, 25, 20, 0) 100%);
-        }
-
-        /* Infinite Seamless Track */
-        .photo-strip-track {
-          display: flex;
-          align-items: center;
-          width: max-content;
-          gap: 1.5rem;
-          animation: infinitePhotoScroll 42s linear infinite;
-          will-change: transform;
-          transform: translate3d(0, 0, 0);
-        }
-
-        @media (min-width: 1024px) {
-          .photo-strip-track {
-            gap: 1.85rem;
-            animation-duration: 46s;
-          }
-        }
-
-        @keyframes infinitePhotoScroll {
-          0% {
-            transform: translate3d(0, 0, 0);
-          }
-          100% {
-            transform: translate3d(-50%, 0, 0);
-          }
-        }
-
-        /* Card Container & Offset Variations */
-        .photo-card-wrapper {
-          flex-shrink: 0;
-          width: var(--card-w, 290px);
-          transform: translateY(var(--v-offset, 0px)) rotate(var(--rot, 0deg)) translate3d(0, 0, 0);
-          transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), z-index 0.35s ease;
-          position: relative;
           z-index: 1;
         }
 
-        .photo-card-wrapper:hover {
-          transform: translateY(calc(var(--v-offset, 0px) - 10px)) rotate(0deg) scale(1.04) translate3d(0, 0, 0);
-          z-index: 8;
+        .timeline-spine-base {
+          position: absolute;
+          inset: 0;
+          background: #E8E1D5;
+          width: 2px;
         }
 
-        /* Card Button Wrapper */
-        .photo-card-btn {
+        .timeline-spine-fill {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 3px;
+          margin-left: -0.5px;
+          background: linear-gradient(180deg, #F59E0B 0%, #D97706 100%);
+          border-radius: 9999px;
+          box-shadow: 0 0 10px rgba(245, 158, 11, 0.4);
+          transition: height 0.15s ease-out;
+        }
+
+        /* ------------------------------------------------------------------
+           Alternating Timeline Rows
+           ------------------------------------------------------------------ */
+        .timeline-rows-list {
+          display: flex;
+          flex-direction: column;
+          gap: 4.5rem;
+          position: relative;
+          z-index: 2;
+        }
+
+        .timeline-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          position: relative;
           width: 100%;
-          display: block;
-          padding: 0;
-          background: transparent;
-          border: none;
-          text-align: left;
-          cursor: pointer;
-          border-radius: 20px;
-          outline: none;
         }
 
-        .photo-card-btn:focus-visible {
-          box-shadow: 0 0 0 3px var(--primary-saffron, #F97316), 0 0 0 6px rgba(249, 115, 22, 0.4);
+        .timeline-col {
+          width: calc(50% - 48px);
+          box-sizing: border-box;
         }
 
-        /* Card Inner Box */
-        .photo-card-inner {
+        /* Desktop Column Ordering */
+        /* Row Even (Story 1, 3, 5, 7): Image Left, Text Right */
+        .row-even .timeline-col-media {
+          order: 1;
+        }
+        .row-even .timeline-col-content {
+          order: 3;
+        }
+
+        /* Row Odd (Story 2, 4, 6): Text Left, Image Right */
+        .row-odd .timeline-col-content {
+          order: 1;
+        }
+        .row-odd .timeline-col-media {
+          order: 3;
+        }
+
+        /* Center Node Marker */
+        .timeline-node {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          background: #FFFDF8;
+          border: 2px solid #E8E1D5;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 3;
+          transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+          box-shadow: 0 2px 8px rgba(23, 23, 23, 0.06);
+        }
+
+        .timeline-node-dot {
+          width: 10px;
+          height: 10px;
+          border-radius: 50%;
+          background: #CBD5E1;
+          transition: all 0.3s ease;
+        }
+
+        .timeline-node.node-active {
+          border-color: #D97706;
+          box-shadow: 0 0 0 5px rgba(245, 158, 11, 0.22);
+          transform: translate(-50%, -50%) scale(1.1);
+        }
+
+        .timeline-node.node-active .timeline-node-dot {
+          background: #D97706;
+          box-shadow: 0 0 8px #F59E0B;
+        }
+
+        /* ------------------------------------------------------------------
+           Media Card (Photograph)
+           ------------------------------------------------------------------ */
+        .timeline-media-card {
           position: relative;
           width: 100%;
           height: 380px;
-          border-radius: 20px;
+          border-radius: 18px;
           overflow: hidden;
-          background: #162620;
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
-          transition: border-color 0.3s ease, box-shadow 0.3s ease;
+          background: #0F172A;
+          border: 1px solid #E8E1D5;
+          box-shadow: 0 6px 24px rgba(23, 23, 23, 0.05);
+          transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
         }
 
-        @media (max-width: 640px) {
-          .photo-card-inner {
-            height: 340px;
-          }
+        .timeline-media-card:hover {
+          transform: translateY(-4px);
+          border-color: #F59E0B;
+          box-shadow: 0 16px 36px -10px rgba(217, 119, 6, 0.16);
         }
 
-        .photo-card-wrapper:hover .photo-card-inner {
-          border-color: rgba(52, 211, 153, 0.5);
-          box-shadow: 0 20px 45px rgba(0, 0, 0, 0.55), 0 0 25px rgba(16, 185, 129, 0.2);
-        }
-
-        /* Card Image */
-        .photo-card-img {
+        .timeline-media-img {
           width: 100%;
           height: 100%;
           object-fit: cover;
-          object-position: center top;
-          transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), filter 0.6s ease;
-          filter: brightness(0.92) contrast(1.04);
+          object-position: center 25%;
+          transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        .photo-card-wrapper:hover .photo-card-img {
-          transform: scale(1.08);
-          filter: brightness(1) contrast(1.06);
+        .timeline-media-card:hover .timeline-media-img {
+          transform: scale(1.04);
         }
 
-        /* Card Overlay */
-        .photo-card-overlay {
+        .timeline-media-overlay {
           position: absolute;
-          inset: 0;
+          top: 1.25rem;
+          left: 1.25rem;
+          z-index: 2;
+        }
+
+        .timeline-focus-pill {
+          display: inline-block;
+          background: rgba(23, 23, 23, 0.78);
+          backdrop-filter: blur(4px);
+          -webkit-backdrop-filter: blur(4px);
+          color: #FFFDF8;
+          font-size: 0.75rem;
+          font-weight: 700;
+          padding: 0.35rem 0.85rem;
+          border-radius: 9999px;
+          letter-spacing: 0.03em;
+          border-left: 3px solid var(--focus-accent, #F59E0B);
+        }
+
+        /* ------------------------------------------------------------------
+           Content Card (Narrative & Testimonial)
+           ------------------------------------------------------------------ */
+        .timeline-content-card {
+          background: #FFFFFF;
+          border: 1px solid #E8E1D5;
+          border-radius: 18px;
+          padding: 2.25rem 2.5rem;
           display: flex;
           flex-direction: column;
-          justify-content: space-between;
-          padding: 1.25rem;
-          background: linear-gradient(
-            180deg, 
-            rgba(9, 23, 18, 0.25) 0%, 
-            rgba(9, 23, 18, 0.1) 40%, 
-            rgba(9, 23, 18, 0.75) 75%, 
-            rgba(9, 23, 18, 0.96) 100%
-          );
-          transition: background 0.3s ease;
+          box-shadow: 0 4px 20px rgba(23, 23, 23, 0.04);
+          transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
         }
 
-        .overlay-top {
+        .timeline-content-card:hover {
+          transform: translateY(-3px);
+          border-color: #F59E0B;
+          box-shadow: 0 14px 34px -8px rgba(217, 119, 6, 0.12);
+        }
+
+        .timeline-meta-header {
           display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          justify-content: space-between;
+          gap: 0.75rem;
+          margin-bottom: 1.15rem;
+        }
+
+        .timeline-status-pill {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.4rem;
+          padding: 0.3rem 0.75rem;
+          border-radius: 9999px;
+          font-weight: 700;
+          font-size: 0.75rem;
+          letter-spacing: 0.02em;
+        }
+
+        .timeline-status-pill.verified {
+          background: #ECFDF5;
+          color: #065F46;
+          border: 1px solid #A7F3D0;
+        }
+
+        .timeline-status-pill.upcoming {
+          background: #FFFBEB;
+          color: #92400E;
+          border: 1px solid #FDE68A;
+        }
+
+        .timeline-location-pill {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.3rem;
+          color: #64748B;
+          font-size: 0.8rem;
+          font-weight: 500;
+        }
+
+        .timeline-location-pill svg {
+          color: #D97706;
+        }
+
+        .timeline-author-name {
+          font-size: 1.65rem;
+          font-weight: 800;
+          color: #171717;
+          margin: 0 0 0.25rem 0;
+          line-height: 1.25;
+          letter-spacing: -0.02em;
+        }
+
+        .timeline-author-role {
+          font-size: 0.95rem;
+          color: #D97706;
+          font-weight: 600;
+          margin: 0 0 1.5rem 0;
+        }
+
+        .timeline-body-content {
+          margin-bottom: 1.75rem;
+        }
+
+        .timeline-quote-wrap {
+          position: relative;
+          padding-left: 0.5rem;
+        }
+
+        .timeline-quote-icon {
+          color: #F59E0B;
+          opacity: 0.55;
+          margin-bottom: 0.5rem;
+        }
+
+        .timeline-quote-text {
+          font-size: 1.1rem;
+          line-height: 1.7;
+          color: #1F2937;
+          font-style: italic;
+          margin: 0;
+        }
+
+        .timeline-placeholder-box {
+          background: #FAF7F0;
+          border-left: 3.5px solid #D97706;
+          padding: 1.15rem 1.35rem;
+          border-radius: 10px;
+        }
+
+        .timeline-placeholder-text {
+          font-size: 0.925rem;
+          color: #475569;
+          line-height: 1.6;
+          margin: 0;
+        }
+
+        .timeline-card-footer {
+          padding-top: 1.15rem;
+          border-top: 1px solid #F1ECE1;
+          display: flex;
+          align-items: center;
           justify-content: flex-start;
         }
 
-        .focus-pill {
-          color: #FFFFFF;
-          font-size: 0.725rem;
+        .timeline-detail-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.45rem;
+          background: transparent;
+          border: none;
+          color: #D97706;
+          font-size: 0.9rem;
           font-weight: 700;
-          padding: 0.25rem 0.65rem;
-          border-radius: var(--radius-pill);
-          letter-spacing: 0.03em;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+          cursor: pointer;
+          padding: 0.45rem 0.75rem;
+          border-radius: 8px;
+          transition: background 0.15s ease, transform 0.15s ease, color 0.15s ease;
         }
 
-        .overlay-bottom {
+        .timeline-detail-btn:hover {
+          background: #FFF7ED;
+          color: #B45309;
+          transform: translateX(3px);
+        }
+
+        /* ------------------------------------------------------------------
+           Entrance Animations
+           ------------------------------------------------------------------ */
+        @media (min-width: 900px) {
+          /* Even row: Media enters from left, Content from right */
+          .row-even .timeline-col-media {
+            opacity: 0;
+            transform: translate3d(-32px, 0, 0);
+            transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+          }
+          .row-even .timeline-col-content {
+            opacity: 0;
+            transform: translate3d(32px, 0, 0);
+            transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.12s, transform 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.12s;
+          }
+
+          /* Odd row: Content enters from left, Media from right */
+          .row-odd .timeline-col-content {
+            opacity: 0;
+            transform: translate3d(-32px, 0, 0);
+            transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.12s, transform 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.12s;
+          }
+          .row-odd .timeline-col-media {
+            opacity: 0;
+            transform: translate3d(32px, 0, 0);
+            transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+          }
+
+          /* Active reveal state */
+          .timeline-row.is-revealed .timeline-col-media,
+          .timeline-row.is-revealed .timeline-col-content {
+            opacity: 1;
+            transform: translate3d(0, 0, 0);
+          }
+        }
+
+        /* ------------------------------------------------------------------
+           Timeline Bottom Community Invite Card
+           ------------------------------------------------------------------ */
+        .timeline-footer-card {
+          margin-top: 5rem;
+          background: #FFFFFF;
+          border: 1px dashed #D97706;
+          border-radius: 18px;
+          padding: 1.75rem 2.25rem;
           display: flex;
           flex-direction: column;
-          gap: 0.35rem;
+          gap: 1.5rem;
+          align-items: flex-start;
+          justify-content: space-between;
+          box-shadow: 0 4px 16px rgba(23, 23, 23, 0.03);
         }
 
-        .card-volunteer-name {
-          font-size: 1.2rem;
-          font-weight: 700;
-          color: #FFFFFF;
-          margin: 0;
-          line-height: 1.25;
-          text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+        @media (min-width: 768px) {
+          .timeline-footer-card {
+            flex-direction: row;
+            align-items: center;
+          }
         }
 
-        .card-volunteer-role {
-          font-size: 0.8rem;
-          font-weight: 600;
-          color: #34D399;
-          margin: 0 0 0.25rem 0;
-        }
-
-        .card-quote-preview {
+        .timeline-footer-content {
           display: flex;
           align-items: flex-start;
-          gap: 0.35rem;
-          font-size: 0.775rem;
-          color: #CBD5E1;
-          font-style: italic;
-          line-height: 1.35;
-          margin-bottom: 0.4rem;
+          gap: 1.25rem;
         }
 
-        .quote-preview-icon {
-          color: var(--primary-saffron, #F97316);
+        .timeline-footer-icon {
+          width: 48px;
+          height: 48px;
+          border-radius: 12px;
+          background: #FFF7ED;
+          color: #D97706;
+          display: flex;
+          align-items: center;
+          justify-content: center;
           flex-shrink: 0;
-          margin-top: 2px;
         }
 
-        .card-meta-row {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding-top: 0.5rem;
-          border-top: 1px solid rgba(255, 255, 255, 0.15);
-          font-size: 0.75rem;
+        .timeline-footer-title {
+          font-size: 1.1rem;
+          font-weight: 700;
+          color: #171717;
+          margin-bottom: 0.35rem;
         }
 
-        .card-location {
-          display: flex;
-          align-items: center;
-          gap: 0.25rem;
-          color: #94A3B8;
+        .timeline-footer-desc {
+          font-size: 0.9rem;
+          color: #475569;
+          margin: 0;
+          line-height: 1.55;
+          max-width: 680px;
         }
 
-        .card-read-hint {
-          display: flex;
-          align-items: center;
-          gap: 0.25rem;
-          color: #34D399;
-          font-weight: 600;
+        .timeline-footer-cta {
+          white-space: nowrap;
+          font-weight: 700;
         }
 
-        /* ----------------------------------------------------
-           Story Lightbox Modal (Appears ABOVE moving strip)
-           Background photo strip CONTINUES MOVING behind it
-        ----------------------------------------------------- */
-        .story-modal-backdrop {
+        /* ------------------------------------------------------------------
+           Mobile & Tablet Layout (< 900px)
+           ------------------------------------------------------------------ */
+        @media (max-width: 899px) {
+          .timeline-spine-track {
+            left: 20px;
+            transform: none;
+            top: 20px;
+            bottom: 120px;
+          }
+
+          .timeline-rows-list {
+            gap: 3.5rem;
+          }
+
+          .timeline-row {
+            flex-direction: column;
+            padding-left: 54px;
+            box-sizing: border-box;
+          }
+
+          .timeline-col {
+            width: 100%;
+          }
+
+          .timeline-col-media {
+            order: 1 !important;
+            margin-bottom: 1.25rem;
+          }
+
+          .timeline-col-content {
+            order: 2 !important;
+          }
+
+          .timeline-node {
+            left: 20px;
+            top: 24px;
+            transform: translate(-50%, 0);
+          }
+
+          .timeline-node.node-active {
+            transform: translate(-50%, 0) scale(1.1);
+          }
+
+          .timeline-media-card {
+            height: 270px;
+          }
+
+          .timeline-content-card {
+            padding: 1.65rem 1.75rem;
+          }
+
+          .timeline-author-name {
+            font-size: 1.45rem;
+          }
+
+          .timeline-quote-text {
+            font-size: 1.025rem;
+          }
+
+          /* Mobile Entrance Animation */
+          .timeline-col-media,
+          .timeline-col-content {
+            opacity: 0;
+            transform: translate3d(0, 24px, 0);
+            transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+          }
+
+          .timeline-row.is-revealed .timeline-col-media,
+          .timeline-row.is-revealed .timeline-col-content {
+            opacity: 1;
+            transform: translate3d(0, 0, 0);
+          }
+        }
+
+        /* ------------------------------------------------------------------
+           Light-Dismiss Details Modal
+           ------------------------------------------------------------------ */
+        .timeline-modal-backdrop {
           position: fixed;
-          inset: 0;
-          background: rgba(6, 17, 13, 0.78);
-          backdrop-filter: blur(8px);
-          -webkit-backdrop-filter: blur(8px);
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(23, 23, 23, 0.72);
+          backdrop-filter: blur(6px);
+          -webkit-backdrop-filter: blur(6px);
           z-index: 1000;
           display: flex;
           align-items: center;
           justify-content: center;
-          padding: 1.25rem;
-          animation: storyBackdropFadeIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          padding: 1.5rem;
         }
 
-        @keyframes storyBackdropFadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-
-        .story-modal-card {
+        .timeline-modal-card {
           background: #FFFFFF;
-          color: var(--slate-900);
+          border-radius: 20px;
+          max-width: 840px;
           width: 100%;
-          max-width: 860px;
           max-height: 90vh;
-          border-radius: 24px;
-          box-shadow: 0 25px 60px rgba(0, 0, 0, 0.45);
-          border: 1px solid rgba(255, 255, 255, 0.8);
+          overflow-y: auto;
           position: relative;
-          overflow: hidden;
-          display: flex;
-          flex-direction: column;
-          animation: storyCardScaleIn 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+          border: 1px solid #E8E1D5;
+          animation: timelineModalPop 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        @keyframes storyCardScaleIn {
+        @keyframes timelineModalPop {
           from {
             opacity: 0;
-            transform: scale(0.94) translateY(18px);
+            transform: scale(0.96) translateY(12px);
           }
           to {
             opacity: 1;
@@ -614,295 +1001,213 @@ export default function VolunteerPhotoStrip({ onExploreRoles }) {
           }
         }
 
-        .story-modal-close {
+        .timeline-modal-close {
           position: absolute;
-          top: 1.15rem;
-          right: 1.15rem;
+          top: 1.25rem;
+          right: 1.25rem;
           width: 36px;
           height: 36px;
           border-radius: 50%;
+          background: #F1F5F9;
           border: none;
-          background: rgba(15, 23, 42, 0.65);
-          color: #FFFFFF;
-          cursor: pointer;
+          color: #171717;
           display: flex;
           align-items: center;
           justify-content: center;
-          z-index: 20;
-          transition: background 0.2s ease, transform 0.2s ease;
+          cursor: pointer;
+          z-index: 10;
+          transition: background 0.15s ease;
         }
 
-        .story-modal-close:hover {
-          background: #0F172A;
-          transform: rotate(90deg);
+        .timeline-modal-close:hover {
+          background: #E2E8F0;
         }
 
-        .story-modal-grid {
+        .timeline-modal-layout {
           display: grid;
           grid-template-columns: 1fr;
-          overflow-y: auto;
-          max-height: 90vh;
         }
 
         @media (min-width: 768px) {
-          .story-modal-grid {
-            grid-template-columns: 340px 1fr;
+          .timeline-modal-layout {
+            grid-template-columns: 320px 1fr;
           }
         }
 
-        /* Media Column */
-        .story-modal-media-col {
-          position: relative;
-          height: 280px;
+        .timeline-modal-media {
           background: #0F172A;
+          position: relative;
+          display: flex;
+          flex-direction: column;
         }
 
-        @media (min-width: 768px) {
-          .story-modal-media-col {
-            height: auto;
-            min-height: 100%;
-          }
-        }
-
-        .story-modal-img {
+        .timeline-modal-img {
           width: 100%;
           height: 100%;
+          min-height: 280px;
           object-fit: cover;
-          object-position: center top;
+          display: block;
         }
 
-        .media-overlay-gradient {
+        .timeline-modal-media-tags {
           position: absolute;
-          inset: 0;
-          background: linear-gradient(180deg, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.6) 100%);
-        }
-
-        .story-media-badges {
-          position: absolute;
-          bottom: 1.25rem;
-          left: 1.25rem;
-          right: 1.25rem;
-          display: flex;
-          flex-direction: column;
-          gap: 0.5rem;
-          z-index: 2;
-        }
-
-        .media-badge {
-          display: inline-flex;
-          align-items: center;
-          gap: 0.4rem;
-          padding: 0.35rem 0.75rem;
-          border-radius: var(--radius-pill);
-          font-size: 0.75rem;
-          font-weight: 700;
-          width: max-content;
-        }
-
-        .media-badge.verified {
-          background: rgba(16, 185, 129, 0.9);
-          color: #FFFFFF;
-          box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-        }
-
-        .media-badge.hours {
-          background: rgba(15, 23, 42, 0.8);
-          color: #F8FAFC;
-          border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        /* Body Column */
-        .story-modal-body-col {
-          padding: 2.25rem;
-          display: flex;
-          flex-direction: column;
-          overflow-y: auto;
-        }
-
-        @media (max-width: 640px) {
-          .story-modal-body-col {
-            padding: 1.5rem;
-          }
-        }
-
-        .story-modal-meta-top {
+          bottom: 1rem;
+          left: 1rem;
+          right: 1rem;
           display: flex;
           flex-wrap: wrap;
-          align-items: center;
-          gap: 0.75rem;
-          margin-bottom: 0.85rem;
+          gap: 0.4rem;
         }
 
-        .story-modal-focus-pill {
-          color: #FFFFFF;
-          font-size: 0.75rem;
+        .timeline-modal-tag {
+          font-size: 0.725rem;
           font-weight: 700;
-          padding: 0.25rem 0.75rem;
-          border-radius: var(--radius-pill);
+          padding: 0.25rem 0.65rem;
+          border-radius: 9999px;
         }
 
-        .story-modal-location {
-          display: inline-flex;
-          align-items: center;
-          gap: 0.3rem;
-          font-size: 0.8rem;
-          color: var(--slate-600);
-          font-weight: 500;
+        .timeline-modal-tag.saffron {
+          background: #F59E0B;
+          color: #FFFFFF;
         }
 
-        .story-modal-name {
-          font-size: 1.75rem;
-          font-weight: 800;
-          color: var(--slate-900);
-          margin-bottom: 0.2rem;
-          letter-spacing: -0.01em;
+        .timeline-modal-tag.slate {
+          background: rgba(15, 23, 42, 0.85);
+          color: #F8FAFC;
         }
 
-        .story-modal-role {
-          font-size: 0.95rem;
-          font-weight: 600;
-          color: var(--primary-700);
+        .timeline-modal-body {
+          padding: 2.25rem 2rem;
+          display: flex;
+          flex-direction: column;
+        }
+
+        .timeline-modal-header {
           margin-bottom: 1.25rem;
         }
 
-        .story-modal-quote-box {
-          background: var(--primary-50);
-          border-left: 4px solid var(--primary-600);
-          padding: 1.15rem 1.25rem;
-          border-radius: 0 var(--radius-md) var(--radius-md) 0;
-          margin-bottom: 1.5rem;
-          display: flex;
-          gap: 0.75rem;
+        .timeline-modal-title {
+          font-size: 1.65rem;
+          font-weight: 800;
+          color: #171717;
+          margin: 0.5rem 0 0.2rem 0;
+          line-height: 1.2;
         }
 
-        .modal-quote-icon {
-          color: var(--primary-600);
-          flex-shrink: 0;
-          margin-top: 2px;
-        }
-
-        .modal-quote-text {
+        .timeline-modal-role {
           font-size: 0.95rem;
+          color: #D97706;
           font-weight: 600;
-          color: var(--primary-900);
-          font-style: italic;
-          line-height: 1.55;
           margin: 0;
         }
 
-        .story-modal-narrative {
+        .timeline-modal-quote-box {
+          background: #FFFDF8;
+          border-left: 3.5px solid #D97706;
+          padding: 1rem 1.25rem;
+          border-radius: 8px;
           margin-bottom: 1.5rem;
+          position: relative;
         }
 
-        .narrative-heading {
-          font-size: 0.85rem;
-          font-weight: 700;
-          color: var(--slate-500);
+        .modal-quote-glyph {
+          color: #D97706;
+          margin-bottom: 0.35rem;
+        }
+
+        .timeline-modal-quote {
+          font-size: 1.05rem;
+          line-height: 1.65;
+          color: #171717;
+          font-style: italic;
+          margin: 0;
+        }
+
+        .timeline-modal-placeholder-box {
+          background: #FAF7F0;
+          border-left: 3.5px solid #D97706;
+          padding: 1rem 1.25rem;
+          border-radius: 8px;
+          margin-bottom: 1.5rem;
+          display: flex;
+          align-items: flex-start;
+          gap: 0.75rem;
+        }
+
+        .modal-clock-glyph {
+          color: #D97706;
+          flex-shrink: 0;
+          margin-top: 0.2rem;
+        }
+
+        .timeline-modal-placeholder-note {
+          font-size: 0.9rem;
+          line-height: 1.6;
+          color: #475569;
+          margin: 0;
+        }
+
+        .timeline-modal-section-title {
+          font-size: 0.8rem;
           text-transform: uppercase;
           letter-spacing: 0.05em;
+          color: #64748B;
+          font-weight: 700;
           margin-bottom: 0.5rem;
         }
 
-        .narrative-text {
+        .timeline-modal-text {
           font-size: 0.925rem;
-          color: var(--slate-700);
           line-height: 1.65;
+          color: #334155;
+          margin-bottom: 1.5rem;
         }
 
-        .story-modal-milestones {
-          background: var(--slate-50);
-          border: 1px solid var(--slate-200);
-          border-radius: var(--radius-lg);
-          padding: 1rem 1.25rem;
+        .timeline-modal-milestones {
           margin-bottom: 1.75rem;
         }
 
-        .milestones-heading {
-          display: flex;
-          align-items: center;
-          gap: 0.4rem;
-          font-size: 0.8rem;
-          font-weight: 700;
-          color: var(--slate-700);
-          text-transform: uppercase;
-          letter-spacing: 0.04em;
-          margin-bottom: 0.65rem;
-        }
-
-        .milestones-list {
+        .timeline-modal-milestone-list {
+          list-style: none;
+          padding: 0;
+          margin: 0;
           display: flex;
           flex-direction: column;
-          gap: 0.45rem;
+          gap: 0.5rem;
         }
 
-        .milestone-item {
+        .timeline-modal-milestone-item {
           display: flex;
           align-items: center;
           gap: 0.5rem;
-          font-size: 0.85rem;
-          color: var(--slate-800);
-          font-weight: 500;
+          font-size: 0.875rem;
+          color: #334155;
         }
 
-        .milestone-check {
-          color: var(--secondary-light-blue, #0EA5E9);
+        .milestone-icon {
+          color: #059669;
           flex-shrink: 0;
         }
 
-        .story-modal-footer {
-          display: flex;
-          flex-wrap: wrap;
-          align-items: center;
-          gap: 0.85rem;
+        .timeline-modal-actions {
           margin-top: auto;
           padding-top: 1rem;
-          border-top: 1px solid var(--slate-100);
         }
 
-        .story-action-btn {
-          flex: 1;
-          min-width: 200px;
-        }
-
-        .story-dismiss-btn {
-          padding: 0.75rem 1.25rem;
-          color: var(--slate-600);
-          border-color: var(--slate-300);
-        }
-
-        .story-dismiss-btn:hover {
-          background: var(--slate-100);
-          color: var(--slate-900);
-        }
-
-        /* ----------------------------------------------------
-           Accessibility & Prefers Reduced Motion
-        ----------------------------------------------------- */
+        /* ------------------------------------------------------------------
+           Reduced Motion Support
+           ------------------------------------------------------------------ */
         @media (prefers-reduced-motion: reduce) {
-          .photo-strip-track {
-            animation: none !important;
-            overflow-x: auto;
-            scroll-snap-type: x mandatory;
-            padding-bottom: 1rem;
-            width: 100%;
-          }
-
-          .photo-card-wrapper {
-            scroll-snap-align: start;
-            transform: none !important;
-          }
-
-          .photo-card-wrapper:hover {
-            transform: none !important;
-          }
-
-          .story-modal-backdrop,
-          .story-modal-card {
-            animation: none !important;
-          }
-
-          .photo-card-img {
+          .timeline-col-media,
+          .timeline-col-content,
+          .timeline-spine-fill,
+          .timeline-media-img,
+          .timeline-node,
+          .timeline-modal-card {
             transition: none !important;
+            animation: none !important;
+            transform: none !important;
+            opacity: 1 !important;
           }
         }
       `}</style>

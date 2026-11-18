@@ -2,9 +2,31 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { projectService } from '../../services/api';
 import { 
-  MapPin, Calendar, Users, DollarSign, Target, 
-  CheckCircle2, Clock, Building2, Heart, ArrowLeft 
+  MapPin, Calendar, Users, Target, 
+  CheckCircle2, Clock, Building2, ArrowLeft, Camera 
 } from 'lucide-react';
+
+import washImg1 from '../../assets/hosa-byrohalli-wash-1.jpg';
+import washImg2 from '../../assets/hosa-byrohalli-wash-2.jpg';
+import washImg3 from '../../assets/hosa-byrohalli-wash-3.jpg';
+import inaugurationImg1 from '../../assets/ri-inauguration-beautification-1.jpg';
+import inaugurationImg2 from '../../assets/ri-inauguration-beautification-2.jpg';
+import inaugurationImg3 from '../../assets/ri-inauguration-beautification-3.jpg';
+import inaugurationImg4 from '../../assets/ri-inauguration-beautification-4.jpg';
+
+function resolveMediaSrc(mediaItem) {
+  const mf = typeof mediaItem === 'string' ? mediaItem : (mediaItem?.media_file || mediaItem?.url || mediaItem?.src || '');
+  if (typeof mf === 'string') {
+    if (mf.includes('ri-inauguration-beautification-1')) return inaugurationImg1;
+    if (mf.includes('ri-inauguration-beautification-2')) return inaugurationImg2;
+    if (mf.includes('ri-inauguration-beautification-3')) return inaugurationImg3;
+    if (mf.includes('ri-inauguration-beautification-4')) return inaugurationImg4;
+    if (mf.includes('hosa-byrohalli-wash-1')) return washImg1;
+    if (mf.includes('hosa-byrohalli-wash-2')) return washImg2;
+    if (mf.includes('hosa-byrohalli-wash-3')) return washImg3;
+  }
+  return mf;
+}
 
 export default function ProjectDetailPage() {
   const { slug } = useParams();
@@ -18,6 +40,87 @@ export default function ProjectDetailPage() {
         setProject(data);
       } catch (err) {
         console.error(err);
+        // Fallback for School Beautification RI Inauguration
+        if (slug === 'school-beautification-ri-inauguration') {
+          setProject({
+            title: 'School Beautification & Cleanliness Drive — RI Inauguration',
+            slug: 'school-beautification-ri-inauguration',
+            focus_area_name: 'Education & Digital Literacy',
+            focus_area_color: '#3B82F6',
+            status: 'COMPLETED',
+            location: 'Government School, Dasarahalli, Hebbal, Bengaluru, Karnataka',
+            start_date: '2025-07-19',
+            end_date: '2025-07-19',
+            budget: 150000,
+            raised_amount: 150000,
+            beneficiaries_count: 450,
+            progress_percentage: 100.0,
+            summary: 'Commemorating the RI Inauguration with school wall painting, creative educational murals, and campus cleanliness drives to create an inspiring learning environment.',
+            description: 'As part of the Responsible Individuals (RI) Inauguration Event held on 19 July 2025 at Dasarahalli, Hebbal, our dedicated volunteer corps, youth leaders, and team members transformed the local Government School into an uplifting, colorful sanctuary for young learners. The initiative combined thorough campus-wide cleanliness drives with vibrant, creative educational wall paintings and sketches designed to stimulate curiosity and civic pride among children. Volunteers scraped and primed weathered school walls, painted interactive educational art, cleaned classroom spaces, and created a renewed, dignified school environment that teachers and students cherish every single day.',
+            problem_statement: 'Dilapidated wall surfaces, weathered exterior corridors, and lack of visual learning elements in community government schools negatively affect student enthusiasm, attendance, and pride in their academic spaces.',
+            solution_approach: 'A volunteer-powered campus renewal: structured cleanliness drives, wall priming, artistic educational murals, and community ownership to foster a positive, motivating school atmosphere.',
+            objectives: [
+              { id: 'obj-1', title: 'Campus cleanliness and sanitation drive', target: '100% grounds & corridors cleared', order: 1 },
+              { id: 'obj-2', title: 'Wall preparation and artistic educational murals', target: '1,200+ sq ft vibrantly painted', order: 2 },
+              { id: 'obj-3', title: 'School environment revitalization and volunteer engagement', target: 'Engage 40+ active RI volunteers', order: 3 },
+            ],
+            activities: [
+              { id: 'act-1', title: 'School Campus Cleanliness & Debris Clearance', date: '2025-07-19', outcome: 'Cleared school grounds, removed accumulated debris, and primed building walls' },
+              { id: 'act-2', title: 'Creative Wall Art, Murals & Painting Drive', date: '2025-07-19', outcome: 'Completed colorful educational murals, learning diagrams, and aesthetic sketches' },
+              { id: 'act-3', title: 'Official RI Inauguration & Community Handover Ceremony', date: '2025-07-19', outcome: 'Dedicated revitalized learning corridors to students and faculty with community pledge' },
+            ],
+            partners: [
+              { id: 'pt-1', partner_name: 'Government School Dasarahalli', role: 'Host Institution & Faculty' },
+              { id: 'pt-2', partner_name: 'Responsible Individuals Volunteer Corps', role: 'Event Organizer & Execution Team' },
+            ],
+            media: [
+              { media_file: inaugurationImg1, caption: 'RI Volunteers painting vibrant murals and educational artwork on school walls' },
+              { media_file: inaugurationImg2, caption: 'Creative sketches and artistic wall detailing by youth volunteers' },
+              { media_file: inaugurationImg3, caption: 'Campus cleanliness drive and exterior wall preparation in progress' },
+              { media_file: inaugurationImg4, caption: 'Volunteers collaborating on revitalizing school learning corridors' },
+            ]
+          });
+        }
+        // Fallback for Hosa Byrohalli WASH project if API has network/CORS hiccup
+        else if (slug === 'hosa-byrohalli-wash-programme') {
+          setProject({
+            title: 'WASH Awareness & School Sanitation Programme',
+            slug: 'hosa-byrohalli-wash-programme',
+            focus_area_name: 'Environment & Water Restoration',
+            focus_area_color: '#10B981',
+            status: 'COMPLETED',
+            location: 'Hosa Byrohalli Government School, Bengaluru, Karnataka',
+            start_date: '2025-12-16',
+            end_date: '2025-12-16',
+            budget: 250000,
+            raised_amount: 250000,
+            beneficiaries_count: 340,
+            progress_percentage: 100.0,
+            summary: 'Promoting hygiene, clean sanitation facilities, and water awareness while distributing educational stationery and cleaning materials at Hosa Byrohalli Government School.',
+            description: 'As part of our commitment to promoting health, hygiene, and sanitation awareness among students, we conducted a comprehensive WASH (Water, Sanitation, and Hygiene) Awareness Programme at Hosa Byrohalli Government School on 16 December 2025. The programme focused on instilling lifelong healthy habits, demonstrating correct handwashing techniques, educating children on personal hygiene, and keeping school classrooms and surrounding grounds clean. To support the students academic journey and encourage clean sanitation practices, educational stationery kits and sanitation supplies were distributed. In addition, our field team conducted a thorough assessment of the schools washroom and sanitation infrastructure to identify key upgrade opportunities for long-term health and dignity.',
+            problem_statement: 'Government school students in peri-urban communities often lack structured guidance on daily sanitation practices, safe hand hygiene, and access to regular sanitation consumables, increasing vulnerability to water-borne illnesses and school absenteeism.',
+            solution_approach: 'A holistic school-level WASH intervention: interactive student hygiene workshops, distribution of hygiene & stationery materials, on-site washroom safety and accessibility auditing, and long-term sanitation maintenance planning with school faculty.',
+            objectives: [
+              { id: 'obj-1', title: 'Student WASH & personal hygiene awareness sessions', target: '100% student participation', order: 1 },
+              { id: 'obj-2', title: 'Distribute study stationery kits and school cleaning supplies', target: '300+ students & facility maintenance', order: 2 },
+              { id: 'obj-3', title: 'Comprehensive inspection of school sanitation & washroom facilities', target: 'Complete baseline infrastructure audit', order: 3 },
+            ],
+            activities: [
+              { id: 'act-1', title: 'Interactive Handwashing & Sanitation Workshop', date: '2025-12-16', outcome: 'Demonstrated 6-step handwashing techniques and hygiene best practices to all classes' },
+              { id: 'act-2', title: 'Educational Stationery & Cleaning Materials Distribution', date: '2025-12-16', outcome: 'Provided essential study stationery and hygiene supplies to students and staff' },
+              { id: 'act-3', title: 'School Washroom & Sanitation Facility Condition Audit', date: '2025-12-16', outcome: 'Documented existing sanitation conditions to plan accessibility and repair improvements' },
+            ],
+            partners: [
+              { id: 'pt-1', partner_name: 'Hosa Byrohalli Government School', role: 'School & Community Partner' },
+              { id: 'pt-2', partner_name: 'Responsible Individuals Volunteer Corps', role: 'Program Execution Partner' },
+            ],
+            media: [
+              { media_file: washImg1, caption: 'Interactive WASH awareness session with students at Hosa Byrohalli Government School' },
+              { media_file: washImg2, caption: 'Distribution of learning stationery and sanitation supplies to students' },
+              { media_file: washImg3, caption: 'School sanitation facility inspection and infrastructure condition assessment' },
+            ]
+          });
+        }
       } finally {
         setLoading(false);
       }
@@ -46,19 +149,29 @@ export default function ProjectDetailPage() {
     location,
     start_date,
     end_date,
-    budget,
-    raised_amount,
     beneficiaries_count,
-    progress_percentage,
     summary,
     description,
     problem_statement,
     solution_approach,
-    objectives = [],
     activities = [],
-    kpis = [],
     partners = [],
+    media = [],
   } = project;
+
+  // Resolve media items (inject local authentic assets if needed)
+  const displayMedia = (media && media.length > 0) ? media : (
+    slug === 'school-beautification-ri-inauguration' ? [
+      { media_file: inaugurationImg1, caption: 'RI Volunteers painting vibrant murals and educational artwork on school walls' },
+      { media_file: inaugurationImg2, caption: 'Creative sketches and artistic wall detailing by youth volunteers' },
+      { media_file: inaugurationImg3, caption: 'Campus cleanliness drive and exterior wall preparation in progress' },
+      { media_file: inaugurationImg4, caption: 'Volunteers collaborating on revitalizing school learning corridors' },
+    ] : (slug === 'hosa-byrohalli-wash-programme' ? [
+      { media_file: washImg1, caption: 'Interactive WASH awareness session with students at Hosa Byrohalli Government School' },
+      { media_file: washImg2, caption: 'Distribution of learning stationery and sanitation supplies to students' },
+      { media_file: washImg3, caption: 'School sanitation facility inspection and infrastructure condition assessment' },
+    ] : [])
+  );
 
   return (
     <div className="project-detail-root">
@@ -109,10 +222,10 @@ export default function ProjectDetailPage() {
               </div>
 
               <div className="detail-meta-item">
-                <DollarSign size={18} color="#10B981" />
+                <Target size={18} color="#10B981" />
                 <div>
-                  <span className="meta-label">Funding Status</span>
-                  <strong>₹{Number(raised_amount).toLocaleString()} / ₹{Number(budget).toLocaleString()}</strong>
+                  <span className="meta-label">Domain Focus</span>
+                  <strong>{focus_area_name || 'Community Impact'}</strong>
                 </div>
               </div>
             </div>
@@ -121,128 +234,96 @@ export default function ProjectDetailPage() {
       </section>
 
       {/* Main Content Layout */}
-      <section className="section bg-light-alt">
+      <section className="section bg-light-alt" style={{ padding: '3.5rem 0' }}>
         <div className="container">
-          <div className="detail-layout-grid">
-            {/* Left Column: Deep Dive Narrative */}
-            <div className="detail-main-col">
-              {/* Problem & Solution */}
-              <div className="card detail-card">
-                <h2 className="detail-card-heading">The Community Challenge</h2>
-                <p className="detail-p">{problem_statement || description}</p>
+          <div className="detail-content-wrap">
+            {/* Problem & Solution */}
+            <div className="card detail-card">
+              <h2 className="detail-card-heading">The Community Challenge</h2>
+              <p className="detail-p">{problem_statement || description}</p>
 
-                {solution_approach && (
-                  <>
-                    <h2 className="detail-card-heading" style={{ marginTop: '2rem' }}>Our Scientific Approach</h2>
-                    <p className="detail-p">{solution_approach}</p>
-                  </>
-                )}
-              </div>
-
-              {/* Measurable KPIs */}
-              {kpis.length > 0 && (
-                <div className="card detail-card">
-                  <h2 className="detail-card-heading">Key Measurable Metrics (KPIs)</h2>
-                  <div className="kpi-list">
-                    {kpis.map((kpi) => (
-                      <div key={kpi.id} className="kpi-item">
-                        <div className="kpi-labels">
-                          <strong>{kpi.metric_name}</strong>
-                          <span className="kpi-value-text">
-                            {Number(kpi.achieved).toLocaleString()} / {Number(kpi.target).toLocaleString()} {kpi.unit}
-                          </span>
-                        </div>
-                        <div className="kpi-progress-bar">
-                          <div 
-                            className="kpi-progress-fill" 
-                            style={{ width: `${Math.min(kpi.percentage, 100)}%`, backgroundColor: focus_area_color || '#10B981' }}
-                          />
-                        </div>
-                        <span className="kpi-pct">{kpi.percentage}% achieved</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Objectives & Activities */}
-              {activities.length > 0 && (
-                <div className="card detail-card">
-                  <h2 className="detail-card-heading">Field Activity Timeline</h2>
-                  <div className="activities-timeline">
-                    {activities.map((act) => (
-                      <div key={act.id} className="activity-row">
-                        <div className="activity-icon-wrap">
-                          <CheckCircle2 size={20} color="#10B981" />
-                        </div>
-                        <div className="activity-info">
-                          <h4 className="activity-title">{act.title}</h4>
-                          {act.outcome && <p className="activity-outcome">{act.outcome}</p>}
-                          <div className="activity-date">
-                            <Clock size={12} /> <span>{act.date || 'Scheduled'}</span>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+              {solution_approach && (
+                <>
+                  <h2 className="detail-card-heading" style={{ marginTop: '2.5rem' }}>Our Scientific Approach</h2>
+                  <p className="detail-p">{solution_approach}</p>
+                </>
               )}
             </div>
 
-            {/* Right Column: CTA & Partners */}
-            <div className="detail-side-col">
-              {/* Support Card */}
-              <div className="card detail-action-card">
-                <h3 className="action-card-title">Support This Initiative</h3>
-                <p className="action-card-text">
-                  Your contribution directly funds transparent materials, labor, bio-enzymes, and equipment for this project.
-                </p>
-
-                <div className="detail-funding-progress">
-                  <div className="progress-labels">
-                    <span>{progress_percentage}% funded</span>
-                    <span>₹{Number(raised_amount).toLocaleString()}</span>
-                  </div>
-                  <div className="detail-bar-track">
-                    <div 
-                      className="detail-bar-fill" 
-                      style={{ width: `${Math.min(progress_percentage, 100)}%` }} 
-                    />
-                  </div>
-                </div>
-
-                <Link to={`/donate?project=${project.id}`} className="btn btn-amber action-btn">
-                  <Heart size={18} fill="currentColor" />
-                  <span>Donate to Project</span>
-                </Link>
-
-                <Link to="/volunteer" className="btn btn-secondary action-btn" style={{ marginTop: '0.75rem' }}>
-                  <span>Volunteer for this Project</span>
-                </Link>
-
-                <div className="tax-notice-side">
-                  <span className="tax-badge-sm">80G</span>
-                  <span>50% tax exemption receipt provided instantly</span>
-                </div>
-              </div>
-
-              {/* Supporting Partners */}
-              {partners.length > 0 && (
-                <div className="card detail-partners-card">
-                  <h4 className="partners-card-title">Supporting Partners</h4>
-                  <div className="partners-card-list">
-                    {partners.map((pt) => (
-                      <div key={pt.id} className="partner-card-row">
-                        <Building2 size={20} color="#10B981" />
-                        <div>
-                          <strong>{pt.partner_name}</strong>
-                          <span className="partner-role-sub">{pt.role}</span>
+            {/* Field Activity Timeline */}
+            {activities.length > 0 && (
+              <div className="card detail-card">
+                <h2 className="detail-card-heading">Field Activity Timeline</h2>
+                <div className="activities-timeline">
+                  {activities.map((act) => (
+                    <div key={act.id || act.title} className="activity-row">
+                      <div className="activity-icon-wrap">
+                        <CheckCircle2 size={20} color="#10B981" />
+                      </div>
+                      <div className="activity-info">
+                        <h4 className="activity-title">{act.title}</h4>
+                        {act.outcome && <p className="activity-outcome">{act.outcome}</p>}
+                        <div className="activity-date">
+                          <Clock size={12} /> <span>{act.date || 'Scheduled'}</span>
                         </div>
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  ))}
                 </div>
-              )}
+              </div>
+            )}
+
+            {/* Ground Documentation & Field Photo Gallery */}
+            {displayMedia.length > 0 && (
+              <div className="card detail-card">
+                <div className="detail-gallery-header">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                    <Camera size={22} color="#10B981" />
+                    <h2 className="detail-card-heading" style={{ margin: 0 }}>Ground Documentation &amp; Field Photos</h2>
+                  </div>
+                  <span className="detail-photo-badge">{displayMedia.length} Verified Photos</span>
+                </div>
+                <div className="detail-media-grid">
+                  {displayMedia.map((m, idx) => (
+                    <div key={idx} className="detail-media-item">
+                      <img 
+                        src={resolveMediaSrc(m)} 
+                        alt={m.caption || `Field photograph ${idx + 1}`} 
+                        className="detail-media-img"
+                      />
+                      {m.caption && <p className="detail-media-caption">{m.caption}</p>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Supporting Partners & Collaborators */}
+            {partners.length > 0 && (
+              <div className="card detail-card">
+                <h2 className="detail-card-heading">Supporting Partners &amp; Collaborators</h2>
+                <div className="detail-partners-grid">
+                  {partners.map((pt) => (
+                    <div key={pt.id || pt.partner_name} className="detail-partner-box">
+                      <div className="partner-icon-box">
+                        <Building2 size={24} color="#10B981" />
+                      </div>
+                      <div>
+                        <strong className="partner-name">{pt.partner_name}</strong>
+                        <span className="partner-role-sub">{pt.role}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Bottom Actions Bar */}
+            <div className="detail-footer-actions">
+              <Link to="/projects" className="btn btn-outline detail-back-btn">
+                <ArrowLeft size={16} />
+                <span>Back to All Projects</span>
+              </Link>
             </div>
           </div>
         </div>
@@ -319,20 +400,19 @@ export default function ProjectDetailPage() {
           color: white;
           font-size: 0.95rem;
         }
-        .detail-layout-grid {
-          display: grid;
-          grid-template-columns: 1fr;
-          gap: 2.5rem;
-        }
-        @media (min-width: 1024px) {
-          .detail-layout-grid {
-            grid-template-columns: 2fr 1.1fr;
-          }
+        .detail-content-wrap {
+          max-width: 1000px;
+          margin: 0 auto;
+          display: flex;
+          flex-direction: column;
+          gap: 2rem;
         }
         .detail-card {
-          padding: 2.25rem;
+          padding: 2.5rem;
           background: #FFFFFF;
-          margin-bottom: 2rem;
+          border-radius: 16px;
+          border: 1px solid rgba(226, 232, 240, 0.8);
+          box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04);
         }
         .detail-card-heading {
           font-size: 1.45rem;
@@ -341,37 +421,10 @@ export default function ProjectDetailPage() {
           margin-bottom: 1.25rem;
         }
         .detail-p {
-          font-size: 1rem;
+          font-size: 1.05rem;
           color: var(--slate-700);
-          line-height: 1.7;
-        }
-        .kpi-list {
-          display: flex;
-          flex-direction: column;
-          gap: 1.5rem;
-        }
-        .kpi-labels {
-          display: flex;
-          justify-content: space-between;
-          font-size: 0.925rem;
-          margin-bottom: 0.4rem;
-        }
-        .kpi-progress-bar {
-          height: 8px;
-          background: var(--slate-200);
-          border-radius: var(--radius-pill);
-          overflow: hidden;
-        }
-        .kpi-progress-fill {
-          height: 100%;
-          border-radius: var(--radius-pill);
-        }
-        .kpi-pct {
-          font-size: 0.75rem;
-          font-weight: 700;
-          color: var(--text-muted);
-          margin-top: 0.25rem;
-          display: block;
+          line-height: 1.75;
+          margin: 0;
         }
         .activities-timeline {
           display: flex;
@@ -380,106 +433,149 @@ export default function ProjectDetailPage() {
         }
         .activity-row {
           display: flex;
-          gap: 1rem;
+          gap: 1.25rem;
           align-items: flex-start;
+          padding: 1.25rem;
+          background: #F8FAFC;
+          border-radius: 12px;
+          border: 1px solid #E2E8F0;
+        }
+        .activity-icon-wrap {
+          width: 36px;
+          height: 36px;
+          border-radius: 50%;
+          background: #ECFDF5;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
         }
         .activity-title {
           font-size: 1.05rem;
           font-weight: 700;
-          margin-bottom: 0.25rem;
+          color: var(--slate-900);
+          margin-bottom: 0.35rem;
         }
         .activity-outcome {
-          font-size: 0.875rem;
-          color: var(--text-muted);
-          margin-bottom: 0.35rem;
+          font-size: 0.9rem;
+          color: #475569;
+          margin-bottom: 0.5rem;
+          line-height: 1.5;
         }
         .activity-date {
           display: flex;
           align-items: center;
-          gap: 0.35rem;
-          font-size: 0.75rem;
+          gap: 0.4rem;
+          font-size: 0.8rem;
           color: var(--slate-500);
+          font-weight: 600;
         }
-        .detail-action-card {
-          padding: 2rem;
-          background: #FFFFFF;
-          margin-bottom: 2rem;
-          border-top: 4px solid var(--accent-amber);
-        }
-        .action-card-title {
-          font-size: 1.35rem;
-          font-weight: 800;
-          margin-bottom: 0.5rem;
-        }
-        .action-card-text {
-          font-size: 0.875rem;
-          color: var(--text-muted);
-          line-height: 1.55;
-          margin-bottom: 1.5rem;
-        }
-        .detail-funding-progress {
-          margin-bottom: 1.5rem;
-        }
-        .progress-labels {
-          display: flex;
-          justify-content: space-between;
-          font-size: 0.85rem;
-          font-weight: 700;
-          margin-bottom: 0.4rem;
-        }
-        .detail-bar-track {
-          height: 8px;
-          background: var(--slate-200);
-          border-radius: var(--radius-pill);
-          overflow: hidden;
-        }
-        .detail-bar-fill {
-          height: 100%;
-          background: var(--accent-amber);
-          border-radius: var(--radius-pill);
-        }
-        .action-btn {
-          width: 100%;
-        }
-        .tax-notice-side {
+        .detail-gallery-header {
           display: flex;
           align-items: center;
-          gap: 0.5rem;
-          font-size: 0.75rem;
-          color: var(--slate-500);
-          margin-top: 1.25rem;
+          justify-content: space-between;
+          margin-bottom: 1.5rem;
+          flex-wrap: wrap;
+          gap: 0.75rem;
         }
-        .tax-badge-sm {
-          background: var(--primary-100);
-          color: var(--primary-800);
-          padding: 0.15rem 0.4rem;
-          font-weight: 800;
-          border-radius: var(--radius-sm);
-        }
-        .detail-partners-card {
-          padding: 1.75rem;
-          background: #FFFFFF;
-        }
-        .partners-card-title {
-          font-size: 1.1rem;
+        .detail-photo-badge {
+          background: #ECFDF5;
+          color: #047857;
+          font-size: 0.825rem;
           font-weight: 700;
-          margin-bottom: 1rem;
+          padding: 0.35rem 0.85rem;
+          border-radius: 9999px;
+          border: 1px solid #A7F3D0;
         }
-        .partners-card-list {
+        .detail-media-grid {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 1.5rem;
+        }
+        @media (min-width: 640px) {
+          .detail-media-grid {
+            grid-template-columns: repeat(2, 1fr);
+          }
+        }
+        @media (min-width: 900px) {
+          .detail-media-grid {
+            grid-template-columns: repeat(3, 1fr);
+          }
+        }
+        .detail-media-item {
+          border-radius: var(--radius-md, 12px);
+          overflow: hidden;
+          background: #F8FAFC;
+          border: 1px solid #E2E8F0;
           display: flex;
           flex-direction: column;
-          gap: 1rem;
+          transition: transform 0.25s ease, box-shadow 0.25s ease;
         }
-        .partner-card-row {
+        .detail-media-item:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 12px 28px -6px rgba(15, 23, 42, 0.12);
+        }
+        .detail-media-img {
+          width: 100%;
+          height: 220px;
+          object-fit: cover;
+          display: block;
+        }
+        .detail-media-caption {
+          padding: 1rem 1.15rem;
+          font-size: 0.85rem;
+          color: #334155;
+          line-height: 1.5;
+          margin: 0;
+          flex: 1;
+          background: #FFFFFF;
+        }
+        .detail-partners-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+          gap: 1.25rem;
+        }
+        .detail-partner-box {
           display: flex;
           align-items: center;
-          gap: 0.75rem;
-          font-size: 0.9rem;
+          gap: 1rem;
+          padding: 1.25rem 1.5rem;
+          background: #F8FAFC;
+          border-radius: 12px;
+          border: 1px solid #E2E8F0;
+        }
+        .partner-icon-box {
+          width: 48px;
+          height: 48px;
+          border-radius: 10px;
+          background: #ECFDF5;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+        }
+        .partner-name {
+          display: block;
+          font-size: 1rem;
+          font-weight: 700;
+          color: var(--slate-900);
+          margin-bottom: 0.2rem;
         }
         .partner-role-sub {
           display: block;
-          font-size: 0.75rem;
-          color: var(--text-muted);
+          font-size: 0.8rem;
+          color: #64748B;
+        }
+        .detail-footer-actions {
+          display: flex;
+          justify-content: center;
+          padding: 1.5rem 0 2rem 0;
+        }
+        .detail-back-btn {
+          padding: 0.75rem 1.75rem;
+          font-size: 0.95rem;
+          font-weight: 600;
+          border-radius: 9999px;
         }
       `}</style>
     </div>

@@ -41,8 +41,20 @@ SECURE_HSTS_PRELOAD = True
 
 # CORS
 CORS_ALLOW_ALL_ORIGINS = False
-CORS_ALLOWED_ORIGINS = os.environ.get(
+cors_allowed_origins_raw = os.environ.get(
     'CORS_ALLOWED_ORIGINS',
     'https://responsibleindividuals.org,https://www.responsibleindividuals.org'
-).split(',')
+)
+CORS_ALLOWED_ORIGINS = [origin.strip() for origin in cors_allowed_origins_raw.split(',') if origin.strip()]
 CORS_ALLOW_CREDENTIALS = True
+
+# CSRF Trusted Origins
+csrf_trusted_origins_raw = os.environ.get(
+    'CSRF_TRUSTED_ORIGINS',
+    os.environ.get('CORS_ALLOWED_ORIGINS', 'https://responsibleindividuals.org,https://www.responsibleindividuals.org')
+)
+CSRF_TRUSTED_ORIGINS = [
+    origin if origin.startswith(('http://', 'https://')) else f'https://{origin}'
+    for origin in (o.strip() for o in csrf_trusted_origins_raw.split(','))
+    if origin
+]

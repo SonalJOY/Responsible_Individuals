@@ -1,704 +1,1142 @@
-import React, { useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { 
-  Target, Wrench, TrendingUp, Users, 
-  ArrowRight, Sparkles, CheckCircle2 
+  Target, Wrench, Users, 
+  ArrowRight, ChevronLeft, ChevronRight,
+  Sprout, BarChart2, ShieldCheck, BookOpen,
+  Cpu, Heart, Compass, Calendar, Award
 } from 'lucide-react';
-import useScrollReveal from '../../hooks/useScrollReveal';
 
 /**
- * WhyVolunteerSection Component (Phase 3B-UI)
- * Interactive, accessible "Why Volunteer With Us?" section.
+ * WhyVolunteerSection Component
+ * Exact Visual Match to Approved Reference Design
+ * 
  * Features:
- * - 4 distinctively styled benefit cards with independent continuous floating animations
- * - Continuous infinite micro-animations for all 4 card theme icons
- * - Card 1 (5.4s), Card 2 (6.2s), Card 3 (5.8s), Card 4 (6.6s) with desynchronized phases
- * - Hover elevation and scale that works smoothly alongside continuous floating
- * - Tactile 2-4px cursor parallax inside cards without React re-renders
- * - Responsive 2x2 / single-column responsive composition
- * - Full prefers-reduced-motion and high-contrast support
+ * - Header: Warm ivory background, outlined saffron pill "WHY IT MATTERS",
+ *   large centered serif heading with "Volunteer" highlighted in saffron, two-line supporting description.
+ * - Left Navigation: Vertical line connecting small circular nodes (active saffron with amber glow, inactive neutral),
+ *   oversized serif numerals (01–04) in Playfair Display, generous vertical spacing,
+ *   active item with restrained warm cream background and subtle golden border, muted inactive typography.
+ * - Center Content: Category pill badge with icon, large bold serif title with saffron underline,
+ *   descriptive text, three vertical supporting rows with circular pale saffron icon bubbles, bold title & subtext,
+ *   rounded orange "Explore Opportunities →" button.
+ * - Right Photo Stack: Wider landscape-oriented 3-layer fanned photo stack with slight counterclockwise tilt on front image
+ *   and progressive clockwise rotations & opacity on background layers. White circular Prev/Next control with saffron chevrons.
+ *   Handwritten script caption ("Individuals creating brighter communities") in Caveat font with curved decorative saffron swoop.
+ * - Dynamic interactive switching on hover & click (desktop), tap (mobile), keyboard navigation, and prefers-reduced-motion.
  */
-export default function WhyVolunteerSection({ onExploreRoles }) {
-  const [sectionRef, isVisible] = useScrollReveal({
-    threshold: 0.1,
-    rootMargin: '0px 0px -40px 0px',
-    triggerOnce: true,
-  });
 
-  // Benefit Cards Configuration
-  const benefitCards = [
-    {
-      id: 'create-impact',
-      theme: 'emerald',
-      badge: 'Tangible Action',
-      title: 'Create Real Impact',
-      description: 'Help turn urgent community and environmental needs into verified field results through structured toolkits, clear metrics, and scientific guidance.',
-      hoverDetail: 'Structured field drives & measurable outcomes',
-      icon: Target,
-      accentColor: '#10B981',
-      bgLight: '#ECFDF5',
-      borderAccent: '#A7F3D0',
-      illustrationType: 'ripple',
-      iconClass: 'icon-anim-pulse',
-    },
-    {
-      id: 'use-skills',
-      theme: 'blue',
-      badge: 'Talent Leverage',
-      title: 'Use Your Skills',
-      description: 'Contribute technical, educational, design, scientific, or logistical abilities directly where grassroots communities benefit from them most.',
-      hoverDetail: 'STEM, healthcare, software, communications & logistics',
-      icon: Wrench,
-      accentColor: '#2563EB',
-      bgLight: '#EFF6FF',
-      borderAccent: '#BFDBFE',
-      illustrationType: 'tools',
-      iconClass: 'icon-anim-rotate',
-    },
-    {
-      id: 'learn-grow',
-      theme: 'amber',
-      badge: 'Personal Growth',
-      title: 'Learn & Grow',
-      description: 'Develop hands-on leadership, deepen community empathy, and earn verifiable service certificates and hours recognized across institutions.',
-      hoverDetail: 'Verified service hours & recognized leadership experience',
-      icon: TrendingUp,
-      accentColor: '#D97706',
-      bgLight: '#FFFBEB',
-      borderAccent: '#FDE68A',
-      illustrationType: 'growth',
-      iconClass: 'icon-anim-growth',
-    },
-    {
-      id: 'build-community',
-      theme: 'violet',
-      badge: 'Lifelong Network',
-      title: 'Build Community',
-      description: 'Connect with a passionate network of students, researchers, educators, and working professionals who believe in proactive civic responsibility.',
-      hoverDetail: 'Collaborate with 2,500+ active change-makers',
-      icon: Users,
-      accentColor: '#7C3AED',
-      bgLight: '#F5F3FF',
-      borderAccent: '#DDD6FE',
-      illustrationType: 'network',
-      iconClass: 'icon-anim-network',
-    },
-  ];
+const BENEFIT_PILLARS = [
+  {
+    number: '01',
+    id: 'create-impact',
+    navTitle: 'Create\nReal Impact',
+    heading: 'Create Real\nImpact',
+    badge: 'TANGIBLE ACTION',
+    badgeTheme: 'green',
+    description: 'Help turn urgent community and environmental needs into verified field results through structured toolkits, clear metrics, and scientific guidance.',
+    points: [
+      {
+        icon: Sprout,
+        title: 'Contribute to real field projects',
+        desc: 'Join environment restoration and community initiatives.',
+      },
+      {
+        icon: BarChart2,
+        title: 'See measurable outcomes',
+        desc: 'Work with structured toolkits and clear metrics.',
+      },
+      {
+        icon: Users,
+        title: 'Be part of meaningful change',
+        desc: 'Your work directly supports communities and the environment.',
+      },
+    ],
+    photos: [
+      {
+        src: '/images/stories/varthur-volunteers-desilting.jpg',
+        alt: 'Volunteers planting saplings and restoring field terrain',
+      },
+      {
+        src: '/images/environment_image.jpeg',
+        alt: 'Community sapling drive in peri-urban tract',
+      },
+      {
+        src: '/images/stories/citizen-water-monitoring.jpg',
+        alt: 'Citizen water quality testing field initiative',
+      },
+    ],
+  },
+  {
+    number: '02',
+    id: 'use-skills',
+    navTitle: 'Use\nYour Skills',
+    heading: 'Use Your\nSkills',
+    badge: 'TALENT LEVERAGE',
+    badgeTheme: 'blue',
+    description: 'Contribute technical, educational, design, scientific, or logistical abilities directly where grassroots communities benefit from them most.',
+    points: [
+      {
+        icon: Cpu,
+        title: 'Apply specialized talent',
+        desc: 'Software, telemetry, spatial mapping, and engineering.',
+      },
+      {
+        icon: BookOpen,
+        title: 'Teach & mentor students',
+        desc: 'Digital literacy and STEM learning toolkits in rural schools.',
+      },
+      {
+        icon: Wrench,
+        title: 'Communications & logistics',
+        desc: 'Visual design, field operations planning, and storytelling.',
+      },
+    ],
+    photos: [
+      {
+        src: '/images/volunteer/use-your-skills.jpg',
+        alt: 'Volunteers painting a creative wall mural with paintbrushes',
+        objectPosition: 'center 60%',
+      },
+      {
+        src: '/images/students_art.jpeg',
+        alt: 'Student creative expression and arts circle',
+      },
+      {
+        src: '/images/whatwedo1.avif',
+        alt: 'Field volunteer action initiative',
+      },
+    ],
+  },
+  {
+    number: '03',
+    id: 'learn-grow',
+    navTitle: 'Learn\n& Grow',
+    heading: 'Learn\n& Grow',
+    badge: 'PERSONAL GROWTH',
+    badgeTheme: 'amber',
+    description: 'Develop hands-on leadership, deepen community empathy, and earn verifiable service certificates and hours recognized across institutions.',
+    points: [
+      {
+        icon: Award,
+        title: 'Earn recognized service credits',
+        desc: 'Verified certificates and logged hours for academic recognition.',
+      },
+      {
+        icon: Compass,
+        title: 'Develop squad leadership',
+        desc: 'Lead small teams, facilitate field safety, and solve real issues.',
+      },
+      {
+        icon: Heart,
+        title: 'Deepen civic empathy',
+        desc: 'Gain firsthand perspective on grassroots community realities.',
+      },
+    ],
+    photos: [
+      {
+        src: '/images/volunteer/learn-and-grow.jpeg',
+        alt: 'Volunteer mentoring a student while painting a wall',
+        objectPosition: 'center 40%',
+      },
+      {
+        src: '/images/Bharath.jpeg',
+        alt: 'Field operations team coordinator',
+      },
+      {
+        src: '/images/stories/varthur-blooming-wetland.jpg',
+        alt: 'Restored community wetland ecosystem',
+      },
+    ],
+  },
+  {
+    number: '04',
+    id: 'build-community',
+    navTitle: 'Build\nCommunity',
+    heading: 'Build\nCommunity',
+    badge: 'LIFELONG NETWORK',
+    badgeTheme: 'violet',
+    description: 'Connect with a passionate community of students, educators, professionals, and neighbors working together for community stewardship.',
+    points: [
+      {
+        icon: Users,
+        title: 'Diverse peer collective',
+        desc: 'Collaborate with students, researchers, engineers, and mentors.',
+      },
+      {
+        icon: Calendar,
+        title: 'Regular meetups & roundtables',
+        desc: 'Participate in civic forums, weekend drives, and ideation sessions.',
+      },
+      {
+        icon: ShieldCheck,
+        title: 'Lifelong civic friendships',
+        desc: 'Build lasting bonds rooted in shared purpose and local impact.',
+      },
+    ],
+    photos: [
+      {
+        src: '/images/volunteer/build-community.jpg',
+        alt: 'Volunteers attending a community session with speaker and banner',
+        objectPosition: 'center 40%',
+      },
+      {
+        src: '/images/whatwedo2.avif',
+        alt: 'Community coordination meetup',
+      },
+      {
+        src: '/images/whatwedo3.jpg',
+        alt: 'Volunteers collaborating on neighborhood improvement',
+      },
+    ],
+  },
+];
+
+export default function WhyVolunteerSection({ onExploreRoles }) {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const navBtnRefs = useRef([]);
+
+  const current = BENEFIT_PILLARS[activeIndex] || BENEFIT_PILLARS[0];
+
+  const handlePrev = () => {
+    setActiveIndex((prev) => (prev - 1 + BENEFIT_PILLARS.length) % BENEFIT_PILLARS.length);
+  };
+
+  const handleNext = () => {
+    setActiveIndex((prev) => (prev + 1) % BENEFIT_PILLARS.length);
+  };
+
+  const handleKeyDown = (e, index) => {
+    let nextIndex = null;
+    if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+      e.preventDefault();
+      nextIndex = (index + 1) % BENEFIT_PILLARS.length;
+    } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+      e.preventDefault();
+      nextIndex = (index - 1 + BENEFIT_PILLARS.length) % BENEFIT_PILLARS.length;
+    } else if (e.key === 'Home') {
+      e.preventDefault();
+      nextIndex = 0;
+    } else if (e.key === 'End') {
+      e.preventDefault();
+      nextIndex = BENEFIT_PILLARS.length - 1;
+    }
+
+    if (nextIndex !== null) {
+      setActiveIndex(nextIndex);
+      navBtnRefs.current[nextIndex]?.focus();
+    }
+  };
+
+  const handleExploreClick = () => {
+    if (typeof onExploreRoles === 'function') {
+      onExploreRoles();
+    } else {
+      const el = document.getElementById('opportunities');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  };
 
   return (
     <section 
-      className="why-volunteer-section" 
-      ref={sectionRef} 
+      className="exact-match-why-section" 
       id="why-volunteer"
       aria-label="Why Volunteer With Us"
     >
-      <div className="container">
-        {/* Section Header */}
-        <div className={`why-header ${isVisible ? 'revealed' : ''}`}>
-          <div className="section-badge why-badge">
-            <Sparkles size={14} className="badge-sparkle" />
-            <span>Why It Matters</span>
+      <div className="exact-match-container">
+        
+        {/* ========================================================
+            1. SECTION HEADER (Centered badge, title & subtitle)
+            ======================================================== */}
+        <div className="exact-match-header">
+          
+          {/* Small rounded outlined saffron pill */}
+          <div className="why-pill-badge">
+            <svg 
+              className="why-pill-icon" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              stroke="currentColor" 
+              strokeWidth="2.5" 
+              strokeLinecap="round" 
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="12" r="3" />
+              <path d="M12 3v3m0 12v3M3 12h3m12 0h3M5.6 5.6l2.1 2.1m8.6 8.6l2.1 2.1M5.6 18.4l2.1-2.1m8.6-8.6l2.1-2.1" />
+            </svg>
+            <span>WHY IT MATTERS</span>
           </div>
-          <h2 className="section-title why-title">Why Volunteer With Us?</h2>
-          <p className="section-subtitle why-subtitle">
-            Your time, skills, and ideas can become meaningful change for communities, students, 
+
+          {/* Large centered serif heading with "Volunteer" in saffron */}
+          <h2 className="why-main-title">
+            Why <span className="saffron-word">Volunteer</span> With Us?
+          </h2>
+
+          {/* Centered two-line supporting description */}
+          <p className="why-main-subtitle">
+            Your time, skills, and ideas can become meaningful change for communities, students,<br className="desktop-break" />
             and the environment. Here is how your contribution creates reciprocal value.
           </p>
         </div>
 
-        {/* 4 Interactive Benefit Cards Grid with Continuous Desynchronized Floating */}
-        <div className="why-cards-grid">
-          {benefitCards.map((card, index) => (
-            <BenefitCard
-              key={card.id}
-              card={card}
-              index={index}
-              isSectionVisible={isVisible}
-              onExploreRoles={onExploreRoles}
-            />
-          ))}
+        {/* ========================================================
+            2. THREE-PART MAIN COMPOSITION
+            ======================================================== */}
+        <div className="exact-match-grid">
+          
+          {/* --------------------------------------------------------
+              LEFT NAVIGATION (Vertical rail, markers, serif numbers)
+              -------------------------------------------------------- */}
+          <div 
+            className="left-nav-track"
+            role="tablist"
+            aria-label="Pillars of Volunteering"
+            aria-orientation="vertical"
+          >
+            {/* Very thin continuous vertical neutral line */}
+            <div className="nav-vertical-rail" aria-hidden="true" />
+
+            {BENEFIT_PILLARS.map((pillar, idx) => {
+              const isActive = activeIndex === idx;
+
+              return (
+                <div 
+                  key={pillar.id}
+                  className={`nav-item-row ${isActive ? 'is-active' : ''}`}
+                >
+                  {/* Small circular marker on the line (active = saffron with glow, inactive = pale neutral) */}
+                  <div 
+                    className={`nav-marker-node ${isActive ? 'active-node' : ''}`}
+                    aria-hidden="true"
+                  />
+
+                  {/* Clickable / hoverable option card */}
+                  <button
+                    ref={(el) => { navBtnRefs.current[idx] = el; }}
+                    type="button"
+                    role="tab"
+                    id={`why-tab-${pillar.id}`}
+                    aria-selected={isActive}
+                    aria-controls={`why-panel-${pillar.id}`}
+                    tabIndex={isActive ? 0 : -1}
+                    className={`nav-option-btn ${isActive ? 'active-btn' : ''}`}
+                    onMouseEnter={() => setActiveIndex(idx)}
+                    onClick={() => setActiveIndex(idx)}
+                    onKeyDown={(e) => handleKeyDown(e, idx)}
+                  >
+                    <span className="nav-serif-num">{pillar.number}</span>
+                    <span className="nav-label-multiline">
+                      {pillar.navTitle.split('\n').map((line, lIdx) => (
+                        <span key={lIdx} className="label-line">{line}</span>
+                      ))}
+                    </span>
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* --------------------------------------------------------
+              CENTER CONTENT (Category pill, bold serif title, underline, points, button)
+              -------------------------------------------------------- */}
+          <div 
+            className="center-content-panel"
+            id={`why-panel-${current.id}`}
+            role="tabpanel"
+            aria-labelledby={`why-tab-${current.id}`}
+            key={current.id}
+          >
+            {/* Category label with icon */}
+            <div className={`center-cat-badge badge-${current.badgeTheme}`}>
+              <Target size={13} className="cat-badge-icon" />
+              <span>{current.badge}</span>
+            </div>
+
+            {/* Large bold serif heading */}
+            <h3 className="center-serif-title">
+              {current.heading.split('\n').map((line, lIdx) => (
+                <span key={lIdx} className="title-block-line">{line}</span>
+              ))}
+            </h3>
+
+            {/* Thin saffron underline beneath the heading */}
+            <div className="saffron-underline-bar" aria-hidden="true" />
+
+            {/* Short description */}
+            <p className="center-description-text">
+              {current.description}
+            </p>
+
+            {/* Three vertically arranged supporting points */}
+            <div className="supporting-points-list">
+              {current.points.map((pt, pIdx) => {
+                const PtIcon = pt.icon;
+                return (
+                  <div key={pIdx} className="point-row-item">
+                    <div className="point-icon-bubble" aria-hidden="true">
+                      <PtIcon size={17} />
+                    </div>
+                    <div className="point-text-block">
+                      <h4 className="point-bold-title">{pt.title}</h4>
+                      <p className="point-sub-text">{pt.desc}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Orange rounded "Explore Opportunities →" button */}
+            <div className="center-action-row">
+              <button
+                type="button"
+                className="exact-explore-btn"
+                onClick={handleExploreClick}
+                aria-label="Explore active volunteer opportunities"
+              >
+                <span>Explore Opportunities</span>
+                <ArrowRight size={16} className="btn-arrow" />
+              </button>
+            </div>
+          </div>
+
+          {/* --------------------------------------------------------
+              RIGHT IMAGE COMPOSITION (Layered landscape photo stack & handwritten script)
+              -------------------------------------------------------- */}
+          <div className="right-composition-wrap">
+            
+            {/* The 3-layer fanned landscape photo stack */}
+            <div className="photo-stack-stage">
+              
+              {/* Back Photo Layer 3 (deepest layer, tilted right) */}
+              <div className="photo-card-layer layer-back" aria-hidden="true">
+                <img 
+                  src={current.photos[2]?.src || current.photos[0].src} 
+                  alt="" 
+                  className="card-stack-img" 
+                  loading="lazy"
+                  style={current.photos[2]?.objectPosition ? { objectPosition: current.photos[2].objectPosition } : undefined}
+                />
+              </div>
+
+              {/* Middle Photo Layer 2 (middle layer, tilted slightly) */}
+              <div className="photo-card-layer layer-middle" aria-hidden="true">
+                <img 
+                  src={current.photos[1]?.src || current.photos[0].src} 
+                  alt="" 
+                  className="card-stack-img" 
+                  loading="lazy"
+                  style={current.photos[1]?.objectPosition ? { objectPosition: current.photos[1].objectPosition } : undefined}
+                />
+              </div>
+
+              {/* Front Photo Layer 1 (main sharp photograph with counterclockwise tilt) */}
+              <div className="photo-card-layer layer-front">
+                <img 
+                  src={current.photos[0].src} 
+                  alt={current.photos[0].alt} 
+                  className="card-stack-img front-img" 
+                  style={current.photos[0]?.objectPosition ? { objectPosition: current.photos[0].objectPosition } : undefined}
+                />
+
+                {/* Subtle dark gradient near bottom */}
+                <div className="front-gradient-vignette" />
+
+                {/* White circular Prev/Next control near bottom-right with saffron chevrons */}
+                <div className="photo-carousel-controls" aria-label="Photo carousel controls">
+                  <button
+                    type="button"
+                    className="chevron-control-btn"
+                    onClick={handlePrev}
+                    aria-label="Previous volunteer pillar"
+                  >
+                    <ChevronLeft size={16} color="#D97706" strokeWidth={2.5} />
+                  </button>
+                  <button
+                    type="button"
+                    className="chevron-control-btn"
+                    onClick={handleNext}
+                    aria-label="Next volunteer pillar"
+                  >
+                    <ChevronRight size={16} color="#D97706" strokeWidth={2.5} />
+                  </button>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Handwritten script caption and decorative saffron curved swoop */}
+            <div className="script-caption-container" aria-hidden="true">
+              <span className="script-caption-text">
+                Individuals creating<br />brighter communities
+              </span>
+              <svg 
+                className="script-saffron-swoosh" 
+                viewBox="0 0 210 26" 
+                fill="none" 
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path 
+                  d="M6 10C68 24 154 24 204 6" 
+                  stroke="#E5A642" 
+                  strokeWidth="2.4" 
+                  strokeLinecap="round" 
+                />
+              </svg>
+            </div>
+
+          </div>
+
         </div>
+
       </div>
 
-      {/* Scoped CSS Styles */}
+      {/* Scoped CSS with exact visual matching tokens */}
       <style>{`
-        .why-volunteer-section {
-          padding: 6rem 0 5.5rem 0;
-          background: #FAFCFB;
+        @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,400&display=swap');
+
+        .exact-match-why-section {
+          padding: 5.5rem 0 6.5rem 0;
+          background: #FAF8F2; /* Warm ivory/cream background */
           position: relative;
           overflow: hidden;
-          border-bottom: 1px solid var(--border-subtle);
+          font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+          color: #18181B;
         }
 
-        /* Ambient Background Blobs */
-        .why-volunteer-section::before {
-          content: '';
-          position: absolute;
-          top: -120px;
-          left: 50%;
-          transform: translateX(-50%);
-          width: 800px;
-          height: 380px;
-          background: radial-gradient(circle, rgba(16, 185, 129, 0.05) 0%, rgba(250, 252, 251, 0) 70%);
-          pointer-events: none;
-          z-index: 0;
-        }
-
-        .why-header {
-          text-align: center;
-          max-width: 720px;
-          margin: 0 auto 3.75rem auto;
+        .exact-match-container {
+          max-width: 1240px;
+          margin: 0 auto;
+          padding: 0 1.5rem;
           position: relative;
-          z-index: 1;
-          opacity: 0;
-          transform: translateY(20px);
-          transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1), transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+          z-index: 2;
         }
 
-        .why-header.revealed {
+        /* -------------------------------------------------------------
+           1. SECTION HEADER
+           ------------------------------------------------------------- */
+        .exact-match-header {
+          text-align: center;
+          margin-bottom: 4.25rem;
           opacity: 1;
-          transform: translateY(0);
         }
 
-        .why-badge {
-          background: var(--primary-50);
-          color: var(--primary-800);
-          border: 1px solid var(--primary-100);
-          margin-bottom: 0.85rem;
-        }
-
-        .why-title {
-          font-size: 2.35rem;
+        /* Pill Badge: "WHY IT MATTERS" */
+        .why-pill-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.45rem;
+          background: #FFF9EE;
+          border: 1.5px solid #F59E0B;
+          border-radius: 9999px;
+          padding: 0.32rem 1.05rem;
+          font-size: 0.68rem;
           font-weight: 800;
-          color: var(--slate-900);
-          margin-bottom: 0.85rem;
+          letter-spacing: 0.08em;
+          color: #B45309;
+          margin-bottom: 1.15rem;
+          box-shadow: 0 2px 8px rgba(245, 158, 11, 0.08);
+        }
+
+        .why-pill-icon {
+          width: 13px;
+          height: 13px;
+          color: #D97706;
+        }
+
+        /* Main Serif Title with saffron highlight */
+        .why-main-title {
+          font-family: 'Playfair Display', Georgia, serif;
+          font-size: 2.85rem;
+          font-weight: 800;
+          color: #171717;
           letter-spacing: -0.02em;
+          line-height: 1.2;
+          margin-bottom: 0.9rem;
         }
 
         @media (min-width: 768px) {
-          .why-title {
-            font-size: 2.85rem;
+          .why-main-title {
+            font-size: 3.4rem;
           }
         }
 
-        .why-subtitle {
-          font-size: 1.1rem;
-          color: var(--text-muted);
+        .why-main-title .saffron-word {
+          color: #D97706;
+          font-style: normal;
+        }
+
+        /* Subtitle */
+        .why-main-subtitle {
+          font-size: 1rem;
+          color: #52525B;
           line-height: 1.65;
+          max-width: 680px;
           margin: 0 auto;
         }
 
-        /* Cards Grid */
-        .why-cards-grid {
+        .desktop-break {
+          display: none;
+        }
+        @media (min-width: 768px) {
+          .desktop-break {
+            display: inline;
+          }
+        }
+
+        /* -------------------------------------------------------------
+           2. THREE-PART MAIN LAYOUT GRID
+           ------------------------------------------------------------- */
+        .exact-match-grid {
           display: grid;
           grid-template-columns: 1fr;
-          gap: 1.75rem;
+          gap: 3rem;
+          align-items: center;
+        }
+
+        @media (min-width: 992px) {
+          .exact-match-grid {
+            grid-template-columns: 240px 1fr 490px;
+            gap: 2.75rem;
+          }
+        }
+
+        @media (min-width: 1200px) {
+          .exact-match-grid {
+            grid-template-columns: 250px 1fr 510px;
+            gap: 3.5rem;
+          }
+        }
+
+        /* -------------------------------------------------------------
+           LEFT NAVIGATION (Vertical rail, markers, large serif numbers)
+           ------------------------------------------------------------- */
+        .left-nav-track {
           position: relative;
+          display: flex;
+          flex-direction: column;
+          gap: 2.25rem;
+          padding-left: 1.5rem;
+        }
+
+        @media (max-width: 991px) {
+          .left-nav-track {
+            padding-left: 0;
+            flex-direction: row;
+            overflow-x: auto;
+            gap: 1rem;
+            padding-bottom: 0.5rem;
+          }
+        }
+
+        /* Thin continuous vertical rail */
+        .nav-vertical-rail {
+          position: absolute;
+          left: 5px;
+          top: 26px;
+          bottom: 26px;
+          width: 1.5px;
+          background: #E5E7EB;
           z-index: 1;
         }
 
-        @media (min-width: 768px) {
-          .why-cards-grid {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 2rem;
+        @media (max-width: 991px) {
+          .nav-vertical-rail {
+            display: none;
           }
         }
 
-        /* ----------------------------------------------------
-           Continuous Floating Wrappers (Desynchronized Phases)
-        ----------------------------------------------------- */
-        .why-card-wrapper {
-          width: 100%;
-          height: 100%;
-          display: flex;
-          will-change: transform;
-        }
-
-        /* Card 1: 5.4s (Up -> Down -> Up) */
-        .why-card-wrapper.float-card-0 {
-          animation: whyCardFloat0 5.4s ease-in-out infinite 0s;
-        }
-
-        /* Card 2: 6.2s (Down -> Up -> Down, phase offset -2.5s) */
-        .why-card-wrapper.float-card-1 {
-          animation: whyCardFloat1 6.2s ease-in-out infinite -2.5s;
-        }
-
-        /* Card 3: 5.8s (Slightly Up -> Down, phase offset -1.2s) */
-        .why-card-wrapper.float-card-2 {
-          animation: whyCardFloat2 5.8s ease-in-out infinite -1.2s;
-        }
-
-        /* Card 4: 6.6s (Down -> Up, phase offset -3.8s) */
-        .why-card-wrapper.float-card-3 {
-          animation: whyCardFloat3 6.6s ease-in-out infinite -3.8s;
-        }
-
-        @keyframes whyCardFloat0 {
-          0%, 100% {
-            transform: translate3d(0, 0px, 0);
-          }
-          50% {
-            transform: translate3d(0, -6px, 0);
-          }
-        }
-
-        @keyframes whyCardFloat1 {
-          0%, 100% {
-            transform: translate3d(0, 0px, 0);
-          }
-          50% {
-            transform: translate3d(0, 5px, 0);
-          }
-        }
-
-        @keyframes whyCardFloat2 {
-          0%, 100% {
-            transform: translate3d(0, -2px, 0);
-          }
-          50% {
-            transform: translate3d(0, -7px, 0);
-          }
-        }
-
-        @keyframes whyCardFloat3 {
-          0%, 100% {
-            transform: translate3d(0, 4px, 0);
-          }
-          50% {
-            transform: translate3d(0, -3px, 0);
-          }
-        }
-
-        /* ----------------------------------------------------
-           Individual Benefit Card Inner Box
-        ----------------------------------------------------- */
-        .why-card {
-          width: 100%;
-          background: #FFFFFF;
-          border-radius: var(--radius-xl);
-          border: 1px solid var(--border-subtle);
-          padding: 2.25rem;
-          box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
-          display: flex;
-          flex-direction: column;
+        .nav-item-row {
           position: relative;
-          overflow: hidden;
-          transition: 
-            opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
-            transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
-            box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1),
-            border-color 0.3s ease;
-          opacity: 0;
-          transform: translateY(24px) scale(0.98);
-          will-change: opacity, transform, box-shadow;
-          cursor: default;
-        }
-
-        .why-card.card-revealed {
-          opacity: 1;
-          transform: translateY(0) scale(1);
-        }
-
-        .why-card:hover {
-          box-shadow: 0 18px 40px rgba(15, 76, 58, 0.10), 0 2px 8px rgba(0, 0, 0, 0.04);
-          transform: translateY(-5px) scale(1.015);
-          border-color: var(--card-border-accent, var(--primary-200));
-        }
-
-        /* Card Top Row */
-        .why-card-top {
           display: flex;
           align-items: center;
-          justify-content: space-between;
-          margin-bottom: 1.5rem;
-        }
-
-        .why-card-badge {
-          font-size: 0.75rem;
-          font-weight: 700;
-          padding: 0.25rem 0.75rem;
-          border-radius: var(--radius-pill);
-          letter-spacing: 0.04em;
-          text-transform: uppercase;
-        }
-
-        /* Visual Graphic Container with Cursor Parallax */
-        .why-card-visual-wrap {
-          width: 54px;
-          height: 54px;
-          border-radius: 16px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          position: relative;
-          transition: transform 0.2s ease-out;
-          transform: translate3d(var(--mouse-x, 0px), var(--mouse-y, 0px), 0);
-          flex-shrink: 0;
-        }
-
-        .why-card-icon {
-          position: relative;
           z-index: 2;
-          transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        .why-card:hover .why-card-icon {
-          transform: scale(1.15);
-        }
-
-        /* ----------------------------------------------------
-           Continuous Micro-Animation Visuals for Each Theme
-        ----------------------------------------------------- */
-        /* 1. Ripple Graphic (Impact) */
-        .ripple-layer {
+        /* Small circular marker node */
+        .nav-marker-node {
           position: absolute;
-          inset: -4px;
-          border-radius: 20px;
-          border: 1.5px solid var(--card-accent, #10B981);
-          opacity: 0.25;
-          animation: ripplePulse 3.2s ease-out infinite;
-          pointer-events: none;
-        }
-
-        .ripple-layer.delayed {
-          inset: -10px;
-          border-radius: 24px;
-          animation-delay: 1.6s;
-          opacity: 0.15;
-        }
-
-        @keyframes ripplePulse {
-          0% {
-            transform: scale(0.92);
-            opacity: 0.45;
-          }
-          50% {
-            transform: scale(1.10);
-            opacity: 0.12;
-          }
-          100% {
-            transform: scale(0.92);
-            opacity: 0.45;
-          }
-        }
-
-        /* Continuous subtle pulse on Impact Target Icon */
-        .icon-anim-pulse {
-          animation: targetPulse 3.2s ease-in-out infinite;
-        }
-
-        @keyframes targetPulse {
-          0%, 100% {
-            transform: scale(1);
-          }
-          50% {
-            transform: scale(1.08);
-          }
-        }
-
-        /* 2. Gear/Skill Rotation (Skills) */
-        .tools-orbit {
-          position: absolute;
-          inset: 0;
-          border-radius: 16px;
-          border: 1px dashed var(--card-accent, #2563EB);
-          opacity: 0.35;
-          animation: toolsSpin 18s linear infinite;
-        }
-
-        @keyframes toolsSpin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-
-        /* Continuous subtle wobble on Skills Wrench Icon */
-        .icon-anim-rotate {
-          animation: wrenchGentle 4.8s ease-in-out infinite;
-        }
-
-        @keyframes wrenchGentle {
-          0%, 100% {
-            transform: rotate(0deg);
-          }
-          25% {
-            transform: rotate(-6deg);
-          }
-          75% {
-            transform: rotate(6deg);
-          }
-        }
-
-        /* 3. Growth Pulse (Learn) */
-        .growth-spark {
-          position: absolute;
-          top: -2px;
-          right: -2px;
+          left: -1.5rem;
+          transform: translateX(-50%);
           width: 8px;
           height: 8px;
           border-radius: 50%;
-          background: #F59E0B;
-          box-shadow: 0 0 10px #F59E0B;
-          animation: growthSpark 2.6s ease-in-out infinite;
+          background: #E5E7EB;
+          border: 1.5px solid #D1D5DB;
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        @keyframes growthSpark {
-          0%, 100% {
-            transform: scale(0.8) translateY(0);
-            opacity: 0.45;
-          }
-          50% {
-            transform: scale(1.3) translateY(-4px);
-            opacity: 1;
+        @media (max-width: 991px) {
+          .nav-marker-node {
+            display: none;
           }
         }
 
-        /* Continuous subtle upward float on Growth Trending Icon */
-        .icon-anim-growth {
-          animation: trendFloat 3.4s ease-in-out infinite;
+        .nav-marker-node.active-node {
+          width: 11px;
+          height: 11px;
+          background: #D97706;
+          border-color: #F59E0B;
+          box-shadow: 0 0 10px rgba(217, 119, 6, 0.6);
         }
 
-        @keyframes trendFloat {
-          0%, 100% {
-            transform: translateY(0);
-          }
-          50% {
-            transform: translateY(-3px);
-          }
-        }
-
-        /* 4. Network Pulse (Community) */
-        .network-node-ring {
-          position: absolute;
-          inset: -6px;
-          border-radius: 22px;
-          background: radial-gradient(circle, rgba(124, 58, 237, 0.18) 0%, rgba(124, 58, 237, 0) 70%);
-          animation: networkPulse 3.2s ease-in-out infinite alternate;
-        }
-
-        @keyframes networkPulse {
-          0% {
-            transform: scale(0.92);
-            opacity: 0.25;
-          }
-          100% {
-            transform: scale(1.18);
-            opacity: 0.70;
-          }
-        }
-
-        /* Continuous subtle scale on Users Icon */
-        .icon-anim-network {
-          animation: usersGentleScale 3.6s ease-in-out infinite;
-        }
-
-        @keyframes usersGentleScale {
-          0%, 100% {
-            transform: scale(1);
-          }
-          50% {
-            transform: scale(1.06);
-          }
-        }
-
-        /* Card Content */
-        .why-card-title {
-          font-size: 1.45rem;
-          font-weight: 700;
-          color: var(--slate-900);
-          margin-bottom: 0.65rem;
-          line-height: 1.3;
-        }
-
-        .why-card-desc {
-          font-size: 0.95rem;
-          color: var(--slate-600);
-          line-height: 1.6;
-          margin-bottom: 1.5rem;
-          flex-grow: 1;
-        }
-
-        /* Card Bottom Hover Detail Strip */
-        .why-card-footer {
+        /* Option Button */
+        .nav-option-btn {
+          width: 100%;
           display: flex;
           align-items: center;
-          justify-content: space-between;
-          padding-top: 1.15rem;
-          border-top: 1px solid var(--slate-100);
-          margin-top: auto;
-          font-size: 0.825rem;
-          font-weight: 600;
-          color: var(--slate-500);
+          gap: 1.25rem;
+          background: transparent;
+          border: 1.5px solid transparent;
+          border-radius: 16px;
+          padding: 0.85rem 1.2rem;
+          text-align: left;
+          cursor: pointer;
+          transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+          color: #71717A;
+        }
+
+        @media (max-width: 991px) {
+          .nav-option-btn {
+            white-space: nowrap;
+            min-width: 165px;
+            background: #FFFFFF;
+            border-color: #E8E1D5;
+          }
+        }
+
+        .nav-option-btn:focus-visible {
+          outline: 2px solid #D97706;
+          outline-offset: 3px;
+        }
+
+        /* Active Option Button Card (Cream tint, gold border, spacious) */
+        .nav-option-btn.active-btn {
+          background: #FFFDF7;
+          border-color: #FDE68A;
+          box-shadow: 0 6px 20px rgba(217, 119, 6, 0.08);
+          padding: 1.1rem 1.45rem;
+        }
+
+        /* Large Serif Numeral (Oversized serif typography) */
+        .nav-serif-num {
+          font-family: 'Playfair Display', Georgia, serif;
+          font-size: 3.25rem;
+          font-weight: 700;
+          line-height: 0.95;
+          color: #A1A1AA;
+          transition: color 0.25s ease;
+          letter-spacing: -0.03em;
+        }
+
+        .nav-option-btn.active-btn .nav-serif-num {
+          color: #D97706;
+        }
+
+        /* Two-line benefit title */
+        .nav-label-multiline {
+          display: flex;
+          flex-direction: column;
+          font-size: 1.05rem;
+          font-weight: 700;
+          line-height: 1.25;
+          color: #71717A;
           transition: color 0.25s ease;
         }
 
-        .why-card:hover .why-card-footer {
-          color: var(--card-accent, var(--primary-700));
+        .label-line {
+          display: block;
         }
 
-        .footer-detail-text {
+        .nav-option-btn.active-btn .nav-label-multiline {
+          color: #18181B;
+        }
+
+        @media (hover: hover) and (pointer: fine) {
+          .nav-option-btn:hover:not(.active-btn) .nav-serif-num {
+            color: #D97706;
+          }
+          .nav-option-btn:hover:not(.active-btn) .nav-label-multiline {
+            color: #27272A;
+          }
+        }
+
+        /* -------------------------------------------------------------
+           CENTER CONTENT
+           ------------------------------------------------------------- */
+        .center-content-panel {
           display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          animation: contentSlideFade 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes contentSlideFade {
+          from {
+            opacity: 0.6;
+            transform: translateY(8px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        /* Category Label */
+        .center-cat-badge {
+          display: inline-flex;
           align-items: center;
           gap: 0.45rem;
-          line-height: 1.4;
+          padding: 0.28rem 0.8rem;
+          border-radius: 9999px;
+          font-size: 0.68rem;
+          font-weight: 800;
+          letter-spacing: 0.05em;
+          text-transform: uppercase;
+          margin-bottom: 0.95rem;
         }
 
-        .footer-check {
-          color: var(--card-accent, #10B981);
+        .cat-badge-icon {
           flex-shrink: 0;
         }
 
-        .footer-arrow {
-          color: var(--card-accent, var(--primary-600));
-          transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        .center-cat-badge.badge-green {
+          background: #DCFCE7;
+          border: 1px solid #86EFAC;
+          color: #166534;
+        }
+
+        .center-cat-badge.badge-blue {
+          background: #EFF6FF;
+          border: 1px solid #BFDBFE;
+          color: #1E40AF;
+        }
+
+        .center-cat-badge.badge-amber {
+          background: #FFFBEB;
+          border: 1px solid #FDE68A;
+          color: #92400E;
+        }
+
+        .center-cat-badge.badge-violet {
+          background: #F5F3FF;
+          border: 1px solid #DDD6FE;
+          color: #5B21B6;
+        }
+
+        /* Large Bold Serif Heading */
+        .center-serif-title {
+          font-family: 'Playfair Display', Georgia, serif;
+          font-size: 2.85rem;
+          font-weight: 800;
+          color: #18181B;
+          line-height: 1.12;
+          letter-spacing: -0.02em;
+          margin: 0;
+        }
+
+        .title-block-line {
+          display: block;
+        }
+
+        /* Thin Saffron Underline Bar */
+        .saffron-underline-bar {
+          width: 52px;
+          height: 3.5px;
+          background: #D97706;
+          border-radius: 2px;
+          margin-top: 0.75rem;
+          margin-bottom: 1.25rem;
+        }
+
+        /* Paragraph Description */
+        .center-description-text {
+          font-size: 0.95rem;
+          color: #52525B;
+          line-height: 1.65;
+          max-width: 440px;
+          margin-bottom: 1.75rem;
+        }
+
+        /* Supporting Points */
+        .supporting-points-list {
+          display: flex;
+          flex-direction: column;
+          gap: 1.25rem;
+          margin-bottom: 2rem;
+          width: 100%;
+        }
+
+        .point-row-item {
+          display: flex;
+          align-items: flex-start;
+          gap: 1rem;
+        }
+
+        /* Circular Saffron-Tinted Icon Bubble */
+        .point-icon-bubble {
+          width: 38px;
+          height: 38px;
+          border-radius: 50%;
+          background: #FEF3C7;
+          color: #D97706;
+          display: flex;
+          align-items: center;
+          justify-content: center;
           flex-shrink: 0;
-          margin-left: 0.5rem;
+          margin-top: 2px;
         }
 
-        .why-card:hover .footer-arrow {
-          transform: translateX(4px);
+        .point-text-block {
+          display: flex;
+          flex-direction: column;
+          gap: 0.15rem;
         }
 
-        /* ----------------------------------------------------
-           Accessibility & Prefers Reduced Motion
-        ----------------------------------------------------- */
+        .point-bold-title {
+          font-size: 0.95rem;
+          font-weight: 700;
+          color: #18181B;
+          margin: 0;
+          line-height: 1.35;
+        }
+
+        .point-sub-text {
+          font-size: 0.825rem;
+          color: #71717A;
+          margin: 0;
+          line-height: 1.45;
+        }
+
+        /* Orange Rounded "Explore Opportunities →" button */
+        .center-action-row {
+          display: flex;
+        }
+
+        .exact-explore-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.6rem;
+          background: #D97706;
+          color: #FFFFFF;
+          font-size: 0.92rem;
+          font-weight: 700;
+          padding: 0.78rem 1.75rem;
+          border-radius: 9999px;
+          border: none;
+          cursor: pointer;
+          box-shadow: 0 4px 14px rgba(217, 119, 6, 0.35);
+          transition: transform 0.25s ease, background-color 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .exact-explore-btn:hover {
+          background: #B45309;
+          transform: translateY(-2px);
+          box-shadow: 0 8px 20px rgba(217, 119, 6, 0.45);
+        }
+
+        .exact-explore-btn:focus-visible {
+          outline: 2px solid #D97706;
+          outline-offset: 3px;
+        }
+
+        .btn-arrow {
+          transition: transform 0.25s ease;
+        }
+
+        .exact-explore-btn:hover .btn-arrow {
+          transform: translateX(3px);
+        }
+
+        /* -------------------------------------------------------------
+           RIGHT IMAGE COMPOSITION (Landscape Layered Photo Stack & Script Caption)
+           ------------------------------------------------------------- */
+        .right-composition-wrap {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          position: relative;
+        }
+
+        /* Wider landscape-oriented image frame */
+        .photo-stack-stage {
+          position: relative;
+          width: 440px;
+          height: 360px;
+          margin-right: 55px; /* Offset for fanned cards to the right */
+        }
+
+        @media (min-width: 1200px) {
+          .photo-stack-stage {
+            width: 460px;
+            height: 380px;
+            margin-right: 60px;
+          }
+        }
+
+        @media (max-width: 991px) {
+          .photo-stack-stage {
+            width: 100%;
+            max-width: 380px;
+            height: 310px;
+            margin: 0 auto;
+          }
+        }
+
+        .photo-card-layer {
+          position: absolute;
+          inset: 0;
+          border-radius: 20px;
+          overflow: hidden;
+          box-shadow: 0 16px 36px rgba(0, 0, 0, 0.12);
+          transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.5s ease;
+          background: #171717;
+        }
+
+        .card-stack-img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          display: block;
+        }
+
+        /* Layer 3: Backmost card, tilted further clockwise */
+        .photo-card-layer.layer-back {
+          transform: rotate(7.8deg) translateX(48px) translateY(18px);
+          opacity: 0.62;
+          filter: brightness(0.92);
+          z-index: 1;
+        }
+
+        /* Layer 2: Middle card, tilted clockwise */
+        .photo-card-layer.layer-middle {
+          transform: rotate(3.8deg) translateX(24px) translateY(9px);
+          opacity: 0.82;
+          filter: brightness(0.96);
+          z-index: 2;
+        }
+
+        /* Layer 1: Front card, slight counterclockwise tilt matching reference */
+        .photo-card-layer.layer-front {
+          transform: rotate(-1.8deg);
+          opacity: 1;
+          z-index: 3;
+          box-shadow: 0 20px 42px rgba(0, 0, 0, 0.18);
+        }
+
+        .front-gradient-vignette {
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(180deg, rgba(0, 0, 0, 0) 65%, rgba(0, 0, 0, 0.4) 100%);
+          pointer-events: none;
+        }
+
+        /* White circular Prev/Next control with saffron chevrons */
+        .photo-carousel-controls {
+          position: absolute;
+          bottom: 1.25rem;
+          right: 1.25rem;
+          background: #FFFFFF;
+          border-radius: 9999px;
+          box-shadow: 0 4px 18px rgba(0, 0, 0, 0.22);
+          padding: 0.35rem 0.65rem;
+          display: flex;
+          align-items: center;
+          gap: 0.35rem;
+          z-index: 5;
+        }
+
+        .chevron-control-btn {
+          background: transparent;
+          border: none;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 0.35rem;
+          border-radius: 50%;
+          transition: background-color 0.2s ease, transform 0.2s ease;
+        }
+
+        .chevron-control-btn:hover {
+          background: #FFF7ED;
+          transform: scale(1.1);
+        }
+
+        .chevron-control-btn:focus-visible {
+          outline: 2px solid #D97706;
+        }
+
+        /* Handwritten script caption and decorative swoosh */
+        .script-caption-container {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          margin-top: 1.5rem;
+          text-align: center;
+        }
+
+        .script-caption-text {
+          font-family: 'Caveat', cursive;
+          font-size: 1.4rem;
+          font-weight: 700;
+          color: #78716C;
+          line-height: 1.25;
+        }
+
+        .script-saffron-swoosh {
+          width: 190px;
+          height: 22px;
+          margin-top: -0.15rem;
+          display: block;
+        }
+
+        /* -------------------------------------------------------------
+           RESPONSIVE ADAPTATIONS
+           ------------------------------------------------------------- */
+        @media (max-width: 991px) {
+          .exact-match-why-section {
+            padding: 4rem 0 5rem 0;
+          }
+
+          .why-main-title {
+            font-size: 2.4rem;
+          }
+
+          .center-serif-title {
+            font-size: 2.2rem;
+          }
+
+          .photo-stack-stage {
+            margin: 0 auto;
+          }
+
+          .script-caption-container {
+            margin-top: 1.5rem;
+          }
+        }
+
+        /* -------------------------------------------------------------
+           ACCESSIBILITY: prefers-reduced-motion
+           ------------------------------------------------------------- */
         @media (prefers-reduced-motion: reduce) {
-          .why-header,
-          .why-card,
-          .why-card-wrapper {
-            opacity: 1 !important;
-            transform: none !important;
+          .center-content-panel,
+          .photo-card-layer,
+          .exact-explore-btn,
+          .nav-option-btn {
             transition: none !important;
             animation: none !important;
-          }
-
-          .why-card:hover {
             transform: none !important;
+            opacity: 1 !important;
           }
 
-          .why-card-visual-wrap {
-            transform: none !important;
-          }
-
-          .why-card-icon,
-          .ripple-layer,
-          .tools-orbit,
-          .growth-spark,
-          .network-node-ring {
-            animation: none !important;
+          .photo-card-layer.layer-back,
+          .photo-card-layer.layer-middle {
+            display: none !important;
           }
         }
       `}</style>
     </section>
-  );
-}
-
-/**
- * Individual Benefit Card with Tactile Pointer-Move Parallax and Continuous Floating Wrapper
- */
-function BenefitCard({ card, index, isSectionVisible, onExploreRoles }) {
-  const cardRef = useRef(null);
-  const visualRef = useRef(null);
-  const IconComponent = card.icon;
-
-  // Staggered reveal delay: 0ms, 120ms, 240ms, 360ms
-  const staggerDelay = `${index * 120}ms`;
-
-  // Tactile Cursor Parallax (without triggering React re-renders)
-  const handlePointerMove = (e) => {
-    if (!visualRef.current || !cardRef.current) return;
-    const rect = cardRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left - rect.width / 2;
-    const y = e.clientY - rect.top - rect.height / 2;
-
-    const normX = (x / (rect.width / 2)) * 4; // Max 4px shift
-    const normY = (y / (rect.height / 2)) * 4;
-
-    visualRef.current.style.setProperty('--mouse-x', `${normX.toFixed(2)}px`);
-    visualRef.current.style.setProperty('--mouse-y', `${normY.toFixed(2)}px`);
-  };
-
-  const handlePointerLeave = () => {
-    if (!visualRef.current) return;
-    visualRef.current.style.setProperty('--mouse-x', '0px');
-    visualRef.current.style.setProperty('--mouse-y', '0px');
-  };
-
-  return (
-    <div className={`why-card-wrapper float-card-${index}`}>
-      <div
-        ref={cardRef}
-        className={`why-card ${isSectionVisible ? 'card-revealed' : ''}`}
-        style={{
-          transitionDelay: staggerDelay,
-          '--card-accent': card.accentColor,
-          '--card-border-accent': card.borderAccent,
-        }}
-        onPointerMove={handlePointerMove}
-        onPointerLeave={handlePointerLeave}
-      >
-        {/* Card Header Top */}
-        <div className="why-card-top">
-          <span 
-            className="why-card-badge"
-            style={{ 
-              backgroundColor: card.bgLight, 
-              color: card.accentColor,
-              border: `1px solid ${card.borderAccent}`,
-            }}
-          >
-            {card.badge}
-          </span>
-
-          {/* Micro-Animated Visual Graphic */}
-          <div 
-            ref={visualRef}
-            className="why-card-visual-wrap"
-            style={{ 
-              backgroundColor: card.bgLight,
-              border: `1px solid ${card.borderAccent}`,
-            }}
-            aria-hidden="true"
-          >
-            {card.illustrationType === 'ripple' && (
-              <>
-                <div className="ripple-layer" />
-                <div className="ripple-layer delayed" />
-              </>
-            )}
-
-            {card.illustrationType === 'tools' && (
-              <div className="tools-orbit" />
-            )}
-
-            {card.illustrationType === 'growth' && (
-              <div className="growth-spark" />
-            )}
-
-            {card.illustrationType === 'network' && (
-              <div className="network-node-ring" />
-            )}
-
-            <IconComponent 
-              size={24} 
-              color={card.accentColor} 
-              className={`why-card-icon ${card.iconClass || ''}`} 
-            />
-          </div>
-        </div>
-
-        {/* Card Body */}
-        <h3 className="why-card-title">{card.title}</h3>
-        <p className="why-card-desc">{card.description}</p>
-
-        {/* Card Footer Detail */}
-        <div className="why-card-footer">
-          <div className="footer-detail-text">
-            <CheckCircle2 size={14} className="footer-check" />
-            <span>{card.hoverDetail}</span>
-          </div>
-          <ArrowRight size={15} className="footer-arrow" />
-        </div>
-      </div>
-    </div>
   );
 }

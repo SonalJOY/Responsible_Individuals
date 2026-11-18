@@ -78,6 +78,17 @@ export default function FinalCTA() {
           position: relative;
           overflow: hidden;
         }
+        @media (max-width: 768px) {
+          .final-cta-root { padding: 5rem 0; }
+          .final-cta-heading { font-size: 2.1rem !important; }
+          .final-cta-lead { font-size: 1rem; margin-bottom: 2rem; }
+          .final-cta-buttons { flex-direction: column; align-items: stretch; gap: 0.85rem; max-width: 340px; margin-left: auto; margin-right: auto; }
+          .btn-cta-primary, .btn-cta-secondary { justify-content: center; width: 100%; font-size: 1rem; }
+        }
+        @media (max-width: 480px) {
+          .final-cta-root { padding: 3rem 0; }
+          .final-cta-heading { font-size: 1.75rem !important; }
+        }
         .text-saffron {
           color: var(--primary-saffron, #F97316);
         }
